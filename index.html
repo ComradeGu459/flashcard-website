@@ -4,117 +4,133 @@
     <meta charset="UTF-8">
     <title>我的自定义闪卡网站</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; justify-content: center; align-items: flex-start; 
-            min-height: 100vh; margin: 0; padding: 20px; 
-            background: linear-gradient(to bottom, #f0f0f0, #d9e6f2); color: #333; 
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0; padding: 0; background: linear-gradient(120deg, #e3f0ff 0%, #f8f9fa 100%); color: #333;
         }
-        .container { 
-            display: flex; width: 90%; max-width: 1400px; gap: 20px; /* 左右间距 */
+        .container {
+            display: flex; flex-wrap: wrap; max-width: 1400px; margin: auto; gap: 20px; padding: 20px;
         }
-        .sidebar { 
-            width: 250px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        .sidebar {
+            width: 260px; min-width: 200px; background: white; padding: 18px; border-radius: 14px; box-shadow: 0 2px 16px rgba(60,120,200,0.08);
         }
-        .sidebar h3 { color: #2980b9; margin-bottom: 10px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar li { margin-bottom: 8px; }
-        .sidebar a { text-decoration: none; color: #2c3e50; cursor: pointer; }
-        .sidebar a:hover { color: #e67e22; }
-        .flashcard-section { flex: 1; /* 左边闪卡区占主要空间 */ }
-        .tools-section { 
-            width: 300px; background: #f9f9f9; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-        } /* 右边学习工具区 */
-        .tools-section h3 { color: #27ae60; }
-        .flashcard { 
-            width: 400px; height: 300px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; 
+        .sidebar h3 {
+            color: #5c6bc0; cursor: pointer; margin: 10px 0; font-weight: 700; font-size: 18px; letter-spacing: 1px;
         }
-        .flashcard-inner { 
-            position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s ease; transform-style: preserve-3d; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border-radius: 10px; 
+        .sidebar ul { list-style: none; padding-left: 10px; margin: 0; }
+        .sidebar .sub-ul { display: none; padding-left: 18px; }
+        .sidebar .expanded > .sub-ul { display: block; }
+        .sidebar h3.expanded { background: linear-gradient(90deg,#e3f0ff,#d1eaff); border-radius: 6px; }
+        .search-input {
+            width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 15px;
         }
-        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { 
-            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; border-radius: 10px; font-size: 18px; line-height: 1.5; 
+        .flashcard-grid {
+            flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; align-content: flex-start;
         }
-        .flashcard-front { background-color: #EAF2F8; color: #2980b9; }
-        .flashcard-front h2 { font-size: 24px; margin: 0; } /* 题目大字体 */
-        .flashcard-back { background-color: #E9F7EF; color: #27ae60; transform: rotateY(180deg); }
-        .flashcard-back p { font-style: italic; margin-top: 10px; } /* 答案斜体分隔 */
-        .controls button, .sidebar button { margin: 10px 0; padding: 12px 20px; background-color: #F39C12; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; display: block; }
-        .controls button:hover, .sidebar button:hover { background-color: #E67E22; }
+        .flashcard {
+            background: white; padding: 24px; border-radius: 14px; box-shadow: 0 4px 18px rgba(60,120,200,0.10);
+            cursor: pointer; transition: box-shadow 0.3s, transform 0.2s; position: relative;
+        }
+        .flashcard:hover {
+            box-shadow: 0 8px 32px rgba(60,120,200,0.18); transform: scale(1.04);
+        }
+
+        .flashcard h4 {
+            font-size: 22px; margin: 0 0 12px; color: #3f51b5; font-weight: 700; letter-spacing: 1px;
+        }
+        .flashcard p {
+            font-size: 15px; color: #666; line-height: 1.7; display: none; font-style: italic; margin: 0;
+        }
+        .flashcard.expanded p {
+            display: block; animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tools-section {
+            width: 260px; min-width: 200px; background: white; padding: 18px; border-radius: 14px; box-shadow: 0 2px 16px rgba(76,175,80,0.08);
+            display: flex; flex-direction: column; gap: 18px; align-items: stretch;
+        }
+        .tools-section h3 {
+            color: #4caf50; font-weight: 700; font-size: 18px; margin-bottom: 8px;
+        }
+        #countdown {
+            font-size: 16px; color: #388e3c; font-weight: 600; background: #e8f5e9; border-radius: 6px; padding: 8px 12px; margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%; min-height: 120px; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; font-size: 15px; resize: vertical;
+        }
+        button {
+            padding: 10px 15px; background: linear-gradient(90deg,#ff9800,#ffd180); color: white; border: none; border-radius: 6px; cursor: pointer; margin: 10px 0; font-size: 15px; font-weight: 600; box-shadow: 0 2px 8px rgba(255,152,0,0.08);
+        }
+        button:hover {
+            background: linear-gradient(90deg,#f57c00,#ffb74d); box-shadow: 0 4px 16px rgba(255,152,0,0.16);
+        }
+        @media (max-width: 900px) {
+            .container { flex-direction: column; gap: 10px; padding: 8px; }
+            .sidebar, .tools-section { width: 100%; min-width: unset; margin-bottom: 10px; }
+            .flashcard-grid { grid-template-columns: repeat(auto-fill, minmax(98vw, 1fr)); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
-            <h3>卡片目录（分科目/章节/级别）</h3>
+            <h3 onclick="toggleMenu(this)">卡片目录（点击展开）</h3>
+            <input type="text" class="search-input" placeholder="搜索卡片..." oninput="filterCards(this.value)">
             <ul id="card-list"></ul>
             <button onclick="showImport()">导入题库</button>
             <textarea id="import-text" style="display:none; width:100%; height:100px;"></textarea>
             <button id="import-btn" style="display:none;" onclick="importCards()">确认导入</button>
             <button onclick="addNewCard()">添加新卡片</button>
         </div>
-        <div class="flashcard-section">
-            <div id="flashcard" class="flashcard">
-                <div class="flashcard-inner">
-                    <div class="flashcard-front"><h2>正面：示例题目</h2></div>
-                    <div class="flashcard-back"><h2>答案</h2><p>示例解释，分开显示。</p></div>
-                </div>
-            </div>
-            <div class="controls">
-                <button onclick="prevCard()">上一张</button>
-                <button onclick="nextCard()">下一张</button>
-            </div>
-        </div>
+        <div class="flashcard-grid" id="flashcard-grid"></div>
         <div class="tools-section">
             <h3>学习工具</h3>
             <p id="countdown">考研倒计时：计算中...</p>
-            <!-- 可以添加更多工具，如笔记区 -->
-            <textarea placeholder="快速笔记区" style="width:100%; height:150px;"></textarea>
+            <textarea placeholder="快速笔记区" style="width:100%; height:150px; border:1px solid #e0e0e0; border-radius:5px; padding:10px;"></textarea>
         </div>
     </div>
 
     <script>
         let cards = [
             { front: "科学", back: "从确定研究对象的性质和规律出发，通过观察、调查和实验得到的系统的知识。主要任务：描述、解释和预测。结合科学研究与科学知识，强调普遍性、实证方法。", category: "社会研究", chapter: "第一章", level: "基础" },
-            // 添加其余卡片，并加 category, chapter, level 属性
             { front: "科学共同体", back: "某一特定学科的科学家所共有的基本世界观和研究范式（考过简答）。", category: "社会研究", chapter: "第一章", level: "基础" },
-            // ... (其他8张类似)
+            // ... (其他卡片)
         ];
 
-        if (localStorage.getItem('flashcards')) {
-            cards = JSON.parse(localStorage.getItem('flashcards'));
-        }
+        if (localStorage.getItem('flashcards')) { cards = JSON.parse(localStorage.getItem('flashcards')); }
 
-        let currentIndex = 0;
-        const flashcard = document.getElementById('flashcard');
-        const front = document.querySelector('.flashcard-front');
-        const back = document.querySelector('.flashcard-back');
-        const cardList = document.getElementById('card-list');
-
-        flashcard.addEventListener('click', () => { flashcard.classList.toggle('flipped'); });
-
-        function updateCard() {
-            front.innerHTML = '<h2>正面：' + cards[currentIndex].front + '</h2>';
-            back.innerHTML = '<h2>答案</h2><p>' + cards[currentIndex].back + '</p>';
-            flashcard.classList.remove('flipped');
+        function renderGrid(filteredCards = cards) {
+            const grid = document.getElementById('flashcard-grid');
+            grid.innerHTML = '';
+            filteredCards.forEach(card => {
+                const div = document.createElement('div');
+                div.className = 'flashcard';
+                div.onclick = () => div.classList.toggle('expanded');
+                div.onmouseover = () => div.style.transform = 'scale(1.04)';
+                div.onmouseout = () => div.style.transform = '';
+                div.innerHTML = `
+                    <h4>${card.front}</h4>
+                    <p>${card.back}</p>
+                `;
+                grid.appendChild(div);
+            });
         }
 
         function updateCardList() {
-            // 分级分类：先按科目分组
             const grouped = cards.reduce((acc, card) => {
                 if (!acc[card.category]) acc[card.category] = {};
                 if (!acc[card.category][card.chapter]) acc[card.category][card.chapter] = {};
-                if (!acc[card.category][card.chapter][card.level]) acc[card.category][card.chapter][card.level] = [];
-                acc[card.category][card.chapter][card.level].push(card);
+                acc[card.category][card.chapter][card.level] = (acc[card.category][card.chapter][card.level] || []).concat(card);
                 return acc;
             }, {});
-
-            cardList.innerHTML = '';
+            const list = document.getElementById('card-list');
+            list.innerHTML = '';
             for (let cat in grouped) {
-                const catLi = document.createElement('li');
-                catLi.textContent = cat;
+                const catH3 = document.createElement('h3');
+                catH3.textContent = cat;
+                catH3.onclick = () => toggleMenu(catH3);
                 const catUl = document.createElement('ul');
+                catUl.className = 'sub-ul';
                 for (let chap in grouped[cat]) {
                     const chapLi = document.createElement('li');
                     chapLi.textContent = chap;
@@ -123,11 +139,26 @@
                         const lvlLi = document.createElement('li');
                         lvlLi.textContent = lvl;
                         const lvlUl = document.createElement('ul');
-                        grouped[cat][chap][lvl].forEach((card, idx) => {
+                        grouped[cat][chap][lvl].forEach(card => {
                             const a = document.createElement('a');
                             a.textContent = card.front;
-                            a.onclick = () => goToCard(cards.indexOf(card));
-                            lvlUl.appendChild(document.createElement('li').appendChild(a));
+                            a.style.cursor = 'pointer';
+                            a.style.color = '#1976d2';
+                            a.style.textDecoration = 'underline';
+                            a.onmouseover = () => a.style.color = '#388e3c';
+                            a.onmouseout = () => a.style.color = '#1976d2';
+                            a.onclick = () => {
+                                const cardsElems = document.querySelectorAll('.flashcard');
+                                const target = Array.from(cardsElems).find(el => el.querySelector('h4').textContent === card.front);
+                                if (target) {
+                                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    target.classList.add('flashcard-highlight');
+                                    setTimeout(() => target.classList.remove('flashcard-highlight'), 1200);
+                                }
+                            };
+                            const li = document.createElement('li');
+                            li.appendChild(a);
+                            lvlUl.appendChild(li);
                         });
                         lvlLi.appendChild(lvlUl);
                         chapUl.appendChild(lvlLi);
@@ -135,52 +166,227 @@
                     chapLi.appendChild(chapUl);
                     catUl.appendChild(chapLi);
                 }
-                catLi.appendChild(catUl);
-                cardList.appendChild(catLi);
+                list.appendChild(catH3);
+                list.appendChild(catUl);
             }
         }
 
-        function prevCard() { currentIndex = (currentIndex - 1 + cards.length) % cards.length; updateCard(); }
-        function nextCard() { currentIndex = (currentIndex + 1) % cards.length; updateCard(); }
-        function goToCard(index) { currentIndex = index; updateCard(); }
-        function showImport() { document.getElementById('import-text').style.display = 'block'; document.getElementById('import-btn').style.display = 'block'; }
-        function importCards() {
-            const text = document.getElementById('import-text').value;
+        function toggleMenu(elem) {
+            elem.nextElementSibling.classList.toggle('expanded');
+            elem.classList.toggle('expanded');
+        }
+        function filterCards(query) {
+            const filtered = cards.filter(card =>
+                card.front.toLowerCase().includes(query.toLowerCase()) ||
+                card.back.toLowerCase().includes(query.toLowerCase()) ||
+                card.category.toLowerCase().includes(query.toLowerCase()) ||
+                card.chapter.toLowerCase().includes(query.toLowerCase()) ||
+                card.level.toLowerCase().includes(query.toLowerCase())
+            );
+            renderGrid(filtered);
+        }
+        function showImport() {
+            const form = document.createElement('div');
+            form.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                    background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.2); z-index: 1000;">
+                    <h3 style="margin-top: 0;">导入题库</h3>
+                    <p style="color: #666; margin-bottom: 15px;">请按以下格式输入或粘贴JSON数据：
+                    <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px;">[
+    {"front": "术语1", "back": "解释1", "category": "科目1", "chapter": "章节1", "level": "基础"},
+    {"front": "术语2", "back": "解释2", "category": "科目1", "chapter": "章节1", "level": "进阶"}
+]</pre></p>
+                    <textarea id="import-json" style="width: 100%; height: 200px; margin-bottom: 15px; padding: 10px;"></textarea>
+                    <div style="text-align: right;">
+                        <button onclick="document.body.removeChild(this.parentElement.parentElement)">取消</button>
+                        <button onclick="importCardsNew(this.parentElement.parentElement)" style="margin-left: 10px;">导入</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(form);
+        }
+
+        function importCardsNew(formDiv) {
+            const text = formDiv.querySelector('#import-json').value;
             try {
                 const newCards = JSON.parse(text);
+                if (!Array.isArray(newCards)) {
+                    throw new Error('数据必须是数组格式');
+                }
+                for (let card of newCards) {
+                    if (!card.front || !card.back || !card.category || !card.chapter || !card.level) {
+                        throw new Error('每个卡片必须包含 front, back, category, chapter, level 字段');
+                    }
+                }
                 cards = cards.concat(newCards);
                 localStorage.setItem('flashcards', JSON.stringify(cards));
                 updateCardList();
-                updateCard();
-            } catch (e) { alert('JSON格式错误！示例：[{"front":"新术语","back":"新解释","category":"科目","chapter":"章节","level":"级别"}]'); }
-        }
-        function addNewCard() {
-            const front = prompt('输入正面（术语）：');
-            const back = prompt('输入反面（解释）：');
-            const category = prompt('输入科目：');
-            const chapter = prompt('输入章节：');
-            const level = prompt('输入级别：');
-            if (front && back) {
-                cards.push({ front, back, category, chapter, level });
-                localStorage.setItem('flashcards', JSON.stringify(cards));
-                updateCardList();
-                updateCard();
+                renderGrid();
+                document.body.removeChild(formDiv);
+                alert(`成功导入 ${newCards.length} 张卡片！`);
+            } catch (e) {
+                alert('导入失败：' + e.message);
             }
         }
 
-        // 考研倒计时（假设日期2025-12-21，改成您的日期）
+        function addNewCard() {
+            const form = document.createElement('div');
+            form.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                    background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.2); z-index: 1000;">
+                    <h3 style="margin-top: 0;">添加新卡片</h3>
+                    <div style="margin-bottom: 10px;">
+                        <label>术语：</label><br>
+                        <input type="text" id="front" style="width: 100%; padding: 5px;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>解释：</label><br>
+                        <textarea id="back" style="width: 100%; height: 100px; padding: 5px;"></textarea>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>科目：</label><br>
+                        <input type="text" id="category" style="width: 100%; padding: 5px;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>章节：</label><br>
+                        <input type="text" id="chapter" style="width: 100%; padding: 5px;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label>级别：</label><br>
+                        <select id="level" style="width: 100%; padding: 5px;">
+                            <option value="基础">基础</option>
+                            <option value="进阶">进阶</option>
+                            <option value="重点">重点</option>
+                        </select>
+                    </div>
+                    <div style="text-align: right;">
+                        <button onclick="document.body.removeChild(this.parentElement.parentElement)">取消</button>
+                        <button onclick="saveNewCard(this.parentElement.parentElement)" style="margin-left: 10px;">保存</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(form);
+        }
+
+        // 保存新卡片的函数
+        function saveNewCard(formDiv) {
+            const front = formDiv.querySelector('#front').value;
+            const back = formDiv.querySelector('#back').value;
+            const category = formDiv.querySelector('#category').value;
+            const chapter = formDiv.querySelector('#chapter').value;
+            const level = formDiv.querySelector('#level').value;
+
+            if (front && back && category && chapter) {
+                cards.push({ front, back, category, chapter, level });
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+                updateCardList();
+                renderGrid();
+                document.body.removeChild(formDiv);
+            } else {
+                alert('请填写所有必填字段！');
+            }
+        }
+
+        // 考研倒计时（2026考研初试2025-12-20~21）
         function updateCountdown() {
-            const examDate = new Date('2025-12-21');
+            const examDate = new Date('2025-12-20T00:00:00');
             const now = new Date();
             const diff = examDate - now;
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            document.getElementById('countdown').textContent = `考研倒计时：${days} 天`;
+            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('countdown').textContent = `考研倒计时：${days > 0 ? days + ' 天' : '已结束'}`;
         }
-        setInterval(updateCountdown, 1000); // 实时更新
+        setInterval(updateCountdown, 1000);
 
-        updateCard();
+        // 高亮卡片样式
+        const style = document.createElement('style');
+        style.innerHTML = `.flashcard-highlight { box-shadow: 0 0 0 4px #1976d2, 0 8px 32px rgba(60,120,200,0.18)!important; transition: box-shadow 0.3s; }`;
+        document.head.appendChild(style);
+
+        // 笔记保存功能
+        let notes = JSON.parse(localStorage.getItem('flashcardNotes') || '{}');
+        function saveNote() {
+            const noteTextarea = document.querySelector('.tools-section textarea');
+            const currentDate = new Date().toISOString().split('T')[0];
+            notes[currentDate] = noteTextarea.value;
+            localStorage.setItem('flashcardNotes', JSON.stringify(notes));
+            showNotification('笔记已自动保存');
+        }
+
+        function loadNotes() {
+            const noteTextarea = document.querySelector('.tools-section textarea');
+            const currentDate = new Date().toISOString().split('T')[0];
+            noteTextarea.value = notes[currentDate] || '';
+            
+            // 添加日期选择器
+            const dateSelector = document.createElement('select');
+            dateSelector.style.marginBottom = '10px';
+            dateSelector.style.width = '100%';
+            dateSelector.style.padding = '5px';
+            
+            const dates = Object.keys(notes).sort().reverse();
+            dateSelector.innerHTML = `<option value="">选择历史笔记...</option>` +
+                dates.map(date => `<option value="${date}">${date}</option>`).join('');
+            
+            dateSelector.onchange = function() {
+                if (this.value) {
+                    noteTextarea.value = notes[this.value] || '';
+                }
+            };
+            
+            const toolsSection = document.querySelector('.tools-section');
+            toolsSection.insertBefore(dateSelector, noteTextarea);
+        }
+
+        // 自动保存笔记
+        document.querySelector('.tools-section textarea').oninput = debounce(saveNote, 1000);
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 保存提示
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(76,175,80,0.9);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 5px;
+                animation: fadeInOut 2s forwards;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => document.body.removeChild(notification), 2000);
+        }
+
+        // 添加动画样式
+        const fadeAnimation = document.createElement('style');
+        fadeAnimation.innerHTML = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateY(20px); }
+                10% { opacity: 1; transform: translateY(0); }
+                90% { opacity: 1; transform: translateY(0); }
+                100% { opacity: 0; transform: translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(fadeAnimation);
+
+        renderGrid();
         updateCardList();
         updateCountdown();
+        loadNotes();
     </script>
 </body>
 </html>
