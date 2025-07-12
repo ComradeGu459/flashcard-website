@@ -4,44 +4,61 @@
     <meta charset="UTF-8">
     <title>我的自定义闪卡网站</title>
     <style>
-    body { 
-    font-family: 'Segoe UI', sans-serif; 
-    display: flex; justify-content: center; align-items: flex-start; 
-    min-height: 100vh; margin: 0; padding: 20px; 
-    background: linear-gradient(to bottom, #f0f0f0, #d9e6f2); color: #333; 
-}
-.container { display: flex; width: 80%; max-width: 1200px; }
-.sidebar { width: 200px; margin-right: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.sidebar h3 { color: #2980b9; margin-bottom: 10px; }
-.sidebar ul { list-style: none; padding: 0; }
-.sidebar li { margin-bottom: 8px; }
-.sidebar a { text-decoration: none; color: #2c3e50; cursor: pointer; }
-.sidebar a:hover { color: #e67e22; }
-.flashcard { width: 350px; height: 250px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; }
-.flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s ease; transform-style: preserve-3d; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border-radius: 10px; }
-.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
-.flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; border-radius: 10px; font-size: 18px; line-height: 1.5; }
-.flashcard-front { background-color: #EAF2F8; color: #2980b9; font-weight: bold; }
-.flashcard-back { background-color: #E9F7EF; color: #27ae60; transform: rotateY(180deg); }
-.controls button, .sidebar button { margin: 10px; padding: 12px 20px; background-color: #F39C12; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
-.controls button:hover, .sidebar button:hover { background-color: #E67E22; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; justify-content: center; align-items: flex-start; 
+            min-height: 100vh; margin: 0; padding: 20px; 
+            background: linear-gradient(to bottom, #f0f0f0, #d9e6f2); color: #333; 
+        }
+        .container { 
+            display: flex; width: 90%; max-width: 1400px; gap: 20px; /* 左右间距 */
+        }
+        .sidebar { 
+            width: 250px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .sidebar h3 { color: #2980b9; margin-bottom: 10px; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar li { margin-bottom: 8px; }
+        .sidebar a { text-decoration: none; color: #2c3e50; cursor: pointer; }
+        .sidebar a:hover { color: #e67e22; }
+        .flashcard-section { flex: 1; /* 左边闪卡区占主要空间 */ }
+        .tools-section { 
+            width: 300px; background: #f9f9f9; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        } /* 右边学习工具区 */
+        .tools-section h3 { color: #27ae60; }
+        .flashcard { 
+            width: 400px; height: 300px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; 
+        }
+        .flashcard-inner { 
+            position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s ease; transform-style: preserve-3d; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border-radius: 10px; 
+        }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { 
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; border-radius: 10px; font-size: 18px; line-height: 1.5; 
+        }
+        .flashcard-front { background-color: #EAF2F8; color: #2980b9; }
+        .flashcard-front h2 { font-size: 24px; margin: 0; } /* 题目大字体 */
+        .flashcard-back { background-color: #E9F7EF; color: #27ae60; transform: rotateY(180deg); }
+        .flashcard-back p { font-style: italic; margin-top: 10px; } /* 答案斜体分隔 */
+        .controls button, .sidebar button { margin: 10px 0; padding: 12px 20px; background-color: #F39C12; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; display: block; }
+        .controls button:hover, .sidebar button:hover { background-color: #E67E22; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
-            <h3>卡片目录</h3>
+            <h3>卡片目录（分科目/章节/级别）</h3>
             <ul id="card-list"></ul>
             <button onclick="showImport()">导入题库</button>
             <textarea id="import-text" style="display:none; width:100%; height:100px;"></textarea>
             <button id="import-btn" style="display:none;" onclick="importCards()">确认导入</button>
             <button onclick="addNewCard()">添加新卡片</button>
         </div>
-        <div>
+        <div class="flashcard-section">
             <div id="flashcard" class="flashcard">
                 <div class="flashcard-inner">
-                    <div class="flashcard-front">正面：示例术语</div>
-                    <div class="flashcard-back">反面：示例解释</div>
+                    <div class="flashcard-front"><h2>正面：示例题目</h2></div>
+                    <div class="flashcard-back"><h2>答案</h2><p>示例解释，分开显示。</p></div>
                 </div>
             </div>
             <div class="controls">
@@ -49,101 +66,121 @@
                 <button onclick="nextCard()">下一张</button>
             </div>
         </div>
+        <div class="tools-section">
+            <h3>学习工具</h3>
+            <p id="countdown">考研倒计时：计算中...</p>
+            <!-- 可以添加更多工具，如笔记区 -->
+            <textarea placeholder="快速笔记区" style="width:100%; height:150px;"></textarea>
+        </div>
     </div>
+
     <script>
-    let cards = [
-    { front: "科学", back: "从确定研究对象的性质和规律出发，通过观察、调查和实验得到的系统的知识。主要任务：描述、解释和预测。结合科学研究与科学知识，强调普遍性、实证方法。" },
-    { front: "科学共同体", back: "某一特定学科的科学家所共有的基本世界观和研究范式（考过简答）。" },
-    // 添加其余8张卡片，如之前对话
-    { front: "社会研究", back: "以经验方式对社会世界中人们的行为、态度、关系及社会现象进行的科学的探究活动。目标：探索和理解社会世界。方法：社会研究方法。" },
-    { front: "方法论", back: "涉及社会研究过程的逻辑和哲学基础。规范科学学科的原理、原则和方法体系。问题包括：社会现象性质、基础假定、客观性、价值关系、范式应用、研究方式逻辑。" },
-    { front: "研究方式", back: "研究所采用的具体形式或类型，包括程序、策略、方法。四种类型：调查研究、实验研究、文献研究、实地研究。每种有基本元素，可独立完成研究过程。" },
-    { front: "具体的方法与技术", back: "研究过程中资料收集、分析方法及操作程序。特点：专门性、技术性、操作性。" },
-    { front: "实证主义方法论", back: "向自然科学看齐，将社会现象视为客观现象，通过观察和定量分析得出客观结论。典型特征：定量分析。" },
-    { front: "人文主义方法论", back: "考虑人的特殊性，发挥研究者主观性，深入内心理解行为。结合人类认识能力和能动性，描述经验世界。典型特征：定性研究。" },
-    { front: "范式", back: "由库恩提出，指研究问题时的角度、视野和参照框架。一整套概念和假定，反映科学家看待世界的基本方式。里尔茨区分三种：社会事实范式、社会定义范式、社会行为范式。" },
-    { front: "社会事实范式", back: "以涂尔干和结构功能主义为代表，强调社会现象客观性，研究宏观社会结构、制度、文化规范。" }
-];
+        let cards = [
+            { front: "科学", back: "从确定研究对象的性质和规律出发，通过观察、调查和实验得到的系统的知识。主要任务：描述、解释和预测。结合科学研究与科学知识，强调普遍性、实证方法。", category: "社会研究", chapter: "第一章", level: "基础" },
+            // 添加其余卡片，并加 category, chapter, level 属性
+            { front: "科学共同体", back: "某一特定学科的科学家所共有的基本世界观和研究范式（考过简答）。", category: "社会研究", chapter: "第一章", level: "基础" },
+            // ... (其他8张类似)
+        ];
 
-// 从浏览器本地存储加载数据
-if (localStorage.getItem('flashcards')) {
-    cards = JSON.parse(localStorage.getItem('flashcards'));
-}
+        if (localStorage.getItem('flashcards')) {
+            cards = JSON.parse(localStorage.getItem('flashcards'));
+        }
 
-let currentIndex = 0;
-const flashcard = document.getElementById('flashcard');
-const front = document.querySelector('.flashcard-front');
-const back = document.querySelector('.flashcard-back');
-const cardList = document.getElementById('card-list');
+        let currentIndex = 0;
+        const flashcard = document.getElementById('flashcard');
+        const front = document.querySelector('.flashcard-front');
+        const back = document.querySelector('.flashcard-back');
+        const cardList = document.getElementById('card-list');
 
-flashcard.addEventListener('click', () => {
-    flashcard.classList.toggle('flipped');
-});
+        flashcard.addEventListener('click', () => { flashcard.classList.toggle('flipped'); });
 
-function updateCard() {
-    front.textContent = '正面：' + cards[currentIndex].front;
-    back.textContent = '反面：' + cards[currentIndex].back;
-    flashcard.classList.remove('flipped');
-}
+        function updateCard() {
+            front.innerHTML = '<h2>正面：' + cards[currentIndex].front + '</h2>';
+            back.innerHTML = '<h2>答案</h2><p>' + cards[currentIndex].back + '</p>';
+            flashcard.classList.remove('flipped');
+        }
 
-function updateCardList() {
-    cardList.innerHTML = '';
-    cards.forEach((card, index) => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.textContent = card.front;
-        a.onclick = () => goToCard(index);
-        li.appendChild(a);
-        cardList.appendChild(li);
-    });
-}
+        function updateCardList() {
+            // 分级分类：先按科目分组
+            const grouped = cards.reduce((acc, card) => {
+                if (!acc[card.category]) acc[card.category] = {};
+                if (!acc[card.category][card.chapter]) acc[card.category][card.chapter] = {};
+                if (!acc[card.category][card.chapter][card.level]) acc[card.category][card.chapter][card.level] = [];
+                acc[card.category][card.chapter][card.level].push(card);
+                return acc;
+            }, {});
 
-function prevCard() {
-    currentIndex = (currentIndex - 1 + cards.length) % cards.length;
-    updateCard();
-}
+            cardList.innerHTML = '';
+            for (let cat in grouped) {
+                const catLi = document.createElement('li');
+                catLi.textContent = cat;
+                const catUl = document.createElement('ul');
+                for (let chap in grouped[cat]) {
+                    const chapLi = document.createElement('li');
+                    chapLi.textContent = chap;
+                    const chapUl = document.createElement('ul');
+                    for (let lvl in grouped[cat][chap]) {
+                        const lvlLi = document.createElement('li');
+                        lvlLi.textContent = lvl;
+                        const lvlUl = document.createElement('ul');
+                        grouped[cat][chap][lvl].forEach((card, idx) => {
+                            const a = document.createElement('a');
+                            a.textContent = card.front;
+                            a.onclick = () => goToCard(cards.indexOf(card));
+                            lvlUl.appendChild(document.createElement('li').appendChild(a));
+                        });
+                        lvlLi.appendChild(lvlUl);
+                        chapUl.appendChild(lvlLi);
+                    }
+                    chapLi.appendChild(chapUl);
+                    catUl.appendChild(chapLi);
+                }
+                catLi.appendChild(catUl);
+                cardList.appendChild(catLi);
+            }
+        }
 
-function nextCard() {
-    currentIndex = (currentIndex + 1) % cards.length;
-    updateCard();
-}
+        function prevCard() { currentIndex = (currentIndex - 1 + cards.length) % cards.length; updateCard(); }
+        function nextCard() { currentIndex = (currentIndex + 1) % cards.length; updateCard(); }
+        function goToCard(index) { currentIndex = index; updateCard(); }
+        function showImport() { document.getElementById('import-text').style.display = 'block'; document.getElementById('import-btn').style.display = 'block'; }
+        function importCards() {
+            const text = document.getElementById('import-text').value;
+            try {
+                const newCards = JSON.parse(text);
+                cards = cards.concat(newCards);
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+                updateCardList();
+                updateCard();
+            } catch (e) { alert('JSON格式错误！示例：[{"front":"新术语","back":"新解释","category":"科目","chapter":"章节","level":"级别"}]'); }
+        }
+        function addNewCard() {
+            const front = prompt('输入正面（术语）：');
+            const back = prompt('输入反面（解释）：');
+            const category = prompt('输入科目：');
+            const chapter = prompt('输入章节：');
+            const level = prompt('输入级别：');
+            if (front && back) {
+                cards.push({ front, back, category, chapter, level });
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+                updateCardList();
+                updateCard();
+            }
+        }
 
-function goToCard(index) {
-    currentIndex = index;
-    updateCard();
-}
+        // 考研倒计时（假设日期2025-12-21，改成您的日期）
+        function updateCountdown() {
+            const examDate = new Date('2025-12-21');
+            const now = new Date();
+            const diff = examDate - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('countdown').textContent = `考研倒计时：${days} 天`;
+        }
+        setInterval(updateCountdown, 1000); // 实时更新
 
-function showImport() {
-    document.getElementById('import-text').style.display = 'block';
-    document.getElementById('import-btn').style.display = 'block';
-}
-
-function importCards() {
-    const text = document.getElementById('import-text').value;
-    try {
-        const newCards = JSON.parse(text);
-        cards = cards.concat(newCards);
-        localStorage.setItem('flashcards', JSON.stringify(cards));
-        updateCardList();
         updateCard();
-    } catch (e) {
-        alert('JSON格式错误！示例：[{"front":"新术语","back":"新解释"}]');
-    }
-}
-
-function addNewCard() {
-    const front = prompt('输入正面（术语）：');
-    const back = prompt('输入反面（解释）：');
-    if (front && back) {
-        cards.push({ front, back });
-        localStorage.setItem('flashcards', JSON.stringify(cards));
         updateCardList();
-        updateCard();
-    }
-}
-
-updateCard();
-updateCardList();
+        updateCountdown();
     </script>
 </body>
 </html>
