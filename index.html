@@ -5,40 +5,60 @@
 <title>闪卡学习</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#333;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#333;display:flex;min-height:100vh;}
 header{padding:20px;text-align:center;}
-header h1{font-size:28px;}
+header h1{font-size:28px;cursor:pointer;}
+aside{width:200px;background:#fff;border-right:1px solid #e5e7eb;padding:20px;overflow-y:auto;}
+.subject{font-weight:bold;margin-top:10px;cursor:pointer;}
+.chapter{margin-left:10px;margin-top:6px;cursor:pointer;}
+.main{flex:1;display:flex;flex-direction:column;}
 .controls{display:flex;justify-content:space-between;align-items:center;padding:20px;max-width:800px;margin:0 auto;}
 .controls input[type="text"]{flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;margin-right:10px;}
 .controls button{padding:10px 16px;border:none;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;}
 .controls button:hover{background:#4f46e5;}
+.stats{padding:10px 20px;font-size:14px;color:#555;}
 .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;padding:0 20px 40px;max-width:1000px;margin:0 auto;}
 .card{perspective:1000px;}
-.card-inner{position:relative;width:100%;height:180px;transform-style:preserve-3d;transition:transform 0.6s;cursor:pointer;}
+.card-inner{position:relative;width:100%;height:200px;transform-style:preserve-3d;transition:transform 0.6s;cursor:pointer;}
 .card.flip .card-inner{transform:rotateY(180deg);}
-.card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;font-size:16px;text-align:center;}
 .card-front{background:#fff;border:1px solid #e5e7eb;}
-.card-back{background:linear-gradient(135deg,#6366f1,#3b82f6);color:#fff;transform:rotateY(180deg);}
-#addModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;}
+.card-back{background:linear-gradient(135deg,#6366f1,#3b82f6);color:#fff;transform:rotateY(180deg);display:flex;flex-direction:column;justify-content:center;}
+.review-buttons{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;}
+.review-buttons button{padding:4px 8px;border:none;border-radius:6px;background:#fff;color:#333;font-size:12px;cursor:pointer;}
+.review-buttons button:hover{background:#e5e7eb;}
+#addModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:10;}
 #addModal .modal-content{background:#fff;border-radius:12px;padding:20px;width:300px;display:flex;flex-direction:column;gap:10px;}
 #addModal input,#addModal textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;}
 #addModal button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;}
 #addModal .close-btn{align-self:flex-end;background:#e5e7eb;}
 #addModal .save-btn{background:#6366f1;color:#fff;}
+.notes{max-width:800px;margin:20px auto;padding:0 20px;}
+.notes textarea{width:100%;min-height:80px;padding:10px;border:1px solid #ccc;border-radius:8px;}
 </style>
 </head>
 <body>
+<aside id="sidebar"></aside>
+<div class="main">
 <header>
-<h1>闪卡学习</h1>
+<h1 onclick="clearFilter()">闪卡学习</h1>
 </header>
 <div class="controls">
 <input type="text" id="search" placeholder="搜索卡片…" oninput="renderCards(this.value)">
 <button onclick="openAddModal()">新建卡片</button>
 </div>
+<div class="stats" id="stats"></div>
 <div class="card-grid" id="card-grid"></div>
+<div class="notes">
+<h3>学习笔记</h3>
+<textarea id="notes" placeholder="记录笔记…" oninput="saveNotes()"></textarea>
+</div>
+</div>
 <div id="addModal">
 <div class="modal-content">
 <button class="close-btn" onclick="closeAddModal()">关闭</button>
+<input type="text" id="newSubject" placeholder="科目">
+<input type="text" id="newChapter" placeholder="章节">
 <input type="text" id="newFront" placeholder="正面内容">
 <textarea id="newBack" rows="4" placeholder="反面内容"></textarea>
 <button class="save-btn" onclick="addCard()">保存</button>
@@ -46,12 +66,31 @@ header h1{font-size:28px;}
 </div>
 <script>
 let cards=JSON.parse(localStorage.getItem('cards')||'[]');
+let selectedSubject='';
+let selectedChapter='';
+const notesEl=document.getElementById('notes');
+notesEl.value=localStorage.getItem('notes')||'';
+
 function save(){localStorage.setItem('cards',JSON.stringify(cards));}
-function renderCards(filter=''){const grid=document.getElementById('card-grid');grid.innerHTML='';const filtered=cards.filter(c=>c.front.includes(filter)||c.back.includes(filter));filtered.forEach((c,index)=>{const card=document.createElement('div');card.className='card';card.innerHTML=`<div class="card-inner" onclick="flipCard(event)"><div class="card-face card-front">${c.front}</div><div class="card-face card-back">${c.back}</div></div>`;card.dataset.index=index;grid.appendChild(card);});}
+function saveNotes(){localStorage.setItem('notes',notesEl.value);}
+
+function getCategories(){const map={};cards.forEach(c=>{if(!map[c.subject])map[c.subject]=new Set();map[c.subject].add(c.chapter);});return map;}
+function renderSidebar(){const sidebar=document.getElementById('sidebar');const cats=getCategories();let html='';Object.keys(cats).forEach(sub=>{html+=`<div class="subject" onclick="toggleSubject(this)">${sub}</div>`;html+='<div>';cats[sub].forEach(ch=>{html+=`<div class="chapter" onclick="filterBy(\'${sub}\',\'${ch}\')">${ch}</div>`;});html+='</div>';});sidebar.innerHTML=html;}
+function toggleSubject(el){const next=el.nextElementSibling;next.style.display=next.style.display==='none'?'block':'none';}
+function filterBy(sub,ch){selectedSubject=sub;selectedChapter=ch;renderCards(document.getElementById('search').value);}
+function clearFilter(){selectedSubject='';selectedChapter='';renderCards(document.getElementById('search').value);}
+
+function renderCards(filter=''){const grid=document.getElementById('card-grid');grid.innerHTML='';const now=Date.now();const filtered=cards.filter(c=>{const txt=c.front.includes(filter)||c.back.includes(filter);const sub=!selectedSubject||c.subject===selectedSubject;const ch=!selectedChapter||c.chapter===selectedChapter;return txt&&sub&&ch;}).sort((a,b)=>(a.due||0)-(b.due||0));filtered.forEach((c,index)=>{const card=document.createElement('div');card.className='card';card.innerHTML=`<div class="card-inner" onclick="flipCard(event)"><div class="card-face card-front">${c.front}</div><div class="card-face card-back"><div>${c.back}</div><div class="review-buttons"><button onclick="gradeCard(${index},'hard');event.stopPropagation();">困难</button><button onclick="gradeCard(${index},'good');event.stopPropagation();">模糊</button><button onclick="gradeCard(${index},'easy');event.stopPropagation();">清晰</button></div></div></div>`;card.dataset.index=index;grid.appendChild(card);});renderStats();}
 function flipCard(e){const card=e.currentTarget.parentElement;card.classList.toggle('flip');}
 function openAddModal(){document.getElementById('addModal').style.display='flex';}
 function closeAddModal(){document.getElementById('addModal').style.display='none';}
-function addCard(){const front=document.getElementById('newFront').value.trim();const back=document.getElementById('newBack').value.trim();if(!front||!back)return;cards.push({front,back});save();renderCards();document.getElementById('newFront').value='';document.getElementById('newBack').value='';closeAddModal();}
+function addCard(){const subject=document.getElementById('newSubject').value.trim();const chapter=document.getElementById('newChapter').value.trim();const front=document.getElementById('newFront').value.trim();const back=document.getElementById('newBack').value.trim();if(!front||!back||!subject||!chapter)return;cards.push({subject,chapter,front,back});save();renderSidebar();renderCards();document.getElementById('newSubject').value='';document.getElementById('newChapter').value='';document.getElementById('newFront').value='';document.getElementById('newBack').value='';closeAddModal();}
+
+function gradeCard(idx,rating){const card=cards[idx];const now=Date.now();card.interval=card.interval||1;card.factor=card.factor||2.5;switch(rating){case'hard':card.interval=1;break;case'good':card.interval*=card.factor;break;case'easy':card.interval*=card.factor*1.3;break;}card.due=now+card.interval*86400000;save();renderCards();}
+
+function renderStats(){const now=Date.now();let due=0,newCount=0;cards.forEach(c=>{if(!c.due)newCount++;else if(c.due<=now)due++;});document.getElementById('stats').textContent=`总卡片:${cards.length} 到期:${due} 新卡片:${newCount}`;}
+
+renderSidebar();
 renderCards();
 </script>
 </body>
