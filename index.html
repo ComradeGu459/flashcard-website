@@ -1,274 +1,151 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-  <meta charset="UTF-8">
-  <title>科学闪卡记忆系统Plus</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:#f3f4f6;}
-    .container{max-width:980px;margin:32px auto;background:#fff;border-radius:16px;box-shadow:0 4px 32px #0002;padding:32px 20px;}
-    h2{margin-bottom:10px;}
-    .flex{display:flex;align-items:center;}
-    .sidebar{float:left;width:200px;}
-    .main{margin-left:220px;}
-    .search{margin:12px 0 18px 0;}
-    .flashcard{width:340px;height:200px;perspective:900px;margin:38px auto 0 auto;}
-    .card-inner{width:100%;height:100%;position:relative;transition:transform .55s cubic-bezier(.5,1.8,.5,1);transform-style:preserve-3d;}
-    .flipped .card-inner{transform:rotateY(180deg);}
-    .card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:18px;box-shadow:0 2px 18px #0002;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.16rem;}
-    .card-face.back{transform:rotateY(180deg);background:#ecfdf5;color:#166534;}
-    .tags{margin-top:12px;}
-    .tag{background:#fee2e2;color:#991b1b;font-size:.87em;padding:1px 8px;border-radius:8px;margin-right:4px;}
-    .tag.high{background:#fde68a;color:#92400e;}
-    .tag.important{background:#bae6fd;color:#0369a1;}
-    .tag.star{background:#f3e8ff;color:#7c3aed;}
-    .fav{color:#f59e42;font-size:1.2em;margin-left:6px;}
-    .review-btns button{margin:0 8px;padding:5px 16px;border-radius:8px;border:none;font-weight:500;cursor:pointer;}
-    .review-btns .hard{background:#fecaca;color:#b91c1c;}
-    .review-btns .medium{background:#fef08a;color:#a16207;}
-    .review-btns .easy{background:#bbf7d0;color:#166534;}
-    .toolbar button{margin:0 8px 10px 0;}
-    .panel{margin-bottom:16px;background:#f1f5f9;border-radius:10px;padding:14px 20px;display:flex;gap:24px;}
-    .panel .block{text-align:center;}
-    .panel .num{font-weight:bold;font-size:1.13rem;}
-    .panel .pct{color:#06b6d4;}
-    .import-box{margin:18px 0;}
-    .import-box textarea{width:100%;height:54px;}
-    .import-box button{margin-top:6px;}
-    .notebook textarea{width:100%;height:44px;}
-    .small{font-size:.97em;color:#888;}
-    .star-btn{background:none;border:none;cursor:pointer;color:#f59e42;font-size:1.35em;vertical-align:middle;}
-    .fav.active{color:#f59e42;}
-    .btn{padding:3px 11px;border-radius:7px;border:none;margin:0 2px;}
-    .btn.del{background:#fee2e2;color:#991b1b;}
-    .btn.wrong{background:#fef08a;color:#a16207;}
-    .btn.export{background:#e0e7ff;color:#3730a3;}
-    .notebook{margin:10px 0;}
-    .notebook label{font-weight:500;}
-    .hide{display:none;}
-    @media(max-width:780px){.sidebar{float:none;width:100%;}.main{margin:0;}.flashcard{width:96vw;}.container{padding:6vw;}}
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>科学闪卡记忆系统 Plus</h2>
-    <div class="panel">
-      <div class="block"><div class="num" id="stat-learned">0</div><div>已掌握</div></div>
-      <div class="block"><div class="num" id="stat-reviewing">0</div><div>复习中</div></div>
-      <div class="block"><div class="num" id="stat-unlearned">0</div><div>未学习</div></div>
-      <div class="block"><div class="num" id="stat-total">0</div><div>总卡片</div></div>
-      <div class="block"><div class="pct" id="stat-pct">0%</div><div>本章进度</div></div>
-    </div>
-    <div class="toolbar">
-      <button onclick="showFavs()">收藏夹</button>
-      <button onclick="showWrongs()">错题本</button>
-      <button onclick="showAll()">全部</button>
-      <button class="btn export" onclick="exportCards()">导出全部</button>
-    </div>
-    <div class="search">
-      <input type="text" id="search" placeholder="搜索题干/答案/标签" style="width:180px;padding:5px 9px;border-radius:7px;border:1px solid #bbb;" oninput="renderAll()">
-      <button onclick="randomOrder=true;renderAll()">随机模式</button>
-      <button onclick="randomOrder=false;renderAll()">顺序模式</button>
-    </div>
-    <div class="import-box">
-      <strong>批量导入（JSON，每条需含subject,chapter,front,back，可选tags）：</strong><br>
-      <textarea id="import-input" placeholder='[{"subject":"英语","chapter":"长难句","front":"What is spaced repetition?","back":"A learning technique that incorporates increasing intervals...","tags":"高频,易错"}]'></textarea><br>
-      <button onclick="importData()">导入</button>
-      <span class="small">支持追加导入，数据本地保存。可用“导出全部”按钮自定义备份。</span>
-    </div>
-    <div class="notebook">
-      <label>本章节系统笔记：</label><br>
-      <textarea id="chapter-note" placeholder="总结、归纳、复习心得等" onblur="saveNote()"></textarea>
-    </div>
-    <div class="sidebar" id="sidebar"></div>
-    <div class="main">
-      <div id="flashcard-box"></div>
-      <div id="review-btns" class="review-btns" style="text-align:center;"></div>
-      <div style="margin:22px 0 0 0">
-        <label>本题错题/笔记：</label><br>
-        <textarea id="note-area" onblur="saveCardNote()"></textarea>
-      </div>
-    </div>
-    <div style="clear:both"></div>
-  </div>
-<script>
-let flashcards = JSON.parse(localStorage.getItem("flashcards")||"[]");
-let subject = flashcards[0]?.subject||"";
-let chapter = flashcards[0]?.chapter||"";
-let idx = 0, flipped = false, searchVal="", randomOrder=false, showFavOnly=false, showWrongOnly=false;
-let favList = JSON.parse(localStorage.getItem("favList")||"[]");
-let wrongList = JSON.parse(localStorage.getItem("wrongList")||"[]");
-let orderArr = [];
+import React from "react";
 
-function saveCards(){localStorage.setItem("flashcards",JSON.stringify(flashcards));}
-function groupBySubject(cards){
-  let map={};cards.forEach(c=>{if(!map[c.subject])map[c.subject]=new Set();map[c.subject].add(c.chapter);});
-  return map;
-}
-function renderSidebar(){
-  let map=groupBySubject(flashcards);
-  let html="";
-  Object.keys(map).forEach(s=>{
-    html+=`<div class="subject">${s}</div>`;
-    Array.from(map[s]).forEach(c=>{
-      html+=`<div class="chapter${subject===s&&chapter===c?' active':''}" onclick="setChapter('${s}','${c}')">${c}</div>`;
-    });
-  });
-  document.getElementById("sidebar").innerHTML=html;
-}
-function setChapter(s,c){
-  subject=s;chapter=c;idx=0;flipped=false;showFavOnly=false;showWrongOnly=false;
-  document.getElementById('search').value="";searchVal="";
-  renderAll();
-}
-function renderFlashcard(){
-  let cards = filterCards();
-  if(!cards.length){document.getElementById("flashcard-box").innerHTML = "<div style='color:#aaa'>该类别无卡片</div>";document.getElementById("review-btns").innerHTML="";return;}
-  if(idx>=cards.length) idx=0;
-  let card = cards[idx];
-  let tagHtml = (card.tags||"").split(",").filter(Boolean).map(t=>{
-    let c="tag";if(t==="高频")c+=" high";if(t==="重点")c+=" important";if(t==="收藏")c+=" star";
-    return `<span class="${c}">${t}</span>`;
-  }).join("");
-  let fav = favList.includes(card.id);
-  document.getElementById("flashcard-box").innerHTML = `
-    <div class="flashcard${flipped?' flipped':''}" onclick="flipCard()">
-      <div class="card-inner">
-        <div class="card-face front">
-          <div style="font-size:.97em;color:#64748b">${card.subject} / ${card.chapter}</div>
-          <div style="font-weight:bold; font-size:1.18em; margin:10px 0;">${highlight(card.front,searchVal)}</div>
-          <div class="tags">${tagHtml}${fav?'<span class="fav">★</span>':''}</div>
+export default function FlashcardLayout({ children }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#e0e7ff] via-[#f0f9ff] to-[#f3f4f6] flex flex-col">
+      <header className="h-16 flex items-center px-8 bg-white/70 shadow-md backdrop-blur-xl sticky top-0 z-30">
+        <span className="font-extrabold text-2xl text-[#6366f1] tracking-widest select-none">FlashBrain</span>
+        <div className="ml-8 flex-1">
+          <input
+            placeholder="搜索知识点、标签、笔记..."
+            className="w-[320px] py-2 px-5 rounded-2xl border-none bg-[#eef2ff] text-gray-700 font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          />
         </div>
-        <div class="card-face back">
-          <div style="font-weight:600; font-size:1.08em;">${highlight(card.back,searchVal)}</div>
+        <div className="ml-auto flex items-center gap-4">
+          <button className="rounded-full bg-gradient-to-tr from-blue-400 to-indigo-400 text-white px-4 py-2 shadow-lg font-bold hover:scale-105 transition">导入题库</button>
+          <button className="rounded-full bg-[#fef3c7] text-[#a16207] font-bold px-4 py-2 hover:bg-[#fde68a] transition">新建卡片</button>
         </div>
+      </header>
+      <main className="flex-1 flex max-w-7xl w-full mx-auto px-8 pt-8 gap-8">
+        {/* 左侧导航 */}
+        <aside className="w-64 flex-shrink-0">
+          <div className="rounded-3xl bg-white/80 shadow-xl backdrop-blur-xl p-5 sticky top-24">
+            <div className="font-bold text-lg mb-4 text-[#6366f1]">知识导航</div>
+            <div className="space-y-2">
+              <NavSection title="公共管理" chapters={["第一章", "第二章", "第三章"]} />
+              <NavSection title="社会研究方法" chapters={["第一章", "第二章", "第三章"]} />
+            </div>
+          </div>
+        </aside>
+        {/* 中间知识卡片瀑布流 */}
+        <section className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+          {children}
+        </section>
+        {/* 右侧统计面板 */}
+        <aside className="w-80 flex-shrink-0">
+          <div className="rounded-3xl bg-white/80 shadow-xl backdrop-blur-xl p-7 sticky top-24">
+            <div className="flex items-center mb-4">
+              <div className="font-bold text-[#6366f1] text-lg">距离考研还有</div>
+              <span className="ml-2 rounded-2xl px-4 py-1 bg-gradient-to-tr from-blue-200 to-purple-200 text-[#4f46e5] font-semibold">123 天</span>
+            </div>
+            <ProgressCircle percent={17} />
+            <div className="grid grid-cols-2 gap-3 text-center mt-8">
+              <StatBlock label="已掌握" value="32" />
+              <StatBlock label="复习中" value="11" />
+              <StatBlock label="未学习" value="86" />
+              <StatBlock label="高频考点" value="9" highlight />
+            </div>
+            <div className="mt-7 border-t pt-5">
+              <div className="font-semibold mb-1 text-gray-500">学习记录</div>
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>连续学习</span>
+                <span className="text-[#6366f1] font-bold">5 天</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>今日已学</span>
+                <span className="text-[#6366f1] font-bold">12 张</span>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-3xl bg-gradient-to-tr from-white/90 to-blue-50 shadow-xl mt-7 p-7">
+            <div className="font-semibold mb-2 text-[#6366f1]">学习笔记</div>
+            <div className="flex gap-2 mb-3">
+              <button className="px-4 py-1 rounded-xl bg-[#f1f5f9] text-[#6366f1] font-semibold hover:bg-indigo-50">快速笔记</button>
+              <button className="px-4 py-1 rounded-xl bg-[#f1f5f9] text-[#6366f1] font-semibold hover:bg-indigo-50">系统笔记</button>
+            </div>
+            <textarea className="w-full h-20 rounded-2xl border-none bg-[#eef2ff] p-3 resize-none shadow-inner" placeholder="记录临时想法或笔记..." />
+          </div>
+        </aside>
+      </main>
+    </div>
+  );
+}
+
+// 侧边栏章节导航
+function NavSection({ title, chapters }) {
+  return (
+    <div>
+      <div className="font-bold text-[#2563eb]">{title}</div>
+      <ul className="pl-3 mt-1 space-y-1">
+        {chapters.map((ch, idx) => (
+          <li key={idx} className="text-gray-700 hover:bg-indigo-50 rounded-xl px-2 py-1 cursor-pointer">{ch}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// 右侧圆环进度条
+function ProgressCircle({ percent }) {
+  return (
+    <div className="flex justify-center items-center my-4">
+      <svg width="92" height="92" viewBox="0 0 92 92">
+        <circle cx="46" cy="46" r="41" fill="none" stroke="#e0e7ff" strokeWidth="9" />
+        <circle
+          cx="46" cy="46" r="41"
+          fill="none"
+          stroke="url(#grad)"
+          strokeWidth="9"
+          strokeDasharray={2 * Math.PI * 41}
+          strokeDashoffset={(1 - percent / 100) * 2 * Math.PI * 41}
+          strokeLinecap="round"
+          transform="rotate(-90 46 46)"
+        />
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="92" y2="92">
+            <stop stopColor="#6366f1" />
+            <stop offset="1" stopColor="#38bdf8" />
+          </linearGradient>
+        </defs>
+        <text x="50%" y="54%" textAnchor="middle" fill="#6366f1" fontSize="1.5rem" fontWeight="bold">{percent}%</text>
+      </svg>
+    </div>
+  );
+}
+
+// 右侧统计小方块
+function StatBlock({ label, value, highlight }) {
+  return (
+    <div className={`rounded-xl px-3 py-2 ${highlight ? "bg-gradient-to-r from-yellow-100 to-yellow-50 text-[#f59e42] font-bold" : "bg-[#f1f5f9] text-gray-700"} shadow-sm`}>
+      <div className="text-lg">{value}</div>
+      <div className="text-xs">{label}</div>
+    </div>
+  );
+}
+// 单张卡片
+function FlashCard({ title, content, tags = [], onClick }) {
+  return (
+    <div
+      className="rounded-3xl bg-white/90 shadow-xl p-7 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl group relative cursor-pointer"
+      style={{ minHeight: "190px" }}
+      onClick={onClick}
+    >
+      <div className="font-bold text-lg mb-3 text-gray-900">{title}</div>
+      <div className="text-gray-600 leading-relaxed mb-3 line-clamp-4 group-hover:line-clamp-none transition-all">{content}</div>
+      <div className="flex gap-2 mt-2 flex-wrap">
+        {tags.map((t, idx) => (
+          <span key={idx}
+            className={`px-3 py-1 rounded-full text-xs font-bold
+              ${t === "高频" ? "bg-gradient-to-r from-yellow-200 to-orange-100 text-yellow-900" :
+              t === "重点" ? "bg-gradient-to-r from-blue-200 to-indigo-100 text-blue-900" :
+              "bg-gray-100 text-gray-500"}
+            `}
+          >{t}</span>
+        ))}
+      </div>
+      <div className="absolute top-4 right-6">
+        <span className="inline-block bg-gradient-to-tr from-indigo-300 to-blue-200 text-[#6366f1] rounded-full px-2 py-0.5 text-xs font-semibold shadow">{Math.floor(Math.random()*100)}热度</span>
       </div>
     </div>
-    <div style="text-align:center;font-size:.99em; margin-top:12px;color:#64748b">
-      第 ${idx+1} / ${cards.length} 张
-      <button onclick="prevCard();event.stopPropagation();">上一张</button>
-      <button onclick="nextCard();event.stopPropagation();">下一张</button>
-      <button class="star-btn" title="收藏/取消收藏" onclick="toggleFav();event.stopPropagation();">${fav?'★':'☆'}</button>
-    </div>
-  `;
-  document.getElementById("review-btns").innerHTML = flipped?`
-    <button class="hard" onclick="reviewCard('hard')">困难</button>
-    <button class="medium" onclick="reviewCard('medium')">模糊</button>
-    <button class="easy" onclick="reviewCard('easy')">清晰</button>
-    <button class="btn wrong" onclick="addWrong();event.stopPropagation();">加入错题本</button>
-    <button class="btn del" onclick="delCard();event.stopPropagation();">删除本题</button>
-  `:"";
-  document.getElementById("note-area").value=card.note||"";
+  );
 }
-function highlight(txt,kw){
-  if(!kw||!txt)return txt||"";
-  return txt.replace(new RegExp(kw,"gi"),m=>`<mark>${m}</mark>`);
-}
-function prevCard(){idx=idx>0?idx-1:0;flipped=false;renderFlashcard();}
-function nextCard(){idx++;if(idx>=filterCards().length)idx=0;flipped=false;renderFlashcard();}
-function flipCard(){flipped=!flipped;renderFlashcard();}
-function reviewCard(level){
-  let card = filterCards()[idx];
-  let old=card.interval||1;
-  let interval = level==='hard'?1:level==='medium'?Math.max(3,old*1.5):Math.max(7,old*2);
-  card.lastReviewed=Date.now(); card.interval=interval; card.nextReview=Date.now()+interval*86400000;
-  card.reviewCount=(card.reviewCount||0)+1;
-  saveCards();nextCard();
-}
-function filterCards(){
-  let cards=flashcards.filter(c=>c.subject===subject&&c.chapter===chapter);
-  if(showFavOnly)cards=cards.filter(c=>favList.includes(c.id));
-  if(showWrongOnly)cards=cards.filter(c=>wrongList.includes(c.id));
-  if(searchVal)cards=cards.filter(c=>(c.front+c.back+(c.tags||"")).toLowerCase().includes(searchVal.toLowerCase()));
-  if(randomOrder){if(!orderArr.length||orderArr.length!==cards.length)orderArr=shuffle([...Array(cards.length).keys()]);cards=orderArr.map(i=>cards[i]);}
-  return cards;
-}
-function showFavs(){showFavOnly=true;showWrongOnly=false;idx=0;flipped=false;renderAll();}
-function showWrongs(){showWrongOnly=true;showFavOnly=false;idx=0;flipped=false;renderAll();}
-function showAll(){showFavOnly=false;showWrongOnly=false;idx=0;flipped=false;renderAll();}
-function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function toggleFav(){
-  let card=filterCards()[idx];
-  if(!card)return;
-  let id=card.id;
-  if(favList.includes(id))favList=favList.filter(x=>x!==id);
-  else favList.push(id);
-  localStorage.setItem("favList",JSON.stringify(favList));
-  renderFlashcard();
-}
-function addWrong(){
-  let card=filterCards()[idx];
-  if(!card)return;
-  let id=card.id;
-  if(!wrongList.includes(id)){wrongList.push(id);localStorage.setItem("wrongList",JSON.stringify(wrongList));alert("已加入错题本");}
-}
-function delCard(){
-  let card=filterCards()[idx];if(!card)return;
-  if(confirm("确定要删除本题吗？")){flashcards=flashcards.filter(c=>c.id!==card.id);saveCards();idx=0;flipped=false;renderAll();}
-}
-function renderStats(){
-  let cards=flashcards.filter(c=>c.subject===subject&&c.chapter===chapter);
-  let learned=cards.filter(c=>(c.reviewCount||0)>=3).length;
-  let reviewing=cards.filter(c=>c.reviewCount>0&&c.reviewCount<3).length;
-  let unlearned=cards.filter(c=>!c.reviewCount).length;
-  let total=cards.length;
-  document.getElementById("stat-learned").textContent=learned;
-  document.getElementById("stat-reviewing").textContent=reviewing;
-  document.getElementById("stat-unlearned").textContent=unlearned;
-  document.getElementById("stat-total").textContent=flashcards.length;
-  document.getElementById("stat-pct").textContent=total?((learned+reviewing)/total*100).toFixed(1)+"%":"0%";
-}
-function importData(){
-  try{
-    let arr = JSON.parse(document.getElementById("import-input").value.trim());
-    if(!Array.isArray(arr)) throw "";
-    arr.forEach(c=>{
-      c.id=Date.now()+Math.random();
-      c.reviewCount=0;c.interval=1;c.lastReviewed=0;c.nextReview=0;
-    });
-    flashcards = flashcards.concat(arr);saveCards();renderAll();
-    alert("导入成功！");
-  }catch{alert("请粘贴正确的JSON数组格式！");}
-}
-function exportCards(){
-  let str = JSON.stringify(flashcards,null,2);
-  let blob=new Blob([str],{type:"application/json"});
-  let url=URL.createObjectURL(blob);
-  let a=document.createElement("a");a.href=url;a.download="flashcards.json";a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
-}
-function saveNote(){
-  let key="note_"+subject+"_"+chapter;
-  localStorage.setItem(key,document.getElementById("chapter-note").value||"");
-}
-function loadNote(){
-  let key="note_"+subject+"_"+chapter;
-  document.getElementById("chapter-note").value=localStorage.getItem(key)||"";
-}
-function saveCardNote(){
-  let card=filterCards()[idx];
-  if(card){card.note=document.getElementById("note-area").value||"";saveCards();}
-}
-function renderAll(){
-  renderSidebar();renderStats();renderFlashcard();loadNote();
-}
-document.getElementById("search").oninput=function(e){searchVal=this.value;idx=0;flipped=false;renderFlashcard();};
-window.setChapter=setChapter;
-window.flipCard=flipCard;
-window.nextCard=nextCard;
-window.prevCard=prevCard;
-window.reviewCard=reviewCard;
-window.importData=importData;
-window.exportCards=exportCards;
-window.showFavs=showFavs;
-window.showWrongs=showWrongs;
-window.showAll=showAll;
-window.toggleFav=toggleFav;
-window.addWrong=addWrong;
-window.delCard=delCard;
-window.saveNote=saveNote;
-window.saveCardNote=saveCardNote;
-renderAll();
-</script>
-</body>
-</html>
