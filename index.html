@@ -1,3 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>我的自定义闪卡网站</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 24px;
             box-sizing: border-box;
             min-height: 100vh;
@@ -53,15 +72,11 @@
             border-radius: 16px;
             padding: 2px;
             background: linear-gradient(135deg, #6366f1, #3b82f6);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient
-(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0
-0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             opacity: 0;
-            transition: opacity 0.3s ease;
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '80,160p' index.html
             transition: opacity 0.3s ease;
         }
         .flashcard.expanded::before {
@@ -143,8 +158,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '80,160p' index.html
             gap: 8px;
         }
         .mastery-btn.not-sure {
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '160,240p' index.html
-        .mastery-btn.not-sure {
             background: #fef3c7;
             color: #d97706;
         }
@@ -225,8 +238,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '160,240p' index.html
         .flashcard.expanded .mastery-buttons {
             display: block;
         }
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '240,320p' index.html
-        }
         .mastery-btn {
             padding: 8px 16px;
             margin-left: 10px;
@@ -273,7 +284,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '240,320p' index.html
                 max-width: 900px;
             }
         }
-
+        
         @media (max-width: 1199px) {
             .container {
                 gap: 15px;
@@ -283,7 +294,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '240,320p' index.html
                 max-width: 700px;
             }
         }
-
+        
         @media (max-width: 900px) {
             .container {
                 flex-direction: column;
@@ -306,8 +317,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '240,320p' index.html
             display: flex;
             align-items: flex-start;
             margin: 10px 0;
-            line-height: 1.7;
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '320,400p' index.html
             line-height: 1.7;
         }
         .numbered-list .number {
@@ -389,8 +398,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '320,400p' index.html
         }
         .stat-item {
             background: #f8fafc;
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '400,480p' index.html
-            background: #f8fafc;
             padding: 12px;
             border-radius: 12px;
             display: flex;
@@ -449,7 +456,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '400,480p' index.html
                 max-width: 900px;
             }
         }
-
+        
         @media (max-width: 1199px) {
             .container {
                 gap: 15px;
@@ -459,7 +466,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '400,480p' index.html
                 max-width: 700px;
             }
         }
-
+        
         @media (max-width: 900px) {
             .container {
                 flex-direction: column;
@@ -470,8 +477,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '400,480p' index.html
                 width: 100%;
                 max-width: 600px;
                 margin: 0 auto 10px;
-            }
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '480,560p' index.html
             }
             .flashcard {
                 width: 95%;
@@ -553,8 +558,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '480,560p' index.html
         }
         .countdown {
             display: flex;
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '560,640p' index.html
-            display: flex;
             flex-direction: column;
             align-items: center;
             gap: 12px;
@@ -622,33 +625,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '560,640p' index.html
             transform: translateY(-1px);
             filter: brightness(1.1);
         }
-        .main-nav {
-            position: sticky;
-            top: 0;
-            background: #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            padding: 10px 20px;
-            display: flex;
-            gap: 20px;
-            z-index: 999;
-        }
-        .nav-btn {
-            background: none;
-            border: none;
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '640,720p' index.html
-            border: none;
-            padding: 8px 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            color: #4b5563;
-        }
-        .nav-btn.active {
-            color: #6366f1;
-            border-bottom: 2px solid #6366f1;
-        }
-        .page { display: none; }
-        .page.active { display: block; }
         .notification {
             position: fixed;
             top: 20px;
@@ -717,13 +693,11 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '640,720p' index.html
             transform: rotateY(180deg);
         }
         .flashcard-front, .flashcard-back {
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '720,800p' index.html
-        .flashcard-front, .flashcard-back {
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
-            background: linear-gradient(180deg, #ffffff, #f3f4f6);
+            background: white;
             padding: 24px;
             border-radius: 16px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -733,20 +707,12 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '720,800p' index.html
         }
         .flashcard-back {
             transform: rotateY(180deg);
-            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            background: linear-gradient(135deg, #fff, #f8fafc);
         }
         .flashcard-tags {
             display: flex;
             gap: 8px;
             margin-bottom: 12px;
-        }
-        .card-title {
-            font-size: 18px;
-            margin: 0 0 10px;
-        }
-        .card-content {
-            line-height: 1.7;
-            font-size: 15px;
         }
         .flashcard-content {
             flex: 1;
@@ -798,8 +764,6 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '720,800p' index.html
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .tab-btn.active {
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '800,880p' index.html
         .tab-btn.active {
             background: #6366f1;
             color: #fff;
@@ -881,20 +845,11 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '800,880p' index.html
     </style>
 </head>
 <body>
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '880,960p' index.html
-<body>
-    <header class="main-nav">
-        <button class="nav-btn active" onclick="switchPage('study')">学习</butto
-n>
-        <button class="nav-btn" onclick="switchPage('notes')">笔记</button>
-        <button class="nav-btn" onclick="switchPage('stats')">进度</button>
-    </header>
-    <div class="container page active" id="study-page">
+    <div class="container">
         <div class="sidebar">
             <h3>知识导航</h3>
             <div class="search-box">
-                <input type="text" class="search-input" placeholder="搜索卡片...
-" oninput="filterCards(this.value)">
+                <input type="text" class="search-input" placeholder="搜索卡片..." oninput="filterCards(this.value)">
                 <i class="search-icon">🔍</i>
             </div>
             <div class="card-list" id="card-list"></div>
@@ -916,16 +871,14 @@ n>
                 <span class="countdown-label">距离考研还有</span>
                 <span class="countdown-value" id="countdown">计算中...</span>
             </div>
-
+            
             <div class="study-stats">
                 <div class="stats-header">
                     <h4>学习进度</h4>
                     <div class="progress-ring">
                         <svg width="60" height="60" viewBox="0 0 60 60">
-                            <circle class="progress-ring-circle-bg" cx="30" cy="
-30" r="24"/>
-                            <circle class="progress-ring-circle" cx="30" cy="30"
- r="24"/>
+                            <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24"/>
+                            <circle class="progress-ring-circle" cx="30" cy="30" r="24"/>
                         </svg>
                         <span class="progress-text">0%</span>
                     </div>
@@ -959,25 +912,15 @@ n>
                     </div>
                 </div>
             </div>
-
-        </div>
-    </div>
-
-<div class="page" id="notes-page" style="display:none;">
-        <div class="tools-section">
+            
             <div class="tool-card note-section">
                 <h4>学习笔记</h4>
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '960,1040p' index.html
-                <h4>学习笔记</h4>
                 <div class="note-tabs">
-                    <button class="tab-btn active" data-tab="quick">快速笔记</bu
-tton>
-                    <button class="tab-btn" data-tab="organized">系统笔记</butto
-n>
+                    <button class="tab-btn active" data-tab="quick">快速笔记</button>
+                    <button class="tab-btn" data-tab="organized">系统笔记</button>
                 </div>
                 <div class="tab-content active" id="quick-note">
-                    <textarea placeholder="记录临时想法和笔记..." id="quick-text
-area"></textarea>
+                    <textarea placeholder="记录临时想法和笔记..." id="quick-textarea"></textarea>
                 </div>
                 <div class="tab-content" id="organized-note">
                     <div class="note-controls">
@@ -987,24 +930,15 @@ area"></textarea>
                         <button class="btn-new-category">新建分类</button>
                     </div>
                     <div class="note-editor">
-                        <input type="text" class="note-title" placeholder="笔记标
-题...">
-                        <textarea id="organized-textarea" placeholder="系统化的学
-习笔记..."></textarea>
+                        <input type="text" class="note-title" placeholder="笔记标题...">
+                        <textarea id="organized-textarea" placeholder="系统化的学习笔记..."></textarea>
                     </div>
                 </div>
                 <div class="note-actions">
-                    <button class="btn-save" onclick="saveNote()">保存笔记</butt
-on>
+                    <button class="btn-save" onclick="saveNote()">保存笔记</button>
                     <button class="btn-view-history">查看历史</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="page" id="stats-page" style="display:none;">
-        <div class="tools-section">
-            <div class="study-stats"></div>
         </div>
     </div>
 
@@ -1013,8 +947,7 @@ on>
         let cards = [
             {
                 front: "公共管理的基本特征", // 线索
-                back: "1、公共性：服务对象和目标的公共性\n2、权力性：行政权力和法
-律保障\n3、服务性：以服务公众为根本宗旨\n4、专业性：需要专业知识和技能", // 目标
+                back: "1、公共性：服务对象和目标的公共性\n2、权力性：行政权力和法律保障\n3、服务性：以服务公众为根本宗旨\n4、专业性：需要专业知识和技能", // 目标
                 category: "公共管理",
                 chapter: "第一章 公共管理概论",
                 section: "公共管理特征",
@@ -1022,8 +955,7 @@ on>
                 examFrequency: "高频",
                 cardType: "特征分析",
                 clue: "思考：什么使公共管理区别于一般管理？", // 辅助记忆线索
-                context: "公共管理是一门专门研究政府管理活动的学科，其特征反映了
-其本质属性", // 知识背景
+                context: "公共管理是一门专门研究政府管理活动的学科，其特征反映了其本质属性", // 知识背景
                 lastReview: null,
                 nextReview: null,
                 reviewCount: 0,
@@ -1032,37 +964,30 @@ on>
             }
         ];
 
-        if (localStorage.getItem('flashcards')) { cards = JSON.parse(localStorag
-e.getItem('flashcards')); }
+        if (localStorage.getItem('flashcards')) { cards = JSON.parse(localStorage.getItem('flashcards')); }
 
         // 添加学习统计功能
         function updateStudyStats() {
             const statsDiv = document.createElement('div');
             statsDiv.className = 'study-stats';
-
+            
             // 计算各类统计数据
             const totalCards = cards.length;
-            const masteredCards = cards.filter(c => localStorage.getItem(`master
-y_${c.front}`) === 'mastered').length;
-            const reviewingCards = cards.filter(c => localStorage.getItem(`maste
-ry_${c.front}`) === 'reviewing').length;
+            const masteredCards = cards.filter(c => localStorage.getItem(`mastery_${c.front}`) === 'mastered').length;
+            const reviewingCards = cards.filter(c => localStorage.getItem(`mastery_${c.front}`) === 'reviewing').length;
             const newCards = totalCards - masteredCards - reviewingCards;
-
+            
             // 计算高频考点数量
-            const highFreqCards = cards.filter(c => c.examFrequency === '高频').
-length;
-
+            const highFreqCards = cards.filter(c => c.examFrequency === '高频').length;
+            
             statsDiv.innerHTML = `
                 <h4 style="margin-top: 0;">学习统计</h4>
                 <div class="study-progress-bar">
-                    <div class="progress" style="width: ${(masteredCards / total
-Cards * 100)}%"></div>
+                    <div class="progress" style="width: ${(masteredCards / totalCards * 100)}%"></div>
                 </div>
                 <div class="mastery-level">
                     <div class="mastery-item">
                         <div class="mastery-value">${masteredCards}</div>
-                        <div>已掌握</div>
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1040,1120p' index.html
                         <div>已掌握</div>
                     </div>
                     <div class="mastery-item">
@@ -1081,7 +1006,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1040,1120p' index.html
                     连续打卡：${getStudyStreak()}天
                 </p>
             `;
-
+            
             // 更新工具区
             const toolsSection = document.querySelector('.tools-section');
             const existingStats = toolsSection.querySelector('.study-stats');
@@ -1094,8 +1019,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1040,1120p' index.html
         // 获取今日学习卡片数
         function getTodayStudyCount() {
             const today = new Date().toISOString().split('T')[0];
-            return parseInt(localStorage.getItem(`study_count_${today}`) || '0')
-;
+            return parseInt(localStorage.getItem(`study_count_${today}`) || '0');
         }
 
         // 更新今日学习计数
@@ -1114,11 +1038,10 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1040,1120p' index.html
 
             while (true) {
                 const dateStr = currentDate.toISOString().split('T')[0];
-                const count = parseInt(localStorage.getItem(`study_count_${dateS
-tr}`) || '0');
-
+                const count = parseInt(localStorage.getItem(`study_count_${dateStr}`) || '0');
+                
                 if (count === 0) break;
-
+                
                 streak++;
                 currentDate.setDate(currentDate.getDate() - 1);
             }
@@ -1129,20 +1052,16 @@ tr}`) || '0');
         function createFlashcard(card) {
             const div = document.createElement('div');
             div.className = 'flashcard';
-
+            
             // 计算复习信息
-            const lastReview = card.lastReview ? new Date(card.lastReview) : nul
-l;
-            const daysAgo = lastReview ? Math.floor((new Date() - lastReview) /
-(1000 * 60 * 60 * 24)) : null;
-
+            const lastReview = card.lastReview ? new Date(card.lastReview) : null;
+            const daysAgo = lastReview ? Math.floor((new Date() - lastReview) / (1000 * 60 * 60 * 24)) : null;
+            
             // 添加标签
             const tags = [];
-            if (card.examFrequency === '高频') tags.push('<span class="tag high"
->高频</span>');
-            if (card.level === '重点') tags.push('<span class="tag medium">重点<
-/span>');
-
+            if (card.examFrequency === '高频') tags.push('<span class="tag high">高频</span>');
+            if (card.level === '重点') tags.push('<span class="tag medium">重点</span>');
+            
             div.innerHTML = `
                 <div class="flashcard-inner">
                     <div class="flashcard-front">
@@ -1150,45 +1069,35 @@ l;
                             <h3 class="card-title">${card.front}</h3>
                             <div class="card-tags">${tags.join('')}</div>
                         </div>
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1120,1200p' index.html
-                        </div>
-                        <div class="card-clue">${card.clue || '思考这个概念的核心
-特征...'}</div>
+                        <div class="card-clue">${card.clue || '思考这个概念的核心特征...'}</div>
                         <div class="card-content">
-                            <div class="card-context">${card.context || '点击卡片
-查看答案'}</div>
+                            <div class="card-context">${card.context || '点击卡片查看答案'}</div>
                         </div>
                         <div class="card-footer">
                             <div class="difficulty-indicator">
-                                ${Array(5).fill(0).map((_, i) =>
-                                    `<span class="difficulty-dot${i < card.diffi
-culty ? ' active' : ''}"></span>`
+                                ${Array(5).fill(0).map((_, i) => 
+                                    `<span class="difficulty-dot${i < card.difficulty ? ' active' : ''}"></span>`
                                 ).join('')}
                             </div>
-                            <small>${lastReview ? `上次复习: ${daysAgo}天前` : '
-首次学习'}</small>
+                            <small>${lastReview ? `上次复习: ${daysAgo}天前` : '首次学习'}</small>
                         </div>
                     </div>
                     <div class="flashcard-back">
                         <div class="card-header">
-                            <div class="card-category">${card.category} > ${card
-.chapter}</div>
+                            <div class="card-category">${card.category} > ${card.chapter}</div>
                         </div>
                         <div class="card-content">
                             ${formatCardContent(card.back)}
                         </div>
                         <div class="card-footer">
                             <div class="mastery-buttons">
-                                <button class="mastery-btn hard" onclick="update
-Mastery('${card.front}', 1, event)">
+                                <button class="mastery-btn hard" onclick="updateMastery('${card.front}', 1, event)">
                                     <span>😅</span>困难
                                 </button>
-                                <button class="mastery-btn medium" onclick="upda
-teMastery('${card.front}', 3, event)">
+                                <button class="mastery-btn medium" onclick="updateMastery('${card.front}', 3, event)">
                                     <span>🤔</span>模糊
                                 </button>
-                                <button class="mastery-btn easy" onclick="update
-Mastery('${card.front}', 5, event)">
+                                <button class="mastery-btn easy" onclick="updateMastery('${card.front}', 5, event)">
                                     <span>✨</span>清晰
                                 </button>
                             </div>
@@ -1196,22 +1105,20 @@ Mastery('${card.front}', 5, event)">
                     </div>
                 </div>
             `;
-
+            
             div.onclick = () => {
                 div.classList.toggle('expanded');
                 // 记录学习进度
                 if (div.classList.contains('expanded')) {
                     incrementTodayStudyCount();
                     // 更新掌握度
-                    const currentMastery = localStorage.getItem(`mastery_${card.
-front}`);
+                    const currentMastery = localStorage.getItem(`mastery_${card.front}`);
                     if (!currentMastery) {
-                        localStorage.setItem(`mastery_${card.front}`, 'reviewing
-');
+                        localStorage.setItem(`mastery_${card.front}`, 'reviewing');
                     }
                 }
             };
-
+            
             return div;
         }
 
@@ -1237,14 +1144,10 @@ front}`);
                     // 提取编号和内容
                     const match = point.match(/^(\d+[\.、．])\s*(.+)$/);
                     if (match) {
-                        html += `<div class="list-item"><span class="number">${m
-atch[1]}</span><span class="content">${match[2]}</span></div>`;
+                        html += `<div class="list-item"><span class="number">${match[1]}</span><span class="content">${match[2]}</span></div>`;
                     } else {
-                        html += `<div class="list-item"><span class="content">${
-point}</span></div>`;
+                        html += `<div class="list-item"><span class="content">${point}</span></div>`;
                     }
-                });
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1200,1280p' index.html
                 });
                 html += '</div>';
                 if (notes) {
@@ -1253,8 +1156,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1200,1280p' index.html
                 return html;
             }
             // 对于没有编号的内容
-            return `<p>${mainContent.replace(/\n/g, '<br>')}</p>${notes ? `<div
-class="note">${notes}</div>` : ''}`;
+            return `<p>${mainContent.replace(/\n/g, '<br>')}</p>${notes ? `<div class="note">${notes}</div>` : ''}`;
         }
 
         // 设置掌握度
@@ -1272,24 +1174,6 @@ class="note">${notes}</div>` : ''}`;
             updateCountdown();
             loadNotes();
             updateStudyStats();
-            switchPage('study');
-        }
-
-        function switchPage(page) {
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('onclick').inclu
-des(page));
-            });
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('
-active'));
-            document.getElementById(page + '-page').classList.add('active');
-
-            if (page === 'notes') {
-                loadNotes();
-            }
-            if (page === 'stats') {
-                updateStudyStats();
-            }
         }
 
         // 修改renderGrid函数
@@ -1314,46 +1198,43 @@ active'));
         function updateCardList() {
             const grouped = cards.reduce((acc, card) => {
                 if (!acc[card.category]) acc[card.category] = {};
-                if (!acc[card.category][card.chapter]) acc[card.category][card.c
-hapter] = [];
+                if (!acc[card.category][card.chapter]) acc[card.category][card.chapter] = [];
                 acc[card.category][card.chapter].push(card);
                 return acc;
             }, {});
-
+            
             const list = document.getElementById('card-list');
             list.innerHTML = '';
-
+            
             for (let cat in grouped) {
                 const catDiv = document.createElement('div');
                 catDiv.className = 'category-item';
-
+                
                 const catHeader = document.createElement('div');
                 catHeader.className = 'category-header';
-                catHeader.innerHTML = `<i>▶</i>${cat}`;
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1280,1360p' index.html
                 catHeader.innerHTML = `<i>▶</i>${cat}`;
                 catHeader.onclick = () => {
                     catHeader.classList.toggle('expanded');
                     catContent.classList.toggle('expanded');
                 };
-
+                
                 const catContent = document.createElement('div');
                 catContent.className = 'category-content';
-
+                
                 for (let chap in grouped[cat]) {
                     const chapDiv = document.createElement('div');
                     chapDiv.className = 'chapter-item';
                     chapDiv.textContent = chap;
-
+                    
                     // 点击章节显示对应的卡片
                     chapDiv.onclick = () => {
                         const chapCards = grouped[cat][chap];
                         renderGrid(chapCards);
                     };
-
+                    
                     catContent.appendChild(chapDiv);
                 }
-
+                
                 catDiv.appendChild(catHeader);
                 catDiv.appendChild(catContent);
                 list.appendChild(catDiv);
@@ -1381,10 +1262,8 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1280,1360p' index.html
                 <div class="modal-content">
                     <h3>导入题库</h3>
                     <div class="import-tabs">
-                        <button class="tab-btn active" data-tab="manual">手动输入
-</button>
-                        <button class="tab-btn" data-tab="file">文件导入</button
->
+                        <button class="tab-btn active" data-tab="manual">手动输入</button>
+                        <button class="tab-btn" data-tab="file">文件导入</button>
                     </div>
                     <div class="tab-content active" id="manual-import">
                         <p>请按以下格式输入JSON数据：</p>
@@ -1397,19 +1276,15 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1280,1360p' index.html
                                 level: "基础"
                             }
                         ], null, 2)}</pre>
-                        <textarea id="import-json" placeholder="在此粘贴JSON数据
-..."></textarea>
+                        <textarea id="import-json" placeholder="在此粘贴JSON数据..."></textarea>
                     </div>
                     <div class="tab-content" id="file-import">
                         <input type="file" id="file-input" accept=".json,.txt">
-                        <p class="file-note">支持.json或.txt格式，确保内容符合要
-求的JSON格式</p>
+                        <p class="file-note">支持.json或.txt格式，确保内容符合要求的JSON格式</p>
                     </div>
                     <div class="modal-actions">
-                        <button class="btn-cancel" onclick="closeImportModal()">
-取消</button>
-                        <button class="btn-import" onclick="processImport()">导入
-</button>
+                        <button class="btn-cancel" onclick="closeImportModal()">取消</button>
+                        <button class="btn-import" onclick="processImport()">导入</button>
                     </div>
                 </div>
             `;
@@ -1417,17 +1292,12 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1280,1360p' index.html
         }
 
         function processImport() {
-            const activeTab = document.querySelector('.import-tabs .tab-btn.acti
-ve').dataset.tab;
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1360,1440p' index.html
-            const activeTab = document.querySelector('.import-tabs .tab-btn.acti
-ve').dataset.tab;
+            const activeTab = document.querySelector('.import-tabs .tab-btn.active').dataset.tab;
             let importData;
-
+            
             try {
                 if (activeTab === 'manual') {
-                    importData = JSON.parse(document.getElementById('import-json
-').value);
+                    importData = JSON.parse(document.getElementById('import-json').value);
                 } else {
                     const fileInput = document.getElementById('file-input');
                     if (!fileInput.files[0]) {
@@ -1440,16 +1310,15 @@ ve').dataset.tab;
                             importData = JSON.parse(e.target.result);
                             processCards(importData);
                         } catch (err) {
-                            showNotification('文件格式错误：' + err.message, 'er
-ror');
+                            showNotification('文件格式错误：' + err.message, 'error');
                         }
                     };
                     reader.readAsText(fileInput.files[0]);
                     return;
                 }
-
+                
                 processCards(importData);
-
+                
             } catch (e) {
                 showNotification('导入失败：' + e.message, 'error');
                 return;
@@ -1460,23 +1329,21 @@ ror');
             if (!Array.isArray(importData)) {
                 throw new Error('数据必须是数组格式');
             }
-
+            
             // 验证数据格式
             importData.forEach((card, index) => {
-                if (!card.front || !card.back || !card.category || !card.chapter
- || !card.level) {
+                if (!card.front || !card.back || !card.category || !card.chapter || !card.level) {
                     throw new Error(`第 ${index + 1} 个卡片数据格式不完整`);
                 }
             });
-
+            
             // 合并现有卡片，避免重复
             const existingFronts = new Set(cards.map(c => c.front));
-            const newCards = importData.filter(card => !existingFronts.has(card.
-front));
-
+            const newCards = importData.filter(card => !existingFronts.has(card.front));
+            
             cards = cards.concat(newCards);
             localStorage.setItem('flashcards', JSON.stringify(cards));
-
+            
             updateCardList();
             renderGrid();
             closeImportModal();
@@ -1501,13 +1368,10 @@ front));
         function updateCountdown() {
             const examDate = new Date('2024-12-21');
             const now = new Date();
-            const diff = Math.max(0, Math.ceil((examDate - now) / (1000 * 60 * 6
-0 * 24)));
+            const diff = Math.max(0, Math.ceil((examDate - now) / (1000 * 60 * 60 * 24)));
             document.getElementById('countdown').textContent = diff + '天';
         }
 
-        function loadNotes() {
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1440,1520p' index.html
         function loadNotes() {
             const today = new Date().toISOString().split('T')[0];
             const quickArea = document.getElementById('quick-textarea');
@@ -1561,7 +1425,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1440,1520p' index.html
             const due = spacedRepetition.getDueCards();
             renderGrid(due);
         }
-
+        
         // 闪卡翻转功能
         function flipCard(event) {
             event.stopPropagation();
@@ -1583,45 +1447,37 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1440,1520p' index.html
         // 切换笔记标签页
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.r
-emove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classLi
-st.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
-                document.getElementById(`${btn.dataset.tab}-note`).classList.add
-('active');
+                document.getElementById(`${btn.dataset.tab}-note`).classList.add('active');
             });
-        });
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1520,1600p' index.html
         });
 
         // 保存笔记
         function saveNote() {
-            const activeTab = document.querySelector('.tab-btn.active').dataset.
-tab;
+            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
             const currentDate = new Date().toISOString().split('T')[0];
-
+            
             if (activeTab === 'quick') {
-                const quickNote = document.getElementById('quick-textarea').valu
-e;
+                const quickNote = document.getElementById('quick-textarea').value;
                 notes.quick[currentDate] = quickNote;
             } else {
                 const category = document.getElementById('note-category').value;
                 const title = document.querySelector('.note-title').value;
-                const content = document.getElementById('organized-textarea').va
-lue;
-
+                const content = document.getElementById('organized-textarea').value;
+                
                 if (!notes.organized[category]) {
                     notes.organized[category] = [];
                 }
-
+                
                 notes.organized[category].push({
                     title,
                     content,
                     date: currentDate
                 });
             }
-
+            
             localStorage.setItem('flashcardNotes', JSON.stringify(notes));
             showNotification('笔记已保存');
         }
@@ -1632,35 +1488,32 @@ lue;
             calculateNextReview(card, mastery) {
                 const now = new Date();
                 const interval = this.getInterval(card.reviewCount, mastery);
-                card.difficulty = this.updateDifficulty(card.difficulty, mastery
-);
+                card.difficulty = this.updateDifficulty(card.difficulty, mastery);
                 card.lastReview = now.toISOString();
                 card.reviewCount += 1;
                 card.mastery = mastery;
-
+                
                 const nextReview = new Date(now);
                 nextReview.setDate(now.getDate() + interval);
                 card.nextReview = nextReview.toISOString();
-
+                
                 return card;
             },
-
+            
             // 计算复习间隔
             getInterval(reviewCount, mastery) {
-                const baseInterval = Math.pow(2, reviewCount - 1); // 基础间隔：
-1, 2, 4, 8, 16...天
+                const baseInterval = Math.pow(2, reviewCount - 1); // 基础间隔：1, 2, 4, 8, 16...天
                 const masteryFactor = mastery / 5; // 掌握度因子：0.2-1
                 const interval = Math.round(baseInterval * masteryFactor);
                 return Math.max(1, Math.min(interval, 90)); // 限制最大间隔为90天
             },
-
+            
             // 更新难度系数
             updateDifficulty(currentDifficulty, mastery) {
-                const diff = currentDifficulty + (mastery <= 2 ? 1 : mastery >=
-4 ? -1 : 0);
+                const diff = currentDifficulty + (mastery <= 2 ? 1 : mastery >= 4 ? -1 : 0);
                 return Math.max(0, Math.min(diff, 5)); // 保持在0-5之间
             },
-
+            
             // 获取需要复习的卡片
             getDueCards() {
                 const now = new Date();
@@ -1671,19 +1524,16 @@ lue;
                 });
             }
         };
-
+        
         // 更新掌握度时应用间隔重复
         function updateMastery(cardId, masteryLevel, event) {
             event.stopPropagation();
             const cardIndex = cards.findIndex(c => c.front === cardId);
             if (cardIndex === -1) return;
-
-            cards[cardIndex] = spacedRepetition.calculateNextReview(cards[cardIn
-dex], masteryLevel);
+            
+            cards[cardIndex] = spacedRepetition.calculateNextReview(cards[cardIndex], masteryLevel);
             localStorage.setItem('flashcards', JSON.stringify(cards));
-root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1600,1680p' index.html
-            localStorage.setItem('flashcards', JSON.stringify(cards));
-
+            
             // 更新显示
             const card = event.target.closest('.flashcard');
             card.classList.remove('flipped');
@@ -1695,7 +1545,7 @@ root@0b0c9796e2d8:/workspace/flashcard-website# sed -n '1600,1680p' index.html
                     '没关系，慢慢来！'
                 );
             }, 300);
-
+            
             // 更新学习统计
             updateStudyStats();
             incrementTodayStudyCount();
