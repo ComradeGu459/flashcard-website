@@ -35,29 +35,29 @@
     .sidebar { align-self: start; }
     .tools-section { align-self: start; }
     .flashcard-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 30px;
-      align-content: flex-start;
-      min-height: 700px;
-      position: relative;
-      z-index: 1;
+      align-items: center;
+      justify-items: center;
+      padding-bottom: 40px;
+      min-height: 100vh;
     }
     /* ---- 3D闪卡动画样式 ---- */
     .flashcard {
       width: 100%;
-      max-width: 28rem;
-      height: 320px;
+      max-width: 26rem;
+      min-height: 260px;
+      max-height: 380px;
       perspective: 1200px;
       background: transparent;
       margin: 0 auto;
       position: relative;
       cursor: pointer;
       user-select: none;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-      transition: box-shadow .24s;
+      border-radius: 14px;
+      box-shadow: 0 6px 28px rgba(100,120,180,0.12);
+      transition: box-shadow .24s, transform .24s;
     }
     .flashcard-inner {
       width: 100%;
@@ -76,7 +76,7 @@
       left: 0; top: 0;
       backface-visibility: hidden;
       background: #fff;
-      border-radius: 12px;
+      border-radius: 14px;
       box-shadow: 0 1px 8px #2433560d;
       display: flex;
       flex-direction: column;
@@ -85,7 +85,7 @@
       padding: 24px;
       transition: box-shadow .2s;
       z-index: 2;
-      overflow: hidden;
+      overflow: auto;
     }
     .flashcard-front { z-index: 3; }
     .flashcard-back {
@@ -94,7 +94,10 @@
       z-index: 1;
       border: 2.5px solid #bbf7d0;
     }
-    .flashcard:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.1); }
+    .flashcard:hover {
+      box-shadow: 0 12px 32px rgba(100,120,180,0.18);
+      transform: translateY(-6px);
+    }
     .card-title {font-size:1.23em;font-weight:700;margin-bottom:9px;}
     .flashcard-tags {margin-bottom: 10px;}
     .tag {display:inline-block;font-size:12px;border-radius:10px;padding:2px 9px 2px 7px;margin-right:6px;}
@@ -230,14 +233,16 @@
     .note-editor textarea {height: 100px;padding: 10px;border: 1px solid #e2e8f0;border-radius: 8px;resize: vertical;font-size: 14px;line-height: 1.6;}
     .note-actions {display: flex;justify-content: space-between;margin-top: 10px;padding-top: 12px;border-top: 1px solid #e2e8f0;}
     /* 响应式适配 */
-    @media (max-width:1200px) {
-      .container {grid-template-columns: 1fr 1fr;gap: 13px;}
-      .sidebar, .tools-section {min-height: 410px;}
-    }
-    @media (max-width:900px) {
-      .container {grid-template-columns: 1fr;gap:7px;padding:8px;}
-      .sidebar, .tools-section {position: static;min-height: auto;margin-bottom:12px;}
-    }
+  @media (max-width:1200px) {
+        .container {grid-template-columns: 1fr 1fr;gap: 13px;}
+        .sidebar, .tools-section {min-height: 410px;}
+        .flashcard-grid {grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));}
+      }
+      @media (max-width:900px) {
+        .container {grid-template-columns: 1fr;gap:7px;padding:8px;}
+        .sidebar, .tools-section {position: static;min-height: auto;margin-bottom:12px;}
+        .flashcard-grid {grid-template-columns: 1fr;}
+      }
     /* 导入弹窗样式 */
     #import-modal-root>div {
       position:fixed;z-index:1200;top:0;left:0;right:0;bottom:0;
