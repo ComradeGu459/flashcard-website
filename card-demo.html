@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>知识卡片示例</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.development.js"></script>
+  <style>
+    body { font-family: 'Roboto Slab', serif; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div id="root" class="w-full max-w-md"></div>
+
+  <script type="text/javascript">
+    const { useState } = React;
+    const { Tag, BookOpen, ChevronRight, ArrowRightCircle } = lucideReact;
+
+    function KnowledgeCard() {
+      const [open, setOpen] = useState(false);
+      return (
+        React.createElement('div', { className: 'bg-white rounded-lg shadow-lg p-6 space-y-4 cursor-pointer', onClick: () => setOpen(!open) },
+          React.createElement('h2', { className: 'text-lg font-bold text-gray-800 flex items-center space-x-2' },
+            React.createElement(BookOpen, { className: 'text-green-600 w-5 h-5' }),
+            React.createElement('span', null, '知识点名称')
+          ),
+          React.createElement('div', { className: 'flex space-x-2 text-sm text-green-600' },
+            React.createElement(Tag, { className: 'w-4 h-4' }),
+            React.createElement('span', null, '关键词')
+          ),
+          React.createElement('p', { className: 'text-sm text-gray-500' }, '一句话作用目的总结'),
+          open && React.createElement('div', { className: 'space-y-2 text-sm text-gray-700' },
+            React.createElement('div', null,
+              React.createElement('h3', { className: 'font-semibold text-gray-800 flex items-center space-x-1' },
+                React.createElement(ChevronRight, { className: 'w-4 h-4 text-green-600' }),
+                React.createElement('span', null, '渐进式原理说明')
+              ),
+              React.createElement('p', null, '详细描述')
+            ),
+            React.createElement('div', null,
+              React.createElement('h3', { className: 'font-semibold text-gray-800 flex items-center space-x-1' },
+                React.createElement(ChevronRight, { className: 'w-4 h-4 text-green-600' }),
+                React.createElement('span', null, '相关场景')
+              ),
+              React.createElement('p', null, '场景标题')
+            ),
+            React.createElement('div', null,
+              React.createElement('h3', { className: 'font-semibold text-gray-800 flex items-center space-x-1' },
+                React.createElement(ChevronRight, { className: 'w-4 h-4 text-green-600' }),
+                React.createElement('span', null, '举例说明')
+              ),
+              React.createElement('p', null, '实际案例')
+            ),
+            React.createElement('div', { className: 'bg-gray-50 p-3 rounded' },
+              React.createElement('h3', { className: 'font-semibold text-gray-800 flex items-center space-x-1' },
+                React.createElement(ArrowRightCircle, { className: 'w-4 h-4 text-green-600' }),
+                React.createElement('span', null, '练习题目')
+              ),
+              React.createElement('p', null, '这里是练习题目的内容')
+            )
+          )
+        )
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(KnowledgeCard));
+  </script>
+</body>
+</html>
