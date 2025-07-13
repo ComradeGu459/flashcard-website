@@ -1016,3 +1016,83 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 </script>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>DeepSeek AI助手</title>
+  <style>
+    body { font-family: sans-serif; background: #f9fafc; margin: 0; }
+    #chatbox { width: 460px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 6px 24px #9992; padding: 24px; }
+    #history { min-height: 180px; margin-bottom: 18px; }
+    .msg { margin: 8px 0; }
+    .user { color: #2196f3; }
+    .ai { color: #4caf50; }
+    #askbox { display: flex; gap: 8px; }
+    #prompt { flex: 1; padding: 8px 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
+    #ask { padding: 8px 19px; background: #6366f1; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+    #ask:disabled { opacity: 0.5; }
+    #apikey { margin-top: 16px; width: 100%; padding: 8px 11px; border-radius: 6px; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <div id="chatbox">
+    <div id="history"></div>
+    <div id="askbox">
+      <input type="text" id="prompt" placeholder="输入你的问题...">
+      <button id="ask">发送</button>
+    </div>
+    <input type="text" id="apikey" placeholder="输入你的 DeepSeek API Key，例：dsw_xxxx" />
+  </div>
+  <script>
+    const promptInput = document.getElementById('prompt');
+    const askBtn = document.getElementById('ask');
+    const apikeyInput = document.getElementById('apikey');
+    const historyDiv = document.getElementById('history');
+    let history = [];
+
+    askBtn.onclick = async function() {
+      const prompt = promptInput.value.trim();
+      const apikey = apikeyInput.value.trim();
+      if (!prompt || !apikey) return alert('请填写提问内容和API key！');
+      askBtn.disabled = true;
+      promptInput.value = '';
+      history.push({role:'user', content:prompt});
+      renderHistory();
+      // 调用 DeepSeek API
+      const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apikey}`
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            {role: "system", content: "你是一个学习助手，回答简洁易懂"},
+            ...history.map(h => ({role: h.role, content: h.content}))
+          ],
+          stream: false
+        })
+      });
+      if (!res.ok) { askBtn.disabled = false; return alert("API调用失败！"); }
+      const data = await res.json();
+      const aiMsg = data.choices?.[0]?.message?.content || '（无返回内容）';
+      history.push({role:'assistant', content:aiMsg});
+      renderHistory();
+      askBtn.disabled = false;
+    };
+
+    function renderHistory() {
+      historyDiv.innerHTML = '';
+      for (let msg of history) {
+        const div = document.createElement('div');
+        div.className = 'msg ' + (msg.role === 'user' ? 'user' : 'ai');
+        div.textContent = (msg.role === 'user' ? '你: ' : 'AI: ') + msg.content;
+        historyDiv.appendChild(div);
+      }
+      historyDiv.scrollTop = historyDiv.scrollHeight;
+    }
+  </script>
+</body>
+</html>
