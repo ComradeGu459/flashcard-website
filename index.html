@@ -2,180 +2,508 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>学习平台</title>
+  <title>科学闪卡背诵系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f7fb;
+    /* 你的CSS全部保留，这里只补充和修正3D相关部分 */
+    .flashcard {
+      perspective: 1200px;
+      background: transparent;
+      position: relative;
+      height: 270px;
+      min-width: 280px;
+      max-width: 380px;
+      margin: 0 auto;
     }
-    .container {
-      display: flex;
-      max-width: 1200px;
-      margin: 30px auto;
-      padding: 30px;
-      background-color: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
-
-    /* 左侧导航 */
-    .sidebar {
-      flex: 1;
-      padding-right: 30px;
-      border-right: 2px solid #e0e0e0;
-    }
-    .sidebar .title {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 20px;
-    }
-    .sidebar ul {
-      list-style-type: none;
-      padding-left: 0;
-    }
-    .sidebar ul li {
-      padding: 12px;
-      font-size: 1rem;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
-    }
-    .sidebar ul li:hover {
-      background-color: #f3f4f6;
-    }
-    .sidebar .active {
-      background-color: #4f7ae3;
-      color: white;
-    }
-
-    /* 右侧内容区 */
-    .main-content {
-      flex: 2;
-      padding-left: 30px;
-    }
-    .main-content .section {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 40px;
-    }
-    .main-content .section .card {
-      background-color: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      width: 48%;
-    }
-    .main-content .section .card h3 {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 15px;
-    }
-    .main-content .section .card .content {
-      font-size: 1rem;
-      color: #555;
-      margin-bottom: 15px;
-    }
-    .main-content .section .card .tags {
-      font-size: 0.9rem;
-      color: #888;
-      display: flex;
-      gap: 10px;
-    }
-    .main-content .section .card .tags span {
-      background-color: #f3f4f6;
-      padding: 5px 10px;
-      border-radius: 12px;
-      color: #777;
-    }
-
-    /* 底部学习进度 */
-    .learning-progress {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-    }
-    .learning-progress .progress-bar {
-      width: 75%;
-      height: 10px;
-      background-color: #dcdfe4;
-      border-radius: 5px;
-    }
-    .learning-progress .progress-bar span {
-      display: block;
+    .flashcard-inner {
+      width: 100%;
       height: 100%;
-      background-color: #4f7ae3;
-      border-radius: 5px;
+      transition: transform 0.6s cubic-bezier(.4,2,.4,1);
+      transform-style: preserve-3d;
+      position: relative;
     }
-    .learning-progress .stats {
-      text-align: right;
+    .flashcard.flipped .flashcard-inner {
+      transform: rotateY(180deg);
     }
-    .learning-progress .stats span {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #4f7ae3;
+    .flashcard-front, .flashcard-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0; top: 0;
+      backface-visibility: hidden;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.09);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: pointer;
+      padding: 28px 26px 20px 26px;
+      transition: box-shadow .2s;
     }
+    .flashcard-front {
+      z-index: 2;
+    }
+    .flashcard-back {
+      background: linear-gradient(130deg, #f1f5fa 70%, #e5eaff 100%);
+      transform: rotateY(180deg);
+      z-index: 1;
+    }
+    /* 标签高亮、编号高亮 */
+    .tag { display:inline-block; font-size:12px; border-radius:10px; padding:2px 8px; margin-right:6px;}
+    .tag.high { background: #e53935; color: #fff;}
+    .tag.medium { background: #ff9800; color: #fff;}
+    .tag.low { background: #43a047; color: #fff;}
+    .numbered-list .number {color:#1976d2; font-weight:bold;}
+    .card-title {font-size:1.2em; font-weight:700; margin-bottom:7px;}
+    .card-clue {font-size:0.99em; color:#4b5563;}
+    .card-category {font-size:13px; color:#64748b; margin-bottom:3px;}
+    .difficulty-dot {display:inline-block; width:8px; height:8px; margin-right:1.5px; border-radius:50%; background:#e0e0e0;}
+    .difficulty-dot.active {background: #6366f1;}
+    /* 按钮补充高亮 */
+    .mastery-btn.hard {background: #fde68a; color: #b45309;}
+    .mastery-btn.medium {background: #bae6fd; color: #0369a1;}
+    .mastery-btn.easy {background: #bbf7d0; color: #166534;}
+    /* 其它你的CSS不变 */
   </style>
 </head>
 <body>
-
-  <div class="container">
-    <!-- 左侧导航栏 -->
-    <div class="sidebar">
-      <div class="title">知识导航</div>
-      <ul>
-        <li class="active">公共管理</li>
-        <li>社会研究方法</li>
-        <li>科学</li>
-        <li>社会研究</li>
-        <li>方法论</li>
-      </ul>
+<div class="container">
+  <div class="sidebar">
+    <h3>知识导航</h3>
+    <div class="search-box">
+      <input type="text" class="search-input" placeholder="搜索卡片..." oninput="filterCards(this.value)">
+      <i class="search-icon">🔍</i>
     </div>
-
-    <!-- 右侧内容 -->
-    <div class="main-content">
-      <!-- 课程内容区 -->
-      <div class="section">
-        <div class="card">
-          <h3>公共管理的基本特征</h3>
-          <div class="content">
-            公共性：服务对象和目标的公共性。<br>
-            权力性：行政权力和法律保障。<br>
-            服务性：以服务公众为根本宗旨。
-          </div>
-          <div class="tags">
-            <span>重要</span>
-            <span>高频考点</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>科学的定义</h3>
-          <div class="content">
-            从确定研究对象的性质和规律出发，通过观察、调查和实验得到的系统的知识。
-          </div>
-          <div class="tags">
-            <span>基础知识</span>
-            <span>复习重点</span>
-          </div>
+    <div class="card-list" id="card-list"></div>
+    <div class="action-buttons">
+      <button class="btn-primary" onclick="showImportModal()">
+        <i class="icon">📥</i>导入题库
+      </button>
+      <button class="btn-secondary" onclick="addNewCard()">
+        <i class="icon">✨</i>新建卡片
+      </button>
+    </div>
+  </div>
+  <div class="flashcard-grid" id="flashcard-grid"></div>
+  <div class="tools-section">
+    <!-- 倒计时/进度/学习统计/笔记区不变 -->
+    <div class="tool-card countdown">
+      <span class="countdown-label">距离考研还有</span>
+      <span class="countdown-value" id="countdown">计算中...</span>
+    </div>
+    <div class="study-stats">
+      <div class="stats-header">
+        <h4>学习进度</h4>
+        <div class="progress-ring">
+          <svg width="60" height="60" viewBox="0 0 60 60">
+            <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24"/>
+            <circle class="progress-ring-circle" cx="30" cy="30" r="24"/>
+          </svg>
+          <span class="progress-text">0%</span>
         </div>
       </div>
-
-      <!-- 学习进度区 -->
-      <div class="learning-progress">
-        <div class="progress-bar">
-          <span style="width: 60%;"></span>
+      <div class="stats-grid">
+        <div class="stat-item"><span class="stat-label">已掌握</span><span class="stat-value" id="stat-mastered">0</span></div>
+        <div class="stat-item"><span class="stat-label">复习中</span><span class="stat-value" id="stat-reviewing">0</span></div>
+        <div class="stat-item"><span class="stat-label">未学习</span><span class="stat-value" id="stat-new">0</span></div>
+        <div class="stat-item highlight"><span class="stat-label">高频考点</span><span class="stat-value" id="stat-high">0</span></div>
+      </div>
+      <div class="study-streak">
+        <div class="streak-info">
+          <span class="streak-label">连续学习</span>
+          <span class="streak-value" id="stat-streak">0天</span>
         </div>
-        <div class="stats">
-          <span>学习进度：60%</span>
+        <div class="today-count">
+          <span class="today-label">今日已学</span>
+          <span class="today-value" id="stat-today">0张</span>
         </div>
+      </div>
+    </div>
+    <div class="tool-card note-section">
+      <h4>学习笔记</h4>
+      <div class="note-tabs">
+        <button class="tab-btn active" data-tab="quick" onclick="switchNoteTab('quick')">快速笔记</button>
+        <button class="tab-btn" data-tab="organized" onclick="switchNoteTab('organized')">系统笔记</button>
+      </div>
+      <div class="tab-content active" id="quick-note">
+        <textarea placeholder="记录临时想法和笔记..." id="quick-textarea"></textarea>
+      </div>
+      <div class="tab-content" id="organized-note">
+        <div class="note-controls">
+          <select id="note-category" class="note-select"></select>
+          <button class="btn-new-category" onclick="addNoteCategory()">新建分类</button>
+        </div>
+        <div class="note-editor">
+          <input type="text" class="note-title" placeholder="笔记标题...">
+          <textarea id="organized-textarea" placeholder="系统化的学习笔记..."></textarea>
+        </div>
+      </div>
+      <div class="note-actions">
+        <button class="btn-save" onclick="saveNote()">保存笔记</button>
+        <button class="btn-view-history" onclick="viewNoteHistory()">查看历史</button>
       </div>
     </div>
   </div>
+</div>
+<!-- 导入弹窗区 -->
+<div id="import-modal-root"></div>
+<script>
+/* 卡片数据与存储结构 */
+let cards = JSON.parse(localStorage.getItem('flashcards') || '[]');
+if (!cards.length) {
+  cards = [{
+    front: "公共管理的基本特征",
+    back: "1、公共性：服务对象和目标的公共性\n2、权力性：行政权力和法律保障\n3、服务性：以服务公众为根本宗旨\n4、专业性：需要专业知识和技能",
+    category: "公共管理",
+    chapter: "第一章 公共管理概论",
+    section: "公共管理特征",
+    level: "重点",
+    examFrequency: "高频",
+    cardType: "特征分析",
+    clue: "思考：什么使公共管理区别于一般管理？",
+    context: "公共管理是一门专门研究政府管理活动的学科，其特征反映了其本质属性",
+    lastReview: null,
+    nextReview: null,
+    reviewCount: 0,
+    difficulty: 0,
+    mastery: 0
+  }];
+}
+/* 统计学习数据 */
+function statSummary() {
+  const total = cards.length;
+  let mastered = 0, reviewing = 0, unlearned = 0, high = 0;
+  cards.forEach(card=>{
+    if(card.mastery>=4) mastered++;
+    else if(card.mastery>=1) reviewing++;
+    else unlearned++;
+    if(card.examFrequency==='高频') high++;
+  });
+  return {total, mastered, reviewing, unlearned, high};
+}
 
+/* 间隔重复算法及复习卡片推送 */
+function getDueCards() {
+  const now = new Date();
+  return cards.filter(card=>{
+    if(!card.nextReview) return true;
+    return new Date(card.nextReview)<=now;
+  });
+}
+
+/* 渲染主网格 */
+let currentCardList = cards; // 当前显示的卡片集
+function renderGrid(showCards=currentCardList) {
+  const grid = document.getElementById('flashcard-grid');
+  grid.innerHTML = '';
+  showCards.forEach(card=>{
+    const div = document.createElement('div');
+    div.className = 'flashcard';
+    // 3D结构
+    div.innerHTML = `
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div class="card-title">${card.front}</div>
+          <div class="flashcard-tags">
+            ${card.examFrequency==='高频'?'<span class="tag high">高频</span>':''}
+            ${card.level==='重点'?'<span class="tag medium">重点</span>':''}
+          </div>
+          <div class="card-clue">${card.clue||''}</div>
+          <div class="card-content"><span>${card.context||''}</span></div>
+        </div>
+        <div class="flashcard-back">
+          <div class="card-category">${card.category} > ${card.chapter}</div>
+          <div class="card-content">${formatCardContent(card.back)}</div>
+          <div class="card-footer">
+            <div class="mastery-buttons">
+              <button class="mastery-btn hard" onclick="updateMastery('${card.front}', 1, event)"><span>😅</span>困难</button>
+              <button class="mastery-btn medium" onclick="updateMastery('${card.front}', 3, event)"><span>🤔</span>模糊</button>
+              <button class="mastery-btn easy" onclick="updateMastery('${card.front}', 5, event)"><span>✨</span>清晰</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    // 3D翻转
+    div.onclick = function(e) {
+      // 避免点击按钮也触发翻转
+      if(e.target.tagName==='BUTTON'||e.target.classList.contains('mastery-btn')) return;
+      this.classList.toggle('flipped');
+    };
+    grid.appendChild(div);
+  });
+}
+/* 格式化编号/注释 */
+function formatCardContent(content) {
+  let mainContent = content, notes = '';
+  const noteMatches = content.match(/（[^）]+）/g);
+  if(noteMatches) {
+    notes = noteMatches.join(' ');
+    mainContent = content.replace(/（[^）]+）/g, '');
+  }
+  if (/1[\.、．]/.test(mainContent)) {
+    const points = mainContent.split(/(?=\d+[\.、．])/)
+      .map(point=>point.trim()).filter(point=>point.length>0);
+    let html = '<div class="numbered-list">';
+    points.forEach(point=>{
+      const match = point.match(/^(\d+[\.、．])\s*(.+)$/);
+      if (match) {
+        html += `<div class="list-item"><span class="number">${match[1]}</span><span class="content">${match[2]}</span></div>`;
+      } else {
+        html += `<div class="list-item"><span class="content">${point}</span></div>`;
+      }
+    });
+    html += '</div>';
+    if(notes) html += `<div class="note">${notes}</div>`;
+    return html;
+  }
+  return `<p>${mainContent.replace(/\n/g,'<br>')}</p>${notes?`<div class="note">${notes}</div>`:''}`;
+}
+/* 学习进度等统计UI自动刷新 */
+function updateStats() {
+  const s = statSummary();
+  document.getElementById('stat-mastered').textContent = s.mastered;
+  document.getElementById('stat-reviewing').textContent = s.reviewing;
+  document.getElementById('stat-new').textContent = s.unlearned;
+  document.getElementById('stat-high').textContent = s.high;
+  // 进度环
+  const percent = s.total?Math.round((s.mastered+s.reviewing)/s.total*100):0;
+  const circle = document.querySelector('.progress-ring-circle');
+  const radius = 24, circumference = 2 * Math.PI * radius;
+  circle.setAttribute('stroke-dasharray',circumference);
+  circle.setAttribute('stroke-dashoffset',circumference*(1-percent/100));
+  document.querySelector('.progress-text').textContent = percent+'%';
+  document.getElementById('stat-today').textContent = getTodayStudyCount()+'张';
+  document.getElementById('stat-streak').textContent = getStudyStreak()+'天';
+}
+/* 侧边栏分类与章节 */
+function updateCardList() {
+  const grouped = cards.reduce((acc,card)=>{
+    if(!acc[card.category]) acc[card.category]={};
+    if(!acc[card.category][card.chapter]) acc[card.category][card.chapter]=[];
+    acc[card.category][card.chapter].push(card);
+    return acc;
+  },{});
+  const list = document.getElementById('card-list');
+  list.innerHTML = '';
+  for(let cat in grouped) {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category-item';
+    const catHeader = document.createElement('div');
+    catHeader.className = 'category-header';
+    catHeader.innerHTML = `<i>▶</i>${cat}`;
+    catHeader.onclick = ()=>{catHeader.classList.toggle('expanded');catContent.classList.toggle('expanded');};
+    const catContent = document.createElement('div');
+    catContent.className = 'category-content';
+    for(let chap in grouped[cat]) {
+      const chapDiv = document.createElement('div');
+      chapDiv.className = 'chapter-item';
+      chapDiv.textContent = chap;
+      chapDiv.onclick = ()=>{
+        currentCardList = grouped[cat][chap];
+        renderGrid(currentCardList);
+      };
+      catContent.appendChild(chapDiv);
+    }
+    catDiv.appendChild(catHeader);
+    catDiv.appendChild(catContent);
+    list.appendChild(catDiv);
+  }
+}
+/* 搜索过滤卡片 */
+function filterCards(query) {
+  const q = query.trim().toLowerCase();
+  if(!q) {
+    renderGrid(cards);
+    currentCardList = cards;
+    return;
+  }
+  const filtered = cards.filter(card=>
+    card.front.toLowerCase().includes(q)||
+    card.back.toLowerCase().includes(q)||
+    card.category.toLowerCase().includes(q)||
+    card.chapter.toLowerCase().includes(q)||
+    (card.level||'').toLowerCase().includes(q)
+  );
+  currentCardList = filtered;
+  renderGrid(filtered);
+}
+/* 倒计时 */
+function updateCountdown() {
+  // 默认考研时间为今年12月23日
+  const now = new Date(), year = now.getFullYear();
+  const target = new Date(year,11,23); // 12月23日
+  let days = Math.ceil((target-now)/86400000);
+  if(days<0) days = Math.ceil((new Date(year+1,11,23)-now)/86400000);
+  document.getElementById('countdown').textContent = days+'天';
+}
+/* 今日学习、连续打卡 */
+function getTodayStudyCount() {
+  const today = new Date().toISOString().split('T')[0];
+  return parseInt(localStorage.getItem(`study_count_${today}`)||'0');
+}
+function incrementTodayStudyCount() {
+  const today = new Date().toISOString().split('T')[0];
+  const count = getTodayStudyCount();
+  localStorage.setItem(`study_count_${today}`, count+1);
+}
+function getStudyStreak() {
+  let streak=0;
+  const today = new Date(), curr = new Date(today);
+  while(1) {
+    const dateStr = curr.toISOString().split('T')[0];
+    if(parseInt(localStorage.getItem(`study_count_${dateStr}`)||'0')===0) break;
+    streak++;
+    curr.setDate(curr.getDate()-1);
+  }
+  return streak;
+}
+/* 间隔重复算法 */
+function spacedRepetition(card, mastery) {
+  const now = new Date();
+  const interval = Math.pow(2,card.reviewCount||0)*(mastery/5);
+  card.lastReview = now.toISOString();
+  card.reviewCount = (card.reviewCount||0)+1;
+  card.mastery = mastery;
+  const next = new Date(now);
+  next.setDate(now.getDate()+Math.max(1,Math.round(interval)));
+  card.nextReview = next.toISOString();
+  card.difficulty = Math.max(0,Math.min(5,(card.difficulty||0)+(mastery<=2?1:mastery>=4?-1:0)));
+  return card;
+}
+/* 更新掌握度并自动切换下一张 */
+function updateMastery(front, mastery, event) {
+  event.stopPropagation();
+  const i = cards.findIndex(c=>c.front===front);
+  if(i===-1) return;
+  cards[i] = spacedRepetition(cards[i], mastery);
+  localStorage.setItem('flashcards', JSON.stringify(cards));
+  incrementTodayStudyCount();
+  updateStats();
+  // 自动翻回正面并加载新一轮复习（优先推送“到期需复习”卡片）
+  document.querySelectorAll('.flashcard').forEach(f=>f.classList.remove('flipped'));
+  setTimeout(()=>{
+    // 刷新主卡片区（推送优先复习卡）
+    const due = getDueCards();
+    if(due.length) {
+      currentCardList = due;
+      renderGrid(due);
+    } else {
+      renderGrid(cards);
+      currentCardList = cards;
+    }
+  }, 300);
+}
+/* 卡片导入导出 */
+function showImportModal() {
+  const modalRoot = document.getElementById('import-modal-root');
+  modalRoot.innerHTML = `
+  <div style="position:fixed;z-index:10000;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;max-width:440px;padding:32px 28px;box-shadow:0 8px 32px #3332;position:relative;">
+      <h3>批量导入题库</h3>
+      <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
+      <textarea id="import-json" style="width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;"></textarea>
+      <input type="file" id="import-file" accept=".json" style="margin:10px 0;">
+      <div style="text-align:right;">
+        <button class="btn-secondary" onclick="document.getElementById('import-modal-root').innerHTML=''">取消</button>
+        <button class="btn-primary" onclick="processImport()">导入</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('import-file').onchange = function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      document.getElementById('import-json').value = ev.target.result;
+    };
+    reader.readAsText(file);
+  };
+}
+function processImport() {
+  let importData;
+  try {
+    importData = JSON.parse(document.getElementById('import-json').value);
+    if(!Array.isArray(importData)) throw Error('请粘贴JSON数组格式');
+    importData.forEach(card=>{
+      if(!card.front||!card.back||!card.category||!card.chapter) throw Error('每条数据需包含front,back,category,chapter');
+      card.lastReview=null;card.nextReview=null;card.reviewCount=0;card.difficulty=0;card.mastery=0;
+    });
+    // 去重导入
+    const fronts = new Set(cards.map(c=>c.front));
+    const newCards = importData.filter(card=>!fronts.has(card.front));
+    cards = cards.concat(newCards);
+    localStorage.setItem('flashcards',JSON.stringify(cards));
+    document.getElementById('import-modal-root').innerHTML='';
+    updateCardList(); renderGrid(cards); updateStats();
+    alert('导入成功！新增'+newCards.length+'条');
+  } catch(e) {
+    alert('导入失败:'+e.message);
+  }
+}
+/* 新建卡片 */
+function addNewCard() {
+  const front = prompt('输入题干(正面)...');
+  if(!front) return;
+  const back = prompt('输入答案(背面)...');
+  if(!back) return;
+  const category = prompt('所属科目/分类?','未分类');
+  const chapter = prompt('所属章节?','未分章');
+  cards.push({
+    front, back, category, chapter,
+    level:'基础', examFrequency:'低频', lastReview:null, nextReview:null, reviewCount:0, difficulty:0, mastery:0
+  });
+  localStorage.setItem('flashcards',JSON.stringify(cards));
+  updateCardList(); renderGrid(cards); updateStats();
+}
+/* ---- 笔记管理、分类等功能 ---- */
+let notes = JSON.parse(localStorage.getItem('flashcardNotes')||'{"quick":{},"organized":{}}');
+function switchNoteTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="'+tab+'"]').classList.add('active');
+  document.getElementById(tab+'-note').classList.add('active');
+}
+function saveNote() {
+  const tab = document.querySelector('.tab-btn.active').dataset.tab;
+  const today = new Date().toISOString().split('T')[0];
+  if(tab==='quick') {
+    notes.quick[today] = document.getElementById('quick-textarea').value;
+  } else {
+    const cat = document.getElementById('note-category').value;
+    const title = document.querySelector('.note-title').value;
+    const content = document.getElementById('organized-textarea').value;
+    if(!cat) return alert('请选择分类');
+    if(!notes.organized[cat]) notes.organized[cat]=[];
+    notes.organized[cat].push({title, content, date:today});
+  }
+  localStorage.setItem('flashcardNotes',JSON.stringify(notes));
+  alert('笔记已保存');
+}
+function addNoteCategory() {
+  const cat = prompt('输入新分类名');
+  if(!cat) return;
+  if(!notes.organized[cat]) notes.organized[cat]=[];
+  updateNoteCategories();
+}
+function updateNoteCategories() {
+  const sel = document.getElementById('note-category');
+  sel.innerHTML = Object.keys(notes.organized).map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+function viewNoteHistory() {
+  alert('历史笔记请到控制台输入：notes 查看，也可后续自定义弹窗...');
+}
+/* 初始化 */
+function initializeApp() {
+  updateCardList();
+  renderGrid(cards);
+  updateStats();
+  updateCountdown();
+  updateNoteCategories();
+}
+/* 自动加载 */
+window.onload = initializeApp;
+</script>
 </body>
 </html>
