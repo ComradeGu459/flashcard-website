@@ -36,8 +36,9 @@
     .tools-section { align-self: start; }
     .flashcard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 40px;
+      padding: 0 10px;
       align-content: flex-start;
       min-height: 700px;
       position: relative;
@@ -246,7 +247,8 @@
       background:#fff;border-radius:12px;max-width:440px;padding:32px 28px;box-shadow:0 8px 32px #3332;position:relative;
     }
     #import-json {width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;}
-    #import-file {margin:10px 0;}
+      #import-file {margin:10px 0;}
+      .import-hint {background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:6px 10px;margin-top:6px;font-size:13px;white-space:pre-wrap;}
     /* 提示动画 */
     @keyframes fadeIn {from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);}}
     .flashcard,.sidebar,.tools-section,.modal-content {animation:fadeIn 0.4s;}
@@ -591,10 +593,13 @@ function showImportModal() {
   const modalRoot = document.getElementById('import-modal-root');
   modalRoot.innerHTML = `
   <div>
-    <div class="modal-content">
-      <h3>批量导入题库</h3>
-      <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
-      <textarea id="import-json"></textarea>
+      <div class="modal-content">
+        <h3>批量导入题库</h3>
+        <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
+        <pre class="import-hint">[
+  {"front":"题干","back":"答案","category":"科目","chapter":"章节"}
+]</pre>
+        <textarea id="import-json"></textarea>
       <input type="file" id="import-file" accept=".json">
       <div style="text-align:right;margin-top:10px;">
         <button class="btn-secondary" onclick="document.getElementById('import-modal-root').innerHTML=''">取消</button>
