@@ -1034,354 +1034,216 @@ document.addEventListener('DOMContentLoaded', ()=>{
     #ask:disabled { opacity: 0.5; }
     #apikey { margin-top: 16px; width: 100%; padding: 8px 11px; border-radius: 6px; border: 1px solid #ddd; }
   </style>
-</head>
-<body>
-/* 新增 AI 助手界面样式 */
-        :root {
-            --primary-color: #6366f1;
-            --text-primary: #1a202c;
-            --text-secondary: #4a5568;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --border-color: #e2e8f0;
+<!-- AI助手悬浮按钮 -->
+<div id="ai-helper-btn" style="position:fixed;right:32px;bottom:36px;z-index:9999;">
+  <button onclick="openAIHelper()" style="width:62px;height:62px;border-radius:50%;border:none;box-shadow:0 2px 15px #9ba5cc22;background:#6366f1;color:#fff;font-size:33px;cursor:pointer;">🤖</button>
+</div>
+<!-- AI助手主弹窗 -->
+<div id="ai-helper-modal" style="display:none;position:fixed;right:34px;bottom:110px;z-index:10000;">
+  <div style="width:410px;max-width:98vw;max-height:82vh;box-shadow:0 8px 42px #2932762a;border-radius:20px;background:#fff;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- 顶栏 -->
+    <div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 17px;background:#f4f7fd;border-bottom:1px solid #ececec;">
+      <span style="font-weight:700;font-size:17px;color:#6366f1;">AI 考研助手</span>
+      <div>
+        <button onclick="exportChatHistory()" title="导出对话" style="background:none;border:none;font-size:17px;color:#36a269;cursor:pointer;margin-right:5px;">⬇️</button>
+        <button onclick="openKeySetting()" title="API Key设置" style="background:none;border:none;font-size:17px;color:#9799bb;cursor:pointer;margin-right:9px;">🔑</button>
+        <button onclick="closeAIHelper()" style="background:none;border:none;font-size:26px;color:#8e98bc;cursor:pointer;">×</button>
+      </div>
+    </div>
+    <!-- 快捷预设 -->
+    <div id="ai-quick-presets" style="padding:7px 15px 2px 15px;background:#fafaff;border-bottom:1px solid #f0f1f6;display:flex;gap:8px;overflow-x:auto;white-space:nowrap;">
+      <button onclick="presetInsert('帮我总结一下公共管理学核心理论框架。')" class="preset-btn">公共管理学理论</button>
+      <button onclick="presetInsert('请分析当前我国公共服务改革的难点与对策。')" class="preset-btn">公共服务难点</button>
+      <button onclick="presetInsert('模拟考研真题：谈谈“新公共管理”与传统公共管理的区别。')" class="preset-btn">新旧对比</button>
+      <button onclick="presetInsert('考点背诵口诀')" class="preset-btn">背诵口诀</button>
+      <button onclick="presetInsert('请列出近五年公共管理考研高频题。')" class="preset-btn">高频真题</button>
+      <button onclick="presetInsert('')" class="preset-btn">自定义</button>
+    </div>
+    <!-- 对话历史 -->
+    <div id="ai-chat-content" style="flex:1;overflow-y:auto;padding:15px 14px 7px 14px;font-size:15px;line-height:1.8;color:#353c52;"></div>
+    <!-- 输入区 -->
+    <div style="padding:9px 13px 12px 13px;background:#f7f9fc;display:flex;gap:7px;">
+      <!-- 语音按钮 -->
+      <button id="ai-mic-btn" onclick="startVoiceInput()" title="语音输入" style="width:40px;height:40px;border-radius:50%;border:none;background:#e2e9fd;color:#6366f1;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🎤</button>
+      <form id="ai-chat-form" style="flex:1;display:flex;gap:7px;" onsubmit="return sendAIMessage();">
+        <input id="ai-chat-input" autocomplete="off" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid #dde2ef;font-size:15px;background:#fff;outline:none;" placeholder="输入你的考研问题/指令，回车发送..." />
+        <select id="ai-model" style="padding:0 8px 0 6px;border-radius:8px;border:1px solid #dde2ef;background:#f9fafd;font-size:15px;color:#656780;">
+          <option value="deepseek-chat">DeepSeek-Chat</option>
+          <option value="deepseek-reasoner">DeepSeek-Reasoner</option>
+        </select>
+        <button type="submit" style="padding:0 18px;height:38px;border-radius:12px;border:none;background:#6366f1;color:#fff;font-size:16px;font-weight:500;cursor:pointer;">发送</button>
+      </form>
+    </div>
+  </div>
+</div>
+<style>
+@media (max-width:600px) {
+  #ai-helper-modal > div { width:98vw !important; right:0 !important; border-radius:0 !important; }
+  #ai-helper-modal { right:0 !important; bottom:0 !important; }
+  #ai-helper-btn { right:16px !important; bottom:16px !important; }
+}
+.preset-btn{border:none;background:#eaf0fd;color:#4364ae;border-radius:8px;padding:4px 10px;font-size:14px;cursor:pointer;margin:0 0 4px 0;}
+.preset-btn:hover{background:#d9e6fb;}
+.ai-msg { margin-bottom:12px; display: flex; align-items: flex-start; }
+.ai-user { justify-content: flex-end; }
+.ai-bubble { max-width: 83%; border-radius: 14px; padding: 9px 13px 9px 12px; margin:0 0 0 8px; word-break: break-word; }
+.ai-bubble-user { background: #e9eafe; color: #494a7c; border-bottom-right-radius: 6px; }
+.ai-bubble-ai { background: #f6f7fe; color: #36a269; border-bottom-left-radius: 6px; }
+.ai-avatar { width:32px; height:32px; border-radius:50%; background:#f0f2ff; color:#6366f1; font-size:22px; display:flex; align-items:center; justify-content:center;}
+.ai-avatar-user {background:#d7ebff; color:#4f7fc9;}
+</style>
+<script>
+const AI_LOCAL_KEY = "ai_study_chat_history_v2";
+let aiHistory = [];
+let voiceRec = null, voiceActive = false;
+
+function presetInsert(text){
+  const input = document.getElementById('ai-chat-input');
+  input.value = text;
+  input.focus();
+}
+function renderHistory(){
+  const el = document.getElementById('ai-chat-content');
+  el.innerHTML = '';
+  aiHistory.forEach(msg => {
+    if(msg.role==='user'){
+      el.innerHTML += `
+      <div class="ai-msg ai-user">
+        <div class="ai-bubble ai-bubble-user">${escapeHTML(msg.content)}</div>
+        <div class="ai-avatar ai-avatar-user">你</div>
+      </div>`;
+    } else if(msg.role==='assistant'){
+      el.innerHTML += `
+      <div class="ai-msg">
+        <div class="ai-avatar">🤖</div>
+        <div class="ai-bubble ai-bubble-ai">${renderMarkdown(msg.content)}</div>
+      </div>`;
+    }
+  });
+  setTimeout(()=>{el.scrollTop = el.scrollHeight}, 20);
+}
+function saveHistory(){ localStorage.setItem(AI_LOCAL_KEY, JSON.stringify(aiHistory)); }
+function openAIHelper(){
+  document.getElementById('ai-helper-modal').style.display = 'block';
+  aiHistory = JSON.parse(localStorage.getItem(AI_LOCAL_KEY)||"[]");
+  renderHistory();
+  setTimeout(()=>{document.getElementById('ai-chat-input').focus()}, 120);
+}
+function closeAIHelper(){ document.getElementById('ai-helper-modal').style.display = 'none'; }
+function openKeySetting(){
+  const key = prompt('输入你的DeepSeek API KEY（自动本地保存）', localStorage.getItem('deepseek_api_key')||'');
+  if(key) localStorage.setItem('deepseek_api_key', key.trim());
+}
+function exportChatHistory(){
+  let txt = '';
+  aiHistory.forEach(m => {
+    txt += (m.role==='user' ? '你: ' : 'AI: ') + m.content.replace(/\n/g, '\r\n')+'\r\n\r\n';
+  });
+  const blob = new Blob([txt], {type:"text/plain"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = "AI助手对话历史.txt";
+  document.body.appendChild(a); a.click(); setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 100);
+}
+// 语音输入
+function startVoiceInput(){
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+    alert("当前浏览器不支持语音输入（推荐使用Chrome）"); return;
+  }
+  if(voiceActive) { // 终止
+    voiceRec && voiceRec.stop();
+    voiceActive = false;
+    document.getElementById('ai-mic-btn').style.background='#e2e9fd';
+    return;
+  }
+  const rec = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  voiceRec = rec;
+  rec.continuous = false; rec.lang = "zh-CN";
+  rec.interimResults = false;
+  rec.onstart = function(){ voiceActive = true; document.getElementById('ai-mic-btn').style.background='#b1cbfb'; }
+  rec.onerror = function(e){voiceActive=false;document.getElementById('ai-mic-btn').style.background='#e2e9fd';}
+  rec.onend = function(){voiceActive=false;document.getElementById('ai-mic-btn').style.background='#e2e9fd';}
+  rec.onresult = function(event){
+    let r = event.results[0][0].transcript.trim();
+    if(r){
+      const input = document.getElementById('ai-chat-input');
+      input.value = r;
+      input.focus();
+    }
+  };
+  rec.start();
+}
+
+// 发送并流式输出
+async function sendAIMessage(){
+  const input = document.getElementById('ai-chat-input');
+  let msg = input.value.trim();
+  if(!msg) return false;
+  aiHistory.push({role:"user", content:msg});
+  saveHistory(); renderHistory();
+  input.value = "";
+  const el = document.getElementById('ai-chat-content');
+  // 显示AI loading气泡
+  const aid = 'ai_'+Date.now();
+  el.innerHTML += `<div class="ai-msg" id="${aid}"><div class="ai-avatar">🤖</div>
+    <div class="ai-bubble ai-bubble-ai"><span id="${aid}_c" style="white-space:pre-line;color:#adb3c2;">AI助手输出中...</span></div></div>`;
+  el.scrollTop = el.scrollHeight;
+
+  try {
+    const key = localStorage.getItem('deepseek_api_key') || prompt('请先填写API Key');
+    if(!key){document.getElementById(aid).remove();return false;}
+    const model = document.getElementById('ai-model').value || "deepseek-chat";
+    // 多轮对话传历史
+    const body = {
+      model: model,
+      messages: [
+        {role: "system", content: "你是考研公共管理方向AI助手，回答尽可能详细、有条理，内容适合背诵和理解，遇到主观性问题要给出学习建议。"},
+        ...aiHistory.slice(-8)
+      ],
+      stream: true
+    };
+    // 兼容stream, 用Fetch+reader
+    const resp = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer "+key },
+      body: JSON.stringify(body)
+    });
+    if(!resp.body) throw new Error("API无返回体");
+    const reader = resp.body.getReader();
+    let full = "", buf = "";
+    const decoder = new TextDecoder();
+    while(true){
+      const {done,value} = await reader.read();
+      if(done) break;
+      buf += decoder.decode(value, {stream:true});
+      let arr = buf.split('\n\n');
+      buf = arr.pop();
+      for(const chunk of arr){
+        const json = chunk.replace(/^data: /,'').trim();
+        if(json==="[DONE]") continue;
+        if(!json) continue;
+        let delta;
+        try { delta = JSON.parse(json); }catch{}
+        if(delta && delta.choices && delta.choices[0].delta && delta.choices[0].delta.content){
+          full += delta.choices[0].delta.content;
+          document.getElementById(aid+"_c").innerHTML = renderMarkdown(escapeHTML(full));
+          el.scrollTop = el.scrollHeight;
         }
-
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .header-actions button {
-            padding: 8px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .header-actions button:hover {
-            background: var(--bg-secondary);
-        }
-
-        /* 修改原有容器样式以适应新布局 */
-        body {
-            padding-top: 64px; /* 为固定导航栏留出空间 */
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 280px 1fr 280px;
-            gap: 24px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-            min-height: calc(100vh - 64px);
-        }
-
-        .sidebar {
-            background: var(--bg-primary);
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            height: calc(100vh - 112px);
-            position: sticky;
-            top: 84px;
-            overflow-y: auto;
-        }
-
-        .sidebar h3 {
-            font-size: 18px;
-            color: var(--text-primary);
-            margin: 0 0 16px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--border-color);
-            position: relative;
-        }
-
-        .new-chat-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 16px;
-            transition: all 0.2s;
-        }
-
-        .new-chat-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .category-header:hover {
-            background: #f1f5f9;
-            color: var(--primary-color);
-        }
-
-        .welcome-section {
-            text-align: center;
-            padding: 48px 0;
-            display: none;
-        }
-
-        .welcome-section.active {
-            display: block;
-        }
-
-        .welcome-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--text-primary);
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 32px;
-            padding: 0 48px;
-        }
-
-        .quick-action-btn {
-            padding: 20px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .quick-action-btn:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-
-        .quick-action-btn h3 {
-            margin: 0 0 8px 0;
-            color: var(--text-primary);
-        }
-
-        .quick-action-btn p {
-            margin: 0;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .flashcard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-        }
-
-        .message {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 24px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
-            background: var(--primary-color);
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-
-        .message-content {
-            flex: 1;
-            padding: 16px;
-            background: var(--bg-primary);
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .message.ai .message-content {
-            background: var(--bg-secondary);
-        }
-
-        .input-container {
-            padding: 24px;
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-color);
-            position: sticky;
-            bottom: 0;
-        }
-
-        .input-wrapper {
-            display: flex;
-            gap: 16px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .chat-input {
-            flex: 1;
-            min-height: 48px;
-            max-height: 200px;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            resize: none;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .send-btn {
-            padding: 12px 24px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .send-btn:hover {
-            opacity: 0.9;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        <script>
-        // 主题切换
-        const themeToggle = document.querySelector('.theme-toggle');
-        themeToggle?.addEventListener('click', () => {
-            document.body.classList.toggle('dark-theme');
-            themeToggle.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
-        });
-
-        // 显示欢迎区域
-        function showWelcome() {
-            const chatContainer = document.querySelector('.flashcard-grid');
-            if (!chatContainer) return;
-            
-            const welcomeSection = document.createElement('div');
-            welcomeSection.className = 'welcome-section active';
-            welcomeSection.innerHTML = `
-                <h1 class="welcome-title">欢迎使用考研AI助手</h1>
-                <p>我可以帮助你复习公共管理学知识，请选择以下功能开始学习</p>
-                <div class="quick-actions">
-                    <button class="quick-action-btn" data-action="高频考点">
-                        <h3>高频考点</h3>
-                        <p>快速掌握重点内容</p>
-                    </button>
-                    <button class="quick-action-btn" data-action="真题解析">
-                        <h3>真题解析</h3>
-                        <p>历年考题详细讲解</p>
-                    </button>
-                    <button class="quick-action-btn" data-action="知识体系">
-                        <h3>知识体系</h3>
-                        <p>系统梳理核心知识</p>
-                    </button>
-                </div>
-            `;
-            chatContainer.insertBefore(welcomeSection, chatContainer.firstChild);
-
-            // 绑定快捷操作按钮事件
-            welcomeSection.querySelectorAll('.quick-action-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const action = btn.getAttribute('data-action');
-                    handleQuickAction(action);
-                });
-            });
-        }
-
-        // 处理快捷操作
-        function handleQuickAction(action) {
-            const welcomeSection = document.querySelector('.welcome-section');
-            if (welcomeSection) {
-                welcomeSection.classList.remove('active');
-            }
-
-            // 根据不同操作显示相应内容
-            switch(action) {
-                case '高频考点':
-                    showHighFrequencyCards();
-                    break;
-                case '真题解析':
-                    showExamQuestions();
-                    break;
-                case '知识体系':
-                    showKnowledgeSystem();
-                    break;
-            }
-        }
-
-        // 显示高频考点卡片
-        function showHighFrequencyCards() {
-            const filtered = cards.filter(card => card.examFrequency === '高频');
-            renderGrid(filtered);
-        }
-
-        // 初始化页面
-        window.addEventListener('load', () => {
-            showWelcome();
-        });
-    </script>
+      }
+    }
+    aiHistory.push({role:"assistant", content:full.trim()});
+    saveHistory(); renderHistory();
+  }catch(e){
+    document.getElementById(aid+"_c").innerHTML = "<span style='color:#f43f5e'>AI助手异常："+escapeHTML(e.message)+"</span>";
+  }
+  return false;
+}
+function escapeHTML(str){ return str.replace(/[<>&"]/g, c=>({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+function renderMarkdown(str){
+  return str.replace(/```([\s\S]+?)```/g, '<pre style="background:#f2f3fa;border-radius:8px;padding:8px 11px;">$1</pre>')
+    .replace(/\n/g, '<br>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.+?)\*/g, '<i>$1</i>')
+    .replace(/^\d+\.(.+)$/gm, '<span style="color:#8366f1;font-weight:bold;">$&</span>');
+}
+</script>
