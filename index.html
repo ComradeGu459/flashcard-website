@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>科学闪卡背诵系统</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
   <style>
     html,body { height: 100%; margin: 0; padding: 0; background: #f5f7fa; color: #222;}
     body { font-family: 'Roboto Slab', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
@@ -333,10 +334,6 @@
   </div>
   <!-- 导入弹窗容器 -->
   <div id="import-modal-root"></div>
-
-  <!-- 下面js部分下一轮发送！ -->
-</body>
-</html>
 <script>
 // ============ 数据初始化与本地存储 ==============
 let cards = JSON.parse(localStorage.getItem('flashcards') || '[]');
@@ -913,3 +910,5 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 </script>
+</body>
+</html>
