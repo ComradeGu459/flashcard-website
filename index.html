@@ -121,10 +121,37 @@
     .flashcard-thumb .thumb-title {font-weight:600;color:#334155;font-size:1.05em;}
 
     /* 大卡片模态 */
-    #card-modal {position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:1500;}
-    #card-modal.active {display:flex;}
-    #card-modal .flashcard {max-width:480px;width:90%;}
-    #card-modal .close-btn {position:absolute;right:12px;top:12px;background:#f8fafc;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;}
+      #card-modal {
+        position: fixed;
+        left: 0; top: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(3px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1500;
+      }
+      #card-modal.active {display:flex; animation: fadeIn 0.25s;}
+      #card-modal .flashcard {
+        max-width: 640px;
+        width: 90%;
+        max-height: 80vh;
+        padding: 40px 32px;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        animation: scaleIn 0.3s ease;
+      }
+      #card-modal .close-btn {position:absolute;right:12px;top:12px;background:#f8fafc;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;}
+      #card-modal .flashcard-front,
+      #card-modal .flashcard-back {
+        padding: 20px 24px 60px 24px;
+        max-height: none;
+        height: 100%;
+      }
+      #card-modal .card-content {flex:1; overflow-y:auto;}
+      #card-modal .mastery-buttons {justify-content: center;}
+
+      @keyframes scaleIn {from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
     .card-title {font-size:1.23em;font-weight:700;margin-bottom:9px;}
     .flashcard-tags {margin-bottom: 10px;}
     .tag {display:inline-block;font-size:12px;border-radius:10px;padding:2px 9px 2px 7px;margin-right:6px;}
@@ -576,6 +603,7 @@ function openCard(front){
   const fc = modal.querySelector('.flashcard');
   fc.onclick = function(e){
     if(e.target.tagName==='BUTTON' || e.target.classList.contains('mastery-btn')) return;
+    e.stopPropagation();
     this.classList.toggle('flipped');
   };
   modal.classList.add('active');
