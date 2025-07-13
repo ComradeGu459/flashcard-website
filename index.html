@@ -1034,10 +1034,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     .msg.ai .content { background:#f1f5f9; }
     .copy-btn { border:none; background:none; cursor:pointer; color:#64748b; font-size:13px; }
     #askbox { display: flex; gap: 8px; }
-    #prompt { flex: 1; padding: 8px 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
+    #prompt { flex: 1; padding: 8px 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; resize: vertical; min-height: 38px; }
     #ask { padding: 8px 19px; background: #6366f1; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
     #ask:disabled { opacity: 0.5; }
     #apikey { margin-top: 16px; width: 100%; padding: 8px 11px; border-radius: 6px; border: 1px solid #ddd; }
+    .top-bar {display:flex;justify-content:space-between;align-items:center;padding:10px 24px;background:#fff;box-shadow:0 2px 6px #0001;position:sticky;top:0;z-index:1000;}
+    .top-bar .logo {font-size:20px;font-weight:bold;color:#4f46e5;}
+    .top-actions button {margin-left:12px;border:none;background:none;cursor:pointer;font-size:14px;color:#475569;}
     @keyframes blink {
       0%,100% { opacity: 0.2; }
       50% { opacity: 1; }
@@ -1048,10 +1051,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
   </style>
 </head>
 <body>
+  <header class="top-bar">
+    <div class="logo">考研AI助手</div>
+    <div class="top-actions">
+      <button>🌙</button>
+      <button>个人信息</button>
+      <button>历史</button>
+      <button>设置</button>
+    </div>
+  </header>
   <div id="chatbox">
     <div id="history"></div>
     <div id="askbox">
-      <input type="text" id="prompt" placeholder="输入你的问题...">
+      <textarea id="prompt" placeholder="输入你的问题..."></textarea>
       <button id="ask">发送</button>
     </div>
     <input type="text" id="apikey" placeholder="输入你的 DeepSeek API Key，例：dsw_xxxx" />
@@ -1061,10 +1073,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const askBtn = document.getElementById('ask');
     const apikeyInput = document.getElementById('apikey');
     const historyDiv = document.getElementById('history');
+    const systemPrompt = `你是一个考研学习专属AI助手，用户准备考公共管理学硕士研究生。请以“高分辅导老师”的身份，输出内容时务必做到以下要求：\n1. 紧扣考研大纲和真题要求，结合学科知识点（如公共管理学基础、管理理论、政策分析、案例解析等），提供结构化、系统化的讲解。\n2. 回答要条理清晰，分点分段、逻辑严密，对重要知识点做总结与归纳，适当给出记忆口诀、思维导图建议、易错点提醒。\n3. 每次回答结尾附上“学习建议”或“高频考点/应试技巧”，帮用户举一反三、思考延伸。\n4. 如用户问题表达不完整或不够具体，自动追问或提示更优的提问方式，主动引导学习路径。\n5. 支持输出表格/清单/流程图等，必要时用markdown格式美化内容。\n6. 输出内容自带考点重要性标注（如[高频]、[基础]、[易混]），并尽量精炼、适合背诵/复习。\n7. 回答风格亲切、鼓励、务实，像一位懂你的学霸前辈，善于发现你的薄弱环节并提供针对性建议。\n你所有的回答都应当帮助用户高效复习公共管理学考研内容，强化记忆和理解，提升应试能力。\n（如你遇到非考研学习场景问题，可优雅回复“本助手专注考研学习，如需学术/生活AI助手服务请说明”）`;
     let history = [];
     let loadingDiv = null;
 
-    askBtn.onclick = async function() {
+    async function send() {
       const prompt = promptInput.value.trim();
       const apikey = apikeyInput.value.trim();
       if (!prompt || !apikey) return alert('请填写提问内容和API key！');
@@ -1083,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         body: JSON.stringify({
           model: "deepseek-chat",
           messages: [
-            {role: "system", content: "你是一个学习助手，回答简洁易懂"},
+            {role: "system", content: systemPrompt},
             ...history.map(h => ({role: h.role, content: h.content}))
           ],
           stream: false
@@ -1096,7 +1109,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (loadingDiv) historyDiv.removeChild(loadingDiv);
       renderHistory();
       askBtn.disabled = false;
-    };
+    }
+
+    askBtn.onclick = send;
+    promptInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
 
     function renderHistory() {
       historyDiv.innerHTML = '';
