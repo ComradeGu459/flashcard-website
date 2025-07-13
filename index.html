@@ -5,20 +5,62 @@
   <title>科学闪卡背诵系统</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    /* 你的CSS全部保留，这里只补充和修正3D相关部分 */
+    html,body { height: 100%; margin: 0; padding: 0; background: #f5f7fa; color: #222;}
+    body { font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
+    .container {
+      display: grid;
+      grid-template-columns: 300px 1fr 320px;
+      gap: 28px;
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 24px 14px 38px 14px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .sidebar, .tools-section {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 3px 20px #24335608,0 1px 2px #24335611;
+      padding: 28px 20px 22px 20px;
+      min-width: 0;
+      min-height: 650px;
+      max-height: 92vh;
+      position: sticky;
+      top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+    .sidebar { align-self: start; }
+    .tools-section { align-self: start; }
+    .flashcard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 30px;
+      align-content: flex-start;
+      min-height: 700px;
+      position: relative;
+      z-index: 1;
+    }
+    /* ---- 3D闪卡动画样式 ---- */
     .flashcard {
+      width: 100%;
+      min-width: 340px;
+      max-width: 430px;
+      height: 300px;
       perspective: 1200px;
       background: transparent;
-      position: relative;
-      height: 270px;
-      min-width: 280px;
-      max-width: 380px;
       margin: 0 auto;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: box-shadow .24s;
     }
     .flashcard-inner {
       width: 100%;
       height: 100%;
-      transition: transform 0.6s cubic-bezier(.4,2,.4,1);
+      transition: transform 0.68s cubic-bezier(.41,1.58,.6,1);
       transform-style: preserve-3d;
       position: relative;
     }
@@ -31,127 +73,273 @@
       height: 100%;
       left: 0; top: 0;
       backface-visibility: hidden;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.09);
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 1px 8px #2433560d;
       display: flex;
       flex-direction: column;
       justify-content: center;
       cursor: pointer;
-      padding: 28px 26px 20px 26px;
+      padding: 38px 30px 20px 32px;
       transition: box-shadow .2s;
-    }
-    .flashcard-front {
       z-index: 2;
+      overflow: hidden;
     }
+    .flashcard-front { z-index: 3; }
     .flashcard-back {
-      background: linear-gradient(130deg, #f1f5fa 70%, #e5eaff 100%);
+      background: linear-gradient(140deg, #f1f6ff 70%, #e6eaff 100%);
       transform: rotateY(180deg);
       z-index: 1;
+      border: 2.5px solid #e0e7ff;
     }
-    /* 标签高亮、编号高亮 */
-    .tag { display:inline-block; font-size:12px; border-radius:10px; padding:2px 8px; margin-right:6px;}
-    .tag.high { background: #e53935; color: #fff;}
-    .tag.medium { background: #ff9800; color: #fff;}
-    .tag.low { background: #43a047; color: #fff;}
-    .numbered-list .number {color:#1976d2; font-weight:bold;}
-    .card-title {font-size:1.2em; font-weight:700; margin-bottom:7px;}
-    .card-clue {font-size:0.99em; color:#4b5563;}
-    .card-category {font-size:13px; color:#64748b; margin-bottom:3px;}
-    .difficulty-dot {display:inline-block; width:8px; height:8px; margin-right:1.5px; border-radius:50%; background:#e0e0e0;}
+    .flashcard:hover { box-shadow: 0 7px 30px #4b5a7a14; }
+    .card-title {font-size:1.23em;font-weight:700;margin-bottom:9px;}
+    .flashcard-tags {margin-bottom: 10px;}
+    .tag {display:inline-block;font-size:12px;border-radius:10px;padding:2px 9px 2px 7px;margin-right:6px;}
+    .tag.high {background: #e53935;color:#fff;}
+    .tag.medium {background: #ff9800;color:#fff;}
+    .tag.low {background: #43a047;color:#fff;}
+    .card-clue {font-size:.98em;color:#385380;margin:3px 0 13px 0;}
+    .card-category {font-size:14px;color:#4b5563;margin-bottom:7px;}
+    .difficulty-dot {display:inline-block;width:9px;height:9px;margin-right:2.5px;border-radius:50%;background:#e0e0e0;}
     .difficulty-dot.active {background: #6366f1;}
-    /* 按钮补充高亮 */
-    .mastery-btn.hard {background: #fde68a; color: #b45309;}
-    .mastery-btn.medium {background: #bae6fd; color: #0369a1;}
-    .mastery-btn.easy {background: #bbf7d0; color: #166534;}
-    /* 其它你的CSS不变 */
+    .card-footer {margin-top:auto;}
+    .numbered-list .number {color:#1976d2;font-weight:bold;}
+    .numbered-list .list-item {margin-bottom:3px;}
+    .note {margin-top:10px;padding:7px 13px 7px 13px;background:#f1f3fa;border-left:4px solid #6366f1;font-size:13px;border-radius:0 7px 7px 0;}
+    /* 3D动画按钮 */
+    .mastery-buttons { display: flex; gap: 10px; margin-top: 16px; justify-content: center;}
+    .mastery-btn { border:none;border-radius:13px;padding:8px 21px;font-size:15px;font-weight:500;cursor:pointer;transition:.14s;}
+    .mastery-btn.hard {background:#fde68a;color:#b45309;}
+    .mastery-btn.medium {background:#bae6fd;color:#0369a1;}
+    .mastery-btn.easy {background:#bbf7d0;color:#166534;}
+    .mastery-btn:hover {transform: scale(1.09);}
+    /* 进度环与统计区 */
+    .progress-ring { position: relative; width: 60px; height: 60px;}
+    .progress-ring-circle-bg {
+      fill: none;
+      stroke: #e2e8f0;
+      stroke-width: 4;
+    }
+    .progress-ring-circle {
+      fill: none;
+      stroke: #6366f1;
+      stroke-width: 4;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      transition: stroke-dashoffset 0.3s ease;
+    }
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 15px;
+      font-weight: 600;
+      color: #6366f1;
+      pointer-events:none;
+    }
+    .stats-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;}
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .stat-item {
+      background: #f8fafc;
+      padding: 10px 0 6px 0;
+      border-radius: 13px;
+      display: flex; flex-direction: column; align-items: center;
+      transition: transform 0.17s;
+      font-size: 15px;
+    }
+    .stat-item.highlight {
+      background: linear-gradient(135deg,#6366f1,#3b82f6);
+      color: #fff;
+    }
+    .stat-label {font-size: 13px; color: #64748b;}
+    .stat-item.highlight .stat-label,
+    .stat-item.highlight .stat-value {color:#fff;}
+    .stat-value {font-size: 20px; font-weight: 600; color: #1a202c;}
+    .study-streak {display:flex;justify-content:space-between;background:#f8fafc;padding:13px 16px;border-radius:12px;}
+    .streak-info, .today-count {display:flex;flex-direction:column;align-items:center;}
+    .streak-label, .today-label {font-size:13px;color:#64748b;}
+    .streak-value, .today-value {font-size:16px;font-weight:600;color:#6366f1;}
+    /* 搜索输入与侧边栏分类 */
+    .search-input {width:100%;padding:11px 14px;border:1px solid #e2e8f0;border-radius:12px;font-size:15px;background:#f8fafc;margin-bottom:8px;}
+    .search-input:focus {border-color:#6366f1;box-shadow:0 0 0 2px #c7d2fe;}
+    .search-box {position: relative;}
+    .search-icon {position: absolute;right: 17px;top: 50%;transform: translateY(-50%);color: #94a3b8;pointer-events: none;}
+    .card-list {list-style: none; padding: 0; margin: 0;}
+    .category-item {margin-bottom: 14px;}
+    .category-header {display: flex;align-items: center;padding: 7px 12px;background: #f8fafc;border-radius: 8px;cursor: pointer;transition: all 0.18s;}
+    .category-header:hover {background: #f1f5f9;}
+    .category-header i {margin-right: 8px;transition: transform 0.2s;}
+    .category-header.expanded i {transform: rotate(90deg);}
+    .category-content {margin-left: 20px;padding: 8px 0;display: none;}
+    .category-content.expanded {display: block;}
+    .chapter-item {margin: 4px 0;padding: 4px 12px;border-radius: 7px;cursor: pointer;transition: all 0.18s;}
+    .chapter-item:hover {background: #e0e7ff;color: #6366f1;}
+    /* 按钮样式 */
+    .btn-primary, .btn-secondary, .btn-save {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      outline: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+    .btn-save {
+      background: #dcfce7;
+      color: #15803d;
+      margin-top: 12px;
+    }
+    .btn-primary:hover, .btn-secondary:hover, .btn-save:hover {
+      filter: brightness(1.1);
+    }
+    .action-buttons {display: flex;flex-direction: column;gap: 10px;margin-top: 18px;}
+    /* 笔记系统UI */
+    .note-section {background:#fff;border-radius:16px;padding:18px 14px 12px 14px;}
+    .note-tabs {display: flex;gap: 10px;margin-bottom: 15px;border-bottom: 2px solid #e2e8f0;padding-bottom: 9px;}
+    .tab-btn {padding:8px 18px;border:none;border-radius:8px;background:#f1f5f9;color:#64748b;cursor:pointer;}
+    .tab-btn.active {background:#6366f1;color:#fff;}
+    .tab-content {display: none;}
+    .tab-content.active {display: block;}
+    .note-controls {display: flex;gap: 10px;margin-bottom: 13px;}
+    .note-select {flex: 1;padding: 8px;border: 1px solid #e2e8f0;border-radius: 8px;background: #f8fafc;}
+    .btn-new-category {padding:8px 16px;background:#4ade80;color:white;border:none;border-radius:8px;cursor:pointer;}
+    .note-editor {display: flex;flex-direction: column;gap: 10px;}
+    .note-title {padding: 8px;border: 1px solid #e2e8f0;border-radius: 8px;font-size: 16px;}
+    .note-editor textarea {height: 100px;padding: 10px;border: 1px solid #e2e8f0;border-radius: 8px;resize: vertical;font-size: 14px;line-height: 1.6;}
+    .note-actions {display: flex;justify-content: space-between;margin-top: 10px;padding-top: 12px;border-top: 1px solid #e2e8f0;}
+    /* 响应式适配 */
+    @media (max-width:1200px) {
+      .container {grid-template-columns: 1fr 1fr;gap: 13px;}
+      .sidebar, .tools-section {min-height: 410px;}
+      .flashcard-grid {grid-template-columns:1fr;}
+    }
+    @media (max-width:900px) {
+      .container {grid-template-columns: 1fr;gap:7px;padding:8px;}
+      .sidebar, .tools-section {position: static;min-height: auto;margin-bottom:12px;}
+      .flashcard-grid {grid-template-columns:1fr;}
+    }
+    /* 导入弹窗样式 */
+    #import-modal-root>div {
+      position:fixed;z-index:1200;top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.19);display:flex;align-items:center;justify-content:center;
+    }
+    #import-modal-root .modal-content {
+      background:#fff;border-radius:12px;max-width:440px;padding:32px 28px;box-shadow:0 8px 32px #3332;position:relative;
+    }
+    #import-json {width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;}
+    #import-file {margin:10px 0;}
+    /* 提示动画 */
+    @keyframes fadeIn {from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);}}
+    .flashcard,.sidebar,.tools-section,.modal-content {animation:fadeIn 0.4s;}
   </style>
 </head>
 <body>
-<div class="container">
-  <div class="sidebar">
-    <h3>知识导航</h3>
-    <div class="search-box">
-      <input type="text" class="search-input" placeholder="搜索卡片..." oninput="filterCards(this.value)">
-      <i class="search-icon">🔍</i>
+  <div class="container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <h3 style="margin-bottom:14px;">知识导航</h3>
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="搜索卡片..." oninput="filterCards(this.value)">
+        <i class="search-icon">🔍</i>
+      </div>
+      <div class="card-list" id="card-list"></div>
+      <div class="action-buttons">
+        <button class="btn-primary" onclick="showImportModal()"><i>📥</i>导入题库</button>
+        <button class="btn-secondary" onclick="addNewCard()"><i>✨</i>新建卡片</button>
+      </div>
     </div>
-    <div class="card-list" id="card-list"></div>
-    <div class="action-buttons">
-      <button class="btn-primary" onclick="showImportModal()">
-        <i class="icon">📥</i>导入题库
-      </button>
-      <button class="btn-secondary" onclick="addNewCard()">
-        <i class="icon">✨</i>新建卡片
-      </button>
+    <!-- 主卡片区 -->
+    <div class="flashcard-grid" id="flashcard-grid"></div>
+    <!-- 工具栏 -->
+    <div class="tools-section">
+      <div class="tool-card countdown">
+        <span class="countdown-label">距离考研还有</span>
+        <span class="countdown-value" id="countdown">计算中...</span>
+      </div>
+      <div class="study-stats">
+        <div class="stats-header">
+          <h4>学习进度</h4>
+          <div class="progress-ring">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24"/>
+              <circle class="progress-ring-circle" cx="30" cy="30" r="24"/>
+            </svg>
+            <span class="progress-text">0%</span>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item"><span class="stat-label">已掌握</span><span class="stat-value" id="stat-mastered">0</span></div>
+          <div class="stat-item"><span class="stat-label">复习中</span><span class="stat-value" id="stat-reviewing">0</span></div>
+          <div class="stat-item"><span class="stat-label">未学习</span><span class="stat-value" id="stat-new">0</span></div>
+          <div class="stat-item highlight"><span class="stat-label">高频考点</span><span class="stat-value" id="stat-high">0</span></div>
+        </div>
+        <div class="study-streak">
+          <div class="streak-info">
+            <span class="streak-label">连续学习</span>
+            <span class="streak-value" id="stat-streak">0天</span>
+          </div>
+          <div class="today-count">
+            <span class="today-label">今日已学</span>
+            <span class="today-value" id="stat-today">0张</span>
+          </div>
+        </div>
+      </div>
+      <div class="tool-card note-section">
+        <h4>学习笔记</h4>
+        <div class="note-tabs">
+          <button class="tab-btn active" data-tab="quick" onclick="switchNoteTab('quick')">快速笔记</button>
+          <button class="tab-btn" data-tab="organized" onclick="switchNoteTab('organized')">系统笔记</button>
+        </div>
+        <div class="tab-content active" id="quick-note">
+          <textarea placeholder="记录临时想法和笔记..." id="quick-textarea"></textarea>
+        </div>
+        <div class="tab-content" id="organized-note">
+          <div class="note-controls">
+            <select id="note-category" class="note-select"></select>
+            <button class="btn-new-category" onclick="addNoteCategory()">新建分类</button>
+          </div>
+          <div class="note-editor">
+            <input type="text" class="note-title" placeholder="笔记标题...">
+            <textarea id="organized-textarea" placeholder="系统化的学习笔记..."></textarea>
+          </div>
+        </div>
+        <div class="note-actions">
+          <button class="btn-save" onclick="saveNote()">保存笔记</button>
+          <button class="btn-view-history" onclick="viewNoteHistory()">查看历史</button>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="flashcard-grid" id="flashcard-grid"></div>
-  <div class="tools-section">
-    <!-- 倒计时/进度/学习统计/笔记区不变 -->
-    <div class="tool-card countdown">
-      <span class="countdown-label">距离考研还有</span>
-      <span class="countdown-value" id="countdown">计算中...</span>
-    </div>
-    <div class="study-stats">
-      <div class="stats-header">
-        <h4>学习进度</h4>
-        <div class="progress-ring">
-          <svg width="60" height="60" viewBox="0 0 60 60">
-            <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24"/>
-            <circle class="progress-ring-circle" cx="30" cy="30" r="24"/>
-          </svg>
-          <span class="progress-text">0%</span>
-        </div>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-item"><span class="stat-label">已掌握</span><span class="stat-value" id="stat-mastered">0</span></div>
-        <div class="stat-item"><span class="stat-label">复习中</span><span class="stat-value" id="stat-reviewing">0</span></div>
-        <div class="stat-item"><span class="stat-label">未学习</span><span class="stat-value" id="stat-new">0</span></div>
-        <div class="stat-item highlight"><span class="stat-label">高频考点</span><span class="stat-value" id="stat-high">0</span></div>
-      </div>
-      <div class="study-streak">
-        <div class="streak-info">
-          <span class="streak-label">连续学习</span>
-          <span class="streak-value" id="stat-streak">0天</span>
-        </div>
-        <div class="today-count">
-          <span class="today-label">今日已学</span>
-          <span class="today-value" id="stat-today">0张</span>
-        </div>
-      </div>
-    </div>
-    <div class="tool-card note-section">
-      <h4>学习笔记</h4>
-      <div class="note-tabs">
-        <button class="tab-btn active" data-tab="quick" onclick="switchNoteTab('quick')">快速笔记</button>
-        <button class="tab-btn" data-tab="organized" onclick="switchNoteTab('organized')">系统笔记</button>
-      </div>
-      <div class="tab-content active" id="quick-note">
-        <textarea placeholder="记录临时想法和笔记..." id="quick-textarea"></textarea>
-      </div>
-      <div class="tab-content" id="organized-note">
-        <div class="note-controls">
-          <select id="note-category" class="note-select"></select>
-          <button class="btn-new-category" onclick="addNoteCategory()">新建分类</button>
-        </div>
-        <div class="note-editor">
-          <input type="text" class="note-title" placeholder="笔记标题...">
-          <textarea id="organized-textarea" placeholder="系统化的学习笔记..."></textarea>
-        </div>
-      </div>
-      <div class="note-actions">
-        <button class="btn-save" onclick="saveNote()">保存笔记</button>
-        <button class="btn-view-history" onclick="viewNoteHistory()">查看历史</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- 导入弹窗区 -->
-<div id="import-modal-root"></div>
+  <!-- 导入弹窗容器 -->
+  <div id="import-modal-root"></div>
+
+  <!-- 下面js部分下一轮发送！ -->
+</body>
+</html>
 <script>
-/* 卡片数据与存储结构 */
+// ============ 数据初始化与本地存储 ==============
 let cards = JSON.parse(localStorage.getItem('flashcards') || '[]');
 if (!cards.length) {
+  // 默认初始卡片
   cards = [{
     front: "公共管理的基本特征",
     back: "1、公共性：服务对象和目标的公共性\n2、权力性：行政权力和法律保障\n3、服务性：以服务公众为根本宗旨\n4、专业性：需要专业知识和技能",
@@ -170,47 +358,89 @@ if (!cards.length) {
     mastery: 0
   }];
 }
-/* 统计学习数据 */
+
+// ============ 学习进度/统计 ==============
 function statSummary() {
   const total = cards.length;
   let mastered = 0, reviewing = 0, unlearned = 0, high = 0;
-  cards.forEach(card=>{
-    if(card.mastery>=4) mastered++;
-    else if(card.mastery>=1) reviewing++;
+  cards.forEach(card => {
+    if (card.mastery >= 4) mastered++;
+    else if (card.mastery >= 1) reviewing++;
     else unlearned++;
-    if(card.examFrequency==='高频') high++;
+    if (card.examFrequency === '高频') high++;
   });
-  return {total, mastered, reviewing, unlearned, high};
+  return { total, mastered, reviewing, unlearned, high };
+}
+function updateStats() {
+  const s = statSummary();
+  document.getElementById('stat-mastered').textContent = s.mastered;
+  document.getElementById('stat-reviewing').textContent = s.reviewing;
+  document.getElementById('stat-new').textContent = s.unlearned;
+  document.getElementById('stat-high').textContent = s.high;
+  // 进度环
+  const percent = s.total ? Math.round((s.mastered + s.reviewing) / s.total * 100) : 0;
+  const circle = document.querySelector('.progress-ring-circle');
+  const radius = 24, circumference = 2 * Math.PI * radius;
+  circle.setAttribute('stroke-dasharray', circumference);
+  circle.setAttribute('stroke-dashoffset', circumference * (1 - percent / 100));
+  document.querySelector('.progress-text').textContent = percent + '%';
+  document.getElementById('stat-today').textContent = getTodayStudyCount() + '张';
+  document.getElementById('stat-streak').textContent = getStudyStreak() + '天';
 }
 
-/* 间隔重复算法及复习卡片推送 */
-function getDueCards() {
-  const now = new Date();
-  return cards.filter(card=>{
-    if(!card.nextReview) return true;
-    return new Date(card.nextReview)<=now;
-  });
+// ============ 侧边栏 分类-章节 二级展开 ==============
+function updateCardList() {
+  const grouped = cards.reduce((acc, card) => {
+    if (!acc[card.category]) acc[card.category] = {};
+    if (!acc[card.category][card.chapter]) acc[card.category][card.chapter] = [];
+    acc[card.category][card.chapter].push(card);
+    return acc;
+  }, {});
+  const list = document.getElementById('card-list');
+  list.innerHTML = '';
+  for (let cat in grouped) {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category-item';
+    const catHeader = document.createElement('div');
+    catHeader.className = 'category-header';
+    catHeader.innerHTML = `<i>▶</i>${cat}`;
+    catHeader.onclick = () => { catHeader.classList.toggle('expanded'); catContent.classList.toggle('expanded'); };
+    const catContent = document.createElement('div');
+    catContent.className = 'category-content';
+    for (let chap in grouped[cat]) {
+      const chapDiv = document.createElement('div');
+      chapDiv.className = 'chapter-item';
+      chapDiv.textContent = chap;
+      chapDiv.onclick = () => {
+        currentCardList = grouped[cat][chap];
+        renderGrid(currentCardList);
+      };
+      catContent.appendChild(chapDiv);
+    }
+    catDiv.appendChild(catHeader);
+    catDiv.appendChild(catContent);
+    list.appendChild(catDiv);
+  }
 }
 
-/* 渲染主网格 */
-let currentCardList = cards; // 当前显示的卡片集
-function renderGrid(showCards=currentCardList) {
+// ============ 主卡片渲染/3D动画/正反切换 ==============
+let currentCardList = cards;
+function renderGrid(showCards = currentCardList) {
   const grid = document.getElementById('flashcard-grid');
   grid.innerHTML = '';
-  showCards.forEach(card=>{
+  showCards.forEach(card => {
     const div = document.createElement('div');
     div.className = 'flashcard';
-    // 3D结构
     div.innerHTML = `
       <div class="flashcard-inner">
         <div class="flashcard-front">
           <div class="card-title">${card.front}</div>
           <div class="flashcard-tags">
-            ${card.examFrequency==='高频'?'<span class="tag high">高频</span>':''}
-            ${card.level==='重点'?'<span class="tag medium">重点</span>':''}
+            ${card.examFrequency === '高频' ? '<span class="tag high">高频</span>' : ''}
+            ${card.level === '重点' ? '<span class="tag medium">重点</span>' : ''}
           </div>
-          <div class="card-clue">${card.clue||''}</div>
-          <div class="card-content"><span>${card.context||''}</span></div>
+          <div class="card-clue">${card.clue || ''}</div>
+          <div class="card-content"><span>${card.context || ''}</span></div>
         </div>
         <div class="flashcard-back">
           <div class="card-category">${card.category} > ${card.chapter}</div>
@@ -225,28 +455,28 @@ function renderGrid(showCards=currentCardList) {
         </div>
       </div>
     `;
-    // 3D翻转
-    div.onclick = function(e) {
+    div.onclick = function (e) {
       // 避免点击按钮也触发翻转
-      if(e.target.tagName==='BUTTON'||e.target.classList.contains('mastery-btn')) return;
+      if (e.target.tagName === 'BUTTON' || e.target.classList.contains('mastery-btn')) return;
       this.classList.toggle('flipped');
     };
     grid.appendChild(div);
   });
 }
-/* 格式化编号/注释 */
+
+// ============ 卡片内容格式化（编号/注释/高亮） ============
 function formatCardContent(content) {
   let mainContent = content, notes = '';
   const noteMatches = content.match(/（[^）]+）/g);
-  if(noteMatches) {
+  if (noteMatches) {
     notes = noteMatches.join(' ');
     mainContent = content.replace(/（[^）]+）/g, '');
   }
   if (/1[\.、．]/.test(mainContent)) {
     const points = mainContent.split(/(?=\d+[\.、．])/)
-      .map(point=>point.trim()).filter(point=>point.length>0);
+      .map(point => point.trim()).filter(point => point.length > 0);
     let html = '<div class="numbered-list">';
-    points.forEach(point=>{
+    points.forEach(point => {
       const match = point.match(/^(\d+[\.、．])\s*(.+)$/);
       if (match) {
         html += `<div class="list-item"><span class="number">${match[1]}</span><span class="content">${match[2]}</span></div>`;
@@ -255,167 +485,128 @@ function formatCardContent(content) {
       }
     });
     html += '</div>';
-    if(notes) html += `<div class="note">${notes}</div>`;
+    if (notes) html += `<div class="note">${notes}</div>`;
     return html;
   }
-  return `<p>${mainContent.replace(/\n/g,'<br>')}</p>${notes?`<div class="note">${notes}</div>`:''}`;
+  return `<p>${mainContent.replace(/\n/g, '<br>')}</p>${notes ? `<div class="note">${notes}</div>` : ''}`;
 }
-/* 学习进度等统计UI自动刷新 */
-function updateStats() {
-  const s = statSummary();
-  document.getElementById('stat-mastered').textContent = s.mastered;
-  document.getElementById('stat-reviewing').textContent = s.reviewing;
-  document.getElementById('stat-new').textContent = s.unlearned;
-  document.getElementById('stat-high').textContent = s.high;
-  // 进度环
-  const percent = s.total?Math.round((s.mastered+s.reviewing)/s.total*100):0;
-  const circle = document.querySelector('.progress-ring-circle');
-  const radius = 24, circumference = 2 * Math.PI * radius;
-  circle.setAttribute('stroke-dasharray',circumference);
-  circle.setAttribute('stroke-dashoffset',circumference*(1-percent/100));
-  document.querySelector('.progress-text').textContent = percent+'%';
-  document.getElementById('stat-today').textContent = getTodayStudyCount()+'张';
-  document.getElementById('stat-streak').textContent = getStudyStreak()+'天';
-}
-/* 侧边栏分类与章节 */
-function updateCardList() {
-  const grouped = cards.reduce((acc,card)=>{
-    if(!acc[card.category]) acc[card.category]={};
-    if(!acc[card.category][card.chapter]) acc[card.category][card.chapter]=[];
-    acc[card.category][card.chapter].push(card);
-    return acc;
-  },{});
-  const list = document.getElementById('card-list');
-  list.innerHTML = '';
-  for(let cat in grouped) {
-    const catDiv = document.createElement('div');
-    catDiv.className = 'category-item';
-    const catHeader = document.createElement('div');
-    catHeader.className = 'category-header';
-    catHeader.innerHTML = `<i>▶</i>${cat}`;
-    catHeader.onclick = ()=>{catHeader.classList.toggle('expanded');catContent.classList.toggle('expanded');};
-    const catContent = document.createElement('div');
-    catContent.className = 'category-content';
-    for(let chap in grouped[cat]) {
-      const chapDiv = document.createElement('div');
-      chapDiv.className = 'chapter-item';
-      chapDiv.textContent = chap;
-      chapDiv.onclick = ()=>{
-        currentCardList = grouped[cat][chap];
-        renderGrid(currentCardList);
-      };
-      catContent.appendChild(chapDiv);
-    }
-    catDiv.appendChild(catHeader);
-    catDiv.appendChild(catContent);
-    list.appendChild(catDiv);
-  }
-}
-/* 搜索过滤卡片 */
+
+// ============ 搜索过滤 ============
 function filterCards(query) {
   const q = query.trim().toLowerCase();
-  if(!q) {
+  if (!q) {
     renderGrid(cards);
     currentCardList = cards;
     return;
   }
-  const filtered = cards.filter(card=>
-    card.front.toLowerCase().includes(q)||
-    card.back.toLowerCase().includes(q)||
-    card.category.toLowerCase().includes(q)||
-    card.chapter.toLowerCase().includes(q)||
-    (card.level||'').toLowerCase().includes(q)
+  const filtered = cards.filter(card =>
+    card.front.toLowerCase().includes(q) ||
+    card.back.toLowerCase().includes(q) ||
+    card.category.toLowerCase().includes(q) ||
+    card.chapter.toLowerCase().includes(q) ||
+    (card.level || '').toLowerCase().includes(q)
   );
   currentCardList = filtered;
   renderGrid(filtered);
 }
-/* 倒计时 */
-function updateCountdown() {
-  // 默认考研时间为今年12月23日
-  const now = new Date(), year = now.getFullYear();
-  const target = new Date(year,11,23); // 12月23日
-  let days = Math.ceil((target-now)/86400000);
-  if(days<0) days = Math.ceil((new Date(year+1,11,23)-now)/86400000);
-  document.getElementById('countdown').textContent = days+'天';
+
+// ============ 间隔重复算法 ============
+function getDueCards() {
+  const now = new Date();
+  return cards.filter(card => {
+    if (!card.nextReview) return true;
+    return new Date(card.nextReview) <= now;
+  });
 }
-/* 今日学习、连续打卡 */
-function getTodayStudyCount() {
-  const today = new Date().toISOString().split('T')[0];
-  return parseInt(localStorage.getItem(`study_count_${today}`)||'0');
-}
-function incrementTodayStudyCount() {
-  const today = new Date().toISOString().split('T')[0];
-  const count = getTodayStudyCount();
-  localStorage.setItem(`study_count_${today}`, count+1);
-}
-function getStudyStreak() {
-  let streak=0;
-  const today = new Date(), curr = new Date(today);
-  while(1) {
-    const dateStr = curr.toISOString().split('T')[0];
-    if(parseInt(localStorage.getItem(`study_count_${dateStr}`)||'0')===0) break;
-    streak++;
-    curr.setDate(curr.getDate()-1);
-  }
-  return streak;
-}
-/* 间隔重复算法 */
 function spacedRepetition(card, mastery) {
   const now = new Date();
-  const interval = Math.pow(2,card.reviewCount||0)*(mastery/5);
+  const interval = Math.pow(2, card.reviewCount || 0) * (mastery / 5);
   card.lastReview = now.toISOString();
-  card.reviewCount = (card.reviewCount||0)+1;
+  card.reviewCount = (card.reviewCount || 0) + 1;
   card.mastery = mastery;
   const next = new Date(now);
-  next.setDate(now.getDate()+Math.max(1,Math.round(interval)));
+  next.setDate(now.getDate() + Math.max(1, Math.round(interval)));
   card.nextReview = next.toISOString();
-  card.difficulty = Math.max(0,Math.min(5,(card.difficulty||0)+(mastery<=2?1:mastery>=4?-1:0)));
+  card.difficulty = Math.max(0, Math.min(5, (card.difficulty || 0) + (mastery <= 2 ? 1 : mastery >= 4 ? -1 : 0)));
   return card;
 }
-/* 更新掌握度并自动切换下一张 */
+
+// ============ 学习反馈/掌握度按钮 ============
 function updateMastery(front, mastery, event) {
   event.stopPropagation();
-  const i = cards.findIndex(c=>c.front===front);
-  if(i===-1) return;
+  const i = cards.findIndex(c => c.front === front);
+  if (i === -1) return;
   cards[i] = spacedRepetition(cards[i], mastery);
   localStorage.setItem('flashcards', JSON.stringify(cards));
   incrementTodayStudyCount();
   updateStats();
-  // 自动翻回正面并加载新一轮复习（优先推送“到期需复习”卡片）
-  document.querySelectorAll('.flashcard').forEach(f=>f.classList.remove('flipped'));
-  setTimeout(()=>{
-    // 刷新主卡片区（推送优先复习卡）
+  document.querySelectorAll('.flashcard').forEach(f => f.classList.remove('flipped'));
+  setTimeout(() => {
+    // 优先推送需复习卡
     const due = getDueCards();
-    if(due.length) {
+    if (due.length) {
       currentCardList = due;
       renderGrid(due);
     } else {
       renderGrid(cards);
       currentCardList = cards;
     }
-  }, 300);
+  }, 330);
 }
-/* 卡片导入导出 */
+
+// ============ 学习天数/打卡统计 ============
+function getTodayStudyCount() {
+  const today = new Date().toISOString().split('T')[0];
+  return parseInt(localStorage.getItem(`study_count_${today}`) || '0');
+}
+function incrementTodayStudyCount() {
+  const today = new Date().toISOString().split('T')[0];
+  const count = getTodayStudyCount();
+  localStorage.setItem(`study_count_${today}`, count + 1);
+}
+function getStudyStreak() {
+  let streak = 0;
+  const today = new Date(), curr = new Date(today);
+  while (1) {
+    const dateStr = curr.toISOString().split('T')[0];
+    if (parseInt(localStorage.getItem(`study_count_${dateStr}`) || '0') === 0) break;
+    streak++;
+    curr.setDate(curr.getDate() - 1);
+  }
+  return streak;
+}
+
+// ============ 倒计时 ============
+function updateCountdown() {
+  // 默认考研12月23日
+  const now = new Date(), year = now.getFullYear();
+  const target = new Date(year, 11, 23);
+  let days = Math.ceil((target - now) / 86400000);
+  if (days < 0) days = Math.ceil((new Date(year + 1, 11, 23) - now) / 86400000);
+  document.getElementById('countdown').textContent = days + '天';
+}
+
+// ============ 批量导入导出 =============
 function showImportModal() {
   const modalRoot = document.getElementById('import-modal-root');
   modalRoot.innerHTML = `
-  <div style="position:fixed;z-index:10000;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;max-width:440px;padding:32px 28px;box-shadow:0 8px 32px #3332;position:relative;">
+  <div>
+    <div class="modal-content">
       <h3>批量导入题库</h3>
       <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
-      <textarea id="import-json" style="width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;"></textarea>
-      <input type="file" id="import-file" accept=".json" style="margin:10px 0;">
-      <div style="text-align:right;">
+      <textarea id="import-json"></textarea>
+      <input type="file" id="import-file" accept=".json">
+      <div style="text-align:right;margin-top:10px;">
         <button class="btn-secondary" onclick="document.getElementById('import-modal-root').innerHTML=''">取消</button>
         <button class="btn-primary" onclick="processImport()">导入</button>
       </div>
     </div>
   </div>`;
-  document.getElementById('import-file').onchange = function(e){
+  document.getElementById('import-file').onchange = function (e) {
     const file = e.target.files[0];
-    if(!file) return;
+    if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(ev){
+    reader.onload = function (ev) {
       document.getElementById('import-json').value = ev.target.result;
     };
     reader.readAsText(file);
@@ -425,85 +616,295 @@ function processImport() {
   let importData;
   try {
     importData = JSON.parse(document.getElementById('import-json').value);
-    if(!Array.isArray(importData)) throw Error('请粘贴JSON数组格式');
-    importData.forEach(card=>{
-      if(!card.front||!card.back||!card.category||!card.chapter) throw Error('每条数据需包含front,back,category,chapter');
-      card.lastReview=null;card.nextReview=null;card.reviewCount=0;card.difficulty=0;card.mastery=0;
+    if (!Array.isArray(importData)) throw Error('请粘贴JSON数组格式');
+    importData.forEach(card => {
+      if (!card.front || !card.back || !card.category || !card.chapter) throw Error('每条需含front,back,category,chapter');
+      card.lastReview = null; card.nextReview = null; card.reviewCount = 0; card.difficulty = 0; card.mastery = 0;
     });
-    // 去重导入
-    const fronts = new Set(cards.map(c=>c.front));
-    const newCards = importData.filter(card=>!fronts.has(card.front));
+    // 去重
+    const fronts = new Set(cards.map(c => c.front));
+    const newCards = importData.filter(card => !fronts.has(card.front));
     cards = cards.concat(newCards);
-    localStorage.setItem('flashcards',JSON.stringify(cards));
-    document.getElementById('import-modal-root').innerHTML='';
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    document.getElementById('import-modal-root').innerHTML = '';
     updateCardList(); renderGrid(cards); updateStats();
-    alert('导入成功！新增'+newCards.length+'条');
-  } catch(e) {
-    alert('导入失败:'+e.message);
+    alert('导入成功！新增' + newCards.length + '条');
+  } catch (e) {
+    alert('导入失败:' + e.message);
   }
 }
-/* 新建卡片 */
 function addNewCard() {
   const front = prompt('输入题干(正面)...');
-  if(!front) return;
+  if (!front) return;
   const back = prompt('输入答案(背面)...');
-  if(!back) return;
-  const category = prompt('所属科目/分类?','未分类');
-  const chapter = prompt('所属章节?','未分章');
+  if (!back) return;
+  const category = prompt('所属科目/分类?', '未分类');
+  const chapter = prompt('所属章节?', '未分章');
   cards.push({
     front, back, category, chapter,
-    level:'基础', examFrequency:'低频', lastReview:null, nextReview:null, reviewCount:0, difficulty:0, mastery:0
+    level: '基础', examFrequency: '低频', lastReview: null, nextReview: null, reviewCount: 0, difficulty: 0, mastery: 0
   });
-  localStorage.setItem('flashcards',JSON.stringify(cards));
+  localStorage.setItem('flashcards', JSON.stringify(cards));
   updateCardList(); renderGrid(cards); updateStats();
 }
-/* ---- 笔记管理、分类等功能 ---- */
-let notes = JSON.parse(localStorage.getItem('flashcardNotes')||'{"quick":{},"organized":{}}');
+
+// ============ 笔记系统 ============
+let notes = JSON.parse(localStorage.getItem('flashcardNotes') || '{"quick":{},"organized":{}}');
 function switchNoteTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  document.querySelector('.tab-btn[data-tab="'+tab+'"]').classList.add('active');
-  document.getElementById(tab+'-note').classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="' + tab + '"]').classList.add('active');
+  document.getElementById(tab + '-note').classList.add('active');
 }
 function saveNote() {
   const tab = document.querySelector('.tab-btn.active').dataset.tab;
   const today = new Date().toISOString().split('T')[0];
-  if(tab==='quick') {
+  if (tab === 'quick') {
     notes.quick[today] = document.getElementById('quick-textarea').value;
   } else {
     const cat = document.getElementById('note-category').value;
     const title = document.querySelector('.note-title').value;
     const content = document.getElementById('organized-textarea').value;
-    if(!cat) return alert('请选择分类');
-    if(!notes.organized[cat]) notes.organized[cat]=[];
-    notes.organized[cat].push({title, content, date:today});
+    if (!cat) return alert('请选择分类');
+    if (!notes.organized[cat]) notes.organized[cat] = [];
+    notes.organized[cat].push({ title, content, date: today });
   }
-  localStorage.setItem('flashcardNotes',JSON.stringify(notes));
+  localStorage.setItem('flashcardNotes', JSON.stringify(notes));
   alert('笔记已保存');
 }
 function addNoteCategory() {
   const cat = prompt('输入新分类名');
-  if(!cat) return;
-  if(!notes.organized[cat]) notes.organized[cat]=[];
+  if (!cat) return;
+  if (!notes.organized[cat]) notes.organized[cat] = [];
   updateNoteCategories();
 }
 function updateNoteCategories() {
   const sel = document.getElementById('note-category');
-  sel.innerHTML = Object.keys(notes.organized).map(c=>`<option value="${c}">${c}</option>`).join('');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">选择分类...</option>' +
+    Object.keys(notes.organized).map(c => `<option value="${c}">${c}</option>`).join('');
 }
 function viewNoteHistory() {
   alert('历史笔记请到控制台输入：notes 查看，也可后续自定义弹窗...');
 }
-/* 初始化 */
+
+// ============ 页面初始化 ============
 function initializeApp() {
   updateCardList();
   renderGrid(cards);
   updateStats();
   updateCountdown();
   updateNoteCategories();
+  // 恢复笔记输入
+  if (notes.quick) {
+    const latest = Object.keys(notes.quick).sort().pop();
+    if (latest) document.getElementById('quick-textarea').value = notes.quick[latest];
+  }
 }
-/* 自动加载 */
 window.onload = initializeApp;
 </script>
-</body>
-</html>
+
+<script>
+// =========== 扩展1：复习模式切换 ===========
+function showReviewMenu() {
+  const opts = [
+    {name:'所有卡片',   filter:()=>true},
+    {name:'只刷到期卡', filter:card=>!card.nextReview||new Date(card.nextReview)<=new Date()},
+    {name:'仅高频考点',filter:card=>card.examFrequency==='高频'},
+    {name:'仅未掌握',  filter:card=>card.mastery<4},
+    {name:'乱序',       filter:()=>true, shuffle:true}
+  ];
+  let html = '<div class="modal-content"><h3>选择复习模式</h3>';
+  opts.forEach((opt,i)=>{
+    html += `<button class="btn-primary" style="margin:7px 0;width:100%;" onclick="applyReviewMode(${i})">${opt.name}</button>`;
+  });
+  html += `<div style="text-align:right"><button class="btn-secondary" onclick="closeModal()">取消</button></div></div>`;
+  showModal(html);
+}
+function applyReviewMode(idx) {
+  const opts = [
+    {name:'所有卡片',   filter:()=>true},
+    {name:'只刷到期卡', filter:card=>!card.nextReview||new Date(card.nextReview)<=new Date()},
+    {name:'仅高频考点',filter:card=>card.examFrequency==='高频'},
+    {name:'仅未掌握',  filter:card=>card.mastery<4},
+    {name:'乱序',       filter:()=>true, shuffle:true}
+  ];
+  const opt = opts[idx];
+  let filtered = cards.filter(opt.filter);
+  if(opt.shuffle) filtered = filtered.sort(()=>Math.random()-.5);
+  currentCardList = filtered;
+  renderGrid(filtered);
+  closeModal();
+}
+function showModal(html) {
+  document.getElementById('import-modal-root').innerHTML = `<div><div class="modal-content">${html}</div></div>`;
+}
+function closeModal() {
+  document.getElementById('import-modal-root').innerHTML = '';
+}
+
+// =========== 扩展2：卡片导出 ===========
+function exportCards() {
+  const data = JSON.stringify(cards,null,2);
+  const blob = new Blob([data], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'flashcards_backup_'+Date.now()+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+document.addEventListener('keydown', e=>{
+  // 快捷键 Ctrl+E 导出
+  if(e.ctrlKey && e.key==='e') { e.preventDefault(); exportCards(); }
+});
+
+// =========== 扩展3：卡片编辑/删除 ===========
+function showEditCard(front) {
+  const i = cards.findIndex(c=>c.front===front);
+  if(i===-1) return;
+  const card = cards[i];
+  let html = `
+  <h3>编辑卡片</h3>
+  <label>题干(正面):<input type="text" id="edit-front" value="${card.front}" style="width:95%;margin-bottom:7px;"></label><br>
+  <label>答案(背面):<textarea id="edit-back" style="width:95%;height:70px;">${card.back}</textarea></label><br>
+  <label>科目:<input type="text" id="edit-category" value="${card.category}" style="width:45%;"></label>
+  <label>章节:<input type="text" id="edit-chapter" value="${card.chapter}" style="width:45%;"></label><br>
+  <label>高频:<input type="checkbox" id="edit-high" ${card.examFrequency==='高频'?'checked':''}></label>
+  <label>重点:<input type="checkbox" id="edit-key" ${card.level==='重点'?'checked':''}></label>
+  <div style="text-align:right;margin-top:13px;">
+    <button class="btn-secondary" onclick="closeModal()">取消</button>
+    <button class="btn-save" onclick="doEditCard('${front}')">保存</button>
+    <button class="btn-primary" style="background:#f44;color:#fff;margin-left:8px;" onclick="deleteCard('${front}')">删除</button>
+  </div>`;
+  showModal(html);
+}
+function doEditCard(oldFront) {
+  const i = cards.findIndex(c=>c.front===oldFront);
+  if(i===-1) return alert('未找到卡片');
+  const newFront = document.getElementById('edit-front').value.trim();
+  const newBack = document.getElementById('edit-back').value;
+  const newCat = document.getElementById('edit-category').value;
+  const newChap = document.getElementById('edit-chapter').value;
+  cards[i].front = newFront; cards[i].back = newBack; cards[i].category = newCat; cards[i].chapter = newChap;
+  cards[i].examFrequency = document.getElementById('edit-high').checked ? '高频' : '低频';
+  cards[i].level = document.getElementById('edit-key').checked ? '重点' : '基础';
+  localStorage.setItem('flashcards',JSON.stringify(cards));
+  updateCardList(); renderGrid(cards);
+  closeModal();
+}
+function deleteCard(front) {
+  if(!confirm('确认删除？')) return;
+  cards = cards.filter(c=>c.front!==front);
+  localStorage.setItem('flashcards',JSON.stringify(cards));
+  updateCardList(); renderGrid(cards);
+  closeModal();
+}
+
+// 给每张卡片添加右上角编辑按钮（和主卡片区渲染结合）
+const oldRenderGrid = renderGrid;
+renderGrid = function(showCards=currentCardList) {
+  const grid = document.getElementById('flashcard-grid');
+  grid.innerHTML = '';
+  showCards.forEach(card => {
+    const div = document.createElement('div');
+    div.className = 'flashcard';
+    div.innerHTML = `
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div style="position:absolute;top:13px;right:16px;z-index:4;">
+            <button title="编辑" onclick="event.stopPropagation();showEditCard('${card.front}')" style="border:none;background:none;font-size:18px;cursor:pointer;">✏️</button>
+          </div>
+          <div class="card-title">${card.front}</div>
+          <div class="flashcard-tags">
+            ${card.examFrequency === '高频' ? '<span class="tag high">高频</span>' : ''}
+            ${card.level === '重点' ? '<span class="tag medium">重点</span>' : ''}
+          </div>
+          <div class="card-clue">${card.clue || ''}</div>
+          <div class="card-content"><span>${card.context || ''}</span></div>
+        </div>
+        <div class="flashcard-back">
+          <div class="card-category">${card.category} > ${card.chapter}</div>
+          <div class="card-content">${formatCardContent(card.back)}</div>
+          <div class="card-footer">
+            <div class="mastery-buttons">
+              <button class="mastery-btn hard" onclick="updateMastery('${card.front}', 1, event)"><span>😅</span>困难</button>
+              <button class="mastery-btn medium" onclick="updateMastery('${card.front}', 3, event)"><span>🤔</span>模糊</button>
+              <button class="mastery-btn easy" onclick="updateMastery('${card.front}', 5, event)"><span>✨</span>清晰</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    div.onclick = function(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.classList.contains('mastery-btn')) return;
+      this.classList.toggle('flipped');
+    };
+    grid.appendChild(div);
+  });
+};
+// 侧边栏章节支持编辑（长按）
+document.addEventListener('contextmenu',function(e){
+  if(e.target.classList.contains('chapter-item')){
+    e.preventDefault();
+    const chap = e.target.textContent;
+    const catDiv = e.target.closest('.category-item');
+    const cat = catDiv.querySelector('.category-header').textContent.replace(/▶/,'').trim();
+    const cardsIn = cards.filter(c=>c.category===cat&&c.chapter===chap);
+    if(!confirm(`要删除“${cat} > ${chap}”下的${cardsIn.length}张卡片？`)) return;
+    cards = cards.filter(c=>!(c.category===cat&&c.chapter===chap));
+    localStorage.setItem('flashcards',JSON.stringify(cards));
+    updateCardList(); renderGrid(cards);
+  }
+},false);
+
+// =========== 扩展4：历史学习记录简要查看 ===========
+function viewNoteHistory() {
+  let html = '<h3>历史笔记（最新10条）</h3><ul style="max-height:260px;overflow:auto;">';
+  const recs = [];
+  Object.values(notes.quick||{}).forEach((txt,date)=>{recs.push({txt,date});});
+  Object.values(notes.organized||{}).forEach(arr=>{
+    arr.forEach(note=>{recs.push({txt:note.title+' '+note.content,date:note.date});});
+  });
+  recs.sort((a,b)=>b.date.localeCompare(a.date));
+  recs.slice(0,10).forEach(r=>{
+    html += `<li style="margin-bottom:9px;font-size:14px;"><b>${r.date||''}</b>：${r.txt.substring(0,80)}...</li>`;
+  });
+  html += '</ul><div style="text-align:right"><button class="btn-secondary" onclick="closeModal()">关闭</button></div>';
+  showModal(html);
+}
+
+// =========== 扩展5：自定义倒计时目标日期 ===========
+function updateCountdown() {
+  let dt = localStorage.getItem('examDate') || '';
+  let date = dt ? new Date(dt) : new Date(new Date().getFullYear(), 11, 23);
+  const now = new Date();
+  let days = Math.ceil((date - now) / 86400000);
+  if (days < 0) days = 0;
+  document.getElementById('countdown').textContent = days + '天';
+  document.querySelector('.countdown-label').onclick = function() {
+    const input = prompt('自定义目标日期（格式: 2024-12-21）', dt || '');
+    if(input){
+      localStorage.setItem('examDate',input);
+      updateCountdown();
+    }
+  }
+}
+
+// =========== 扩展6：主界面按钮添加 ===========
+const btns = document.createElement('div');
+btns.style.margin = "12px 0 0 0";
+btns.innerHTML = `
+  <button class="btn-primary" onclick="showReviewMenu()" style="width:98%;margin-bottom:8px;">复习模式</button>
+  <button class="btn-primary" onclick="exportCards()" style="width:98%;margin-bottom:8px;">导出卡片</button>
+`;
+document.querySelector('.sidebar .action-buttons').prepend(btns);
+
+// =========== 动画微交互/更多 ===========
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('.btn-primary,.btn-secondary,.btn-save,.mastery-btn').forEach(btn=>{
+    btn.onmousedown = ()=>{ btn.style.transform="scale(0.97)"; }
+    btn.onmouseup = btn.onmouseleave = ()=>{ btn.style.transform=""; }
+  });
+});
+</script>
