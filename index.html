@@ -36,8 +36,8 @@
     .tools-section { align-self: start; }
     .flashcard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 40px;
       align-content: flex-start;
       min-height: 700px;
       position: relative;
@@ -46,7 +46,7 @@
     /* ---- 3D闪卡动画样式 ---- */
     .flashcard {
       width: 100%;
-      min-width: 340px;
+      min-width: 360px;
       max-width: 430px;
       height: 300px;
       perspective: 1200px;
@@ -247,6 +247,7 @@
     }
     #import-json {width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;}
     #import-file {margin:10px 0;}
+    .import-hint {background:#f8fafc;border:1px dashed #d1d5db;padding:8px;font-size:13px;margin:8px 0;white-space:pre-wrap;}
     /* 提示动画 */
     @keyframes fadeIn {from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);}}
     .flashcard,.sidebar,.tools-section,.modal-content {animation:fadeIn 0.4s;}
@@ -594,6 +595,9 @@ function showImportModal() {
     <div class="modal-content">
       <h3>批量导入题库</h3>
       <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
+      <pre class="import-hint">[
+  {"front":"题干","back":"答案","category":"科目","chapter":"章节"}
+]</pre>
       <textarea id="import-json"></textarea>
       <input type="file" id="import-file" accept=".json">
       <div style="text-align:right;margin-top:10px;">
