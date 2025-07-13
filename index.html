@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     html,body { height: 100%; margin: 0; padding: 0; background: #f5f7fa; color: #222;}
-    body { font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
+    body { font-family: 'Roboto Slab', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
     .container {
       display: grid;
       grid-template-columns: 300px 1fr 320px;
@@ -19,7 +19,7 @@
     }
     .sidebar, .tools-section {
       background: #fff;
-      border-radius: 20px;
+      border-radius: 12px;
       box-shadow: 0 3px 20px #24335608,0 1px 2px #24335611;
       padding: 28px 20px 22px 20px;
       min-width: 0;
@@ -35,9 +35,10 @@
     .sidebar { align-self: start; }
     .tools-section { align-self: start; }
     .flashcard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-      gap: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
       align-content: flex-start;
       min-height: 700px;
       position: relative;
@@ -46,15 +47,16 @@
     /* ---- 3D闪卡动画样式 ---- */
     .flashcard {
       width: 100%;
-      min-width: 360px;
-      max-width: 430px;
-      height: 300px;
+      max-width: 28rem;
+      height: 320px;
       perspective: 1200px;
       background: transparent;
       margin: 0 auto;
       position: relative;
       cursor: pointer;
       user-select: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
       transition: box-shadow .24s;
     }
     .flashcard-inner {
@@ -74,31 +76,32 @@
       left: 0; top: 0;
       backface-visibility: hidden;
       background: #fff;
-      border-radius: 20px;
+      border-radius: 12px;
       box-shadow: 0 1px 8px #2433560d;
       display: flex;
       flex-direction: column;
       justify-content: center;
       cursor: pointer;
-      padding: 38px 30px 20px 32px;
+      padding: 24px;
       transition: box-shadow .2s;
       z-index: 2;
       overflow: hidden;
     }
     .flashcard-front { z-index: 3; }
     .flashcard-back {
-      background: linear-gradient(140deg, #f1f6ff 70%, #e6eaff 100%);
+      background: linear-gradient(140deg, #f1fdf4 70%, #d1fae5 100%);
       transform: rotateY(180deg);
       z-index: 1;
-      border: 2.5px solid #e0e7ff;
+      border: 2.5px solid #bbf7d0;
     }
-    .flashcard:hover { box-shadow: 0 7px 30px #4b5a7a14; }
+    .flashcard:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.1); }
     .card-title {font-size:1.23em;font-weight:700;margin-bottom:9px;}
     .flashcard-tags {margin-bottom: 10px;}
     .tag {display:inline-block;font-size:12px;border-radius:10px;padding:2px 9px 2px 7px;margin-right:6px;}
-    .tag.high {background: #e53935;color:#fff;}
-    .tag.medium {background: #ff9800;color:#fff;}
-    .tag.low {background: #43a047;color:#fff;}
+    .tag-icon {margin-right:3px;}
+    .tag.high {background: #22c55e;color:#fff;}
+    .tag.medium {background: #4ade80;color:#065f46;}
+    .tag.low {background: #bbf7d0;color:#065f46;}
     .card-clue {font-size:.98em;color:#385380;margin:3px 0 13px 0;}
     .card-category {font-size:14px;color:#4b5563;margin-bottom:7px;}
     .difficulty-dot {display:inline-block;width:9px;height:9px;margin-right:2.5px;border-radius:50%;background:#e0e0e0;}
@@ -230,12 +233,10 @@
     @media (max-width:1200px) {
       .container {grid-template-columns: 1fr 1fr;gap: 13px;}
       .sidebar, .tools-section {min-height: 410px;}
-      .flashcard-grid {grid-template-columns:1fr;}
     }
     @media (max-width:900px) {
       .container {grid-template-columns: 1fr;gap:7px;padding:8px;}
       .sidebar, .tools-section {position: static;min-height: auto;margin-bottom:12px;}
-      .flashcard-grid {grid-template-columns:1fr;}
     }
     /* 导入弹窗样式 */
     #import-modal-root>div {
@@ -437,8 +438,8 @@ function renderGrid(showCards = currentCardList) {
         <div class="flashcard-front">
           <div class="card-title">${card.front}</div>
           <div class="flashcard-tags">
-            ${card.examFrequency === '高频' ? '<span class="tag high">高频</span>' : ''}
-            ${card.level === '重点' ? '<span class="tag medium">重点</span>' : ''}
+            ${card.examFrequency === '高频' ? '<span class="tag high"><span class='tag-icon'>⭐</span>高频</span>' : ''}
+            ${card.level === '重点' ? '<span class="tag medium"><span class='tag-icon'>📌</span>重点</span>' : ''}
           </div>
           <div class="card-clue">${card.clue || ''}</div>
           <div class="card-content"><span>${card.context || ''}</span></div>
@@ -821,8 +822,8 @@ renderGrid = function(showCards=currentCardList) {
           </div>
           <div class="card-title">${card.front}</div>
           <div class="flashcard-tags">
-            ${card.examFrequency === '高频' ? '<span class="tag high">高频</span>' : ''}
-            ${card.level === '重点' ? '<span class="tag medium">重点</span>' : ''}
+            ${card.examFrequency === '高频' ? '<span class="tag high"><span class='tag-icon'>⭐</span>高频</span>' : ''}
+            ${card.level === '重点' ? '<span class="tag medium"><span class='tag-icon'>📌</span>重点</span>' : ''}
           </div>
           <div class="card-clue">${card.clue || ''}</div>
           <div class="card-content"><span>${card.context || ''}</span></div>
