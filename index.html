@@ -316,6 +316,9 @@
     @keyframes fadeIn {from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);}}
     .flashcard,.sidebar,.tools-section,.modal-content {animation:fadeIn 0.4s;}
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -1024,15 +1027,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
   <style>
     body { font-family: sans-serif; background: #f9fafc; margin: 0; }
     #chatbox { width: 460px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 6px 24px #9992; padding: 24px; }
-    #history { min-height: 180px; margin-bottom: 18px; }
-    .msg { margin: 8px 0; }
-    .user { color: #2196f3; }
-    .ai { color: #4caf50; }
+    #history { min-height: 180px; max-height: 400px; overflow-y: auto; margin-bottom: 18px; padding-right: 6px; }
+    .msg { margin: 8px 0; display:flex; gap:6px; }
+    .msg .content { padding:8px 12px; border-radius:8px; flex:1; line-height:1.6; word-break:break-word; white-space:pre-wrap; }
+    .msg.user .content { background:#e0e7ff; }
+    .msg.ai .content { background:#f1f5f9; }
+    .copy-btn { border:none; background:none; cursor:pointer; color:#64748b; font-size:13px; }
     #askbox { display: flex; gap: 8px; }
     #prompt { flex: 1; padding: 8px 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
     #ask { padding: 8px 19px; background: #6366f1; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
     #ask:disabled { opacity: 0.5; }
     #apikey { margin-top: 16px; width: 100%; padding: 8px 11px; border-radius: 6px; border: 1px solid #ddd; }
+    @keyframes blink {
+      0%,100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .loading-dot { width:6px; height:6px; border-radius:50%; background:#64748b; display:inline-block; margin-right:3px; animation:blink 1.4s infinite; }
+    .loading-dot:nth-child(2){ animation-delay:0.2s; }
+    .loading-dot:nth-child(3){ animation-delay:0.4s; }
   </style>
 </head>
 <body>
@@ -1050,6 +1062,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const apikeyInput = document.getElementById('apikey');
     const historyDiv = document.getElementById('history');
     let history = [];
+    let loadingDiv = null;
 
     askBtn.onclick = async function() {
       const prompt = promptInput.value.trim();
@@ -1059,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       promptInput.value = '';
       history.push({role:'user', content:prompt});
       renderHistory();
+      loadingDiv = addLoading();
       // 调用 DeepSeek API
       const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
         method: "POST",
@@ -1079,6 +1093,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const data = await res.json();
       const aiMsg = data.choices?.[0]?.message?.content || '（无返回内容）';
       history.push({role:'assistant', content:aiMsg});
+      if (loadingDiv) historyDiv.removeChild(loadingDiv);
       renderHistory();
       askBtn.disabled = false;
     };
@@ -1088,10 +1103,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
       for (let msg of history) {
         const div = document.createElement('div');
         div.className = 'msg ' + (msg.role === 'user' ? 'user' : 'ai');
-        div.textContent = (msg.role === 'user' ? '你: ' : 'AI: ') + msg.content;
+        const content = document.createElement('div');
+        content.className = 'content';
+        if (msg.role === 'assistant') {
+          content.innerHTML = marked.parse(msg.content);
+        } else {
+          content.textContent = msg.content;
+        }
+        const copy = document.createElement('button');
+        copy.className = 'copy-btn';
+        copy.textContent = '复制';
+        copy.onclick = () => navigator.clipboard.writeText(msg.content);
+        div.appendChild(content);
+        div.appendChild(copy);
         historyDiv.appendChild(div);
       }
       historyDiv.scrollTop = historyDiv.scrollHeight;
+      historyDiv.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
+    }
+
+    function addLoading() {
+      const div = document.createElement('div');
+      div.className = 'msg ai';
+      const inner = document.createElement('div');
+      inner.className = 'content';
+      inner.innerHTML = '<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>';
+      div.appendChild(inner);
+      historyDiv.appendChild(div);
+      historyDiv.scrollTop = historyDiv.scrollHeight;
+      return div;
     }
   </script>
 </body>
