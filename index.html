@@ -1041,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   <title>考研AI助手 · DeepSeek</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
       --primary: #6366f1;
@@ -1261,24 +1262,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
       transition:.12s;
     }
     .input-btn:hover { filter: brightness(1.10);}
-    .setting-bar {
-      display: flex; gap: 15px; align-items: center;
-      margin-top: 8px;
-      font-size: 15px;
-      color: #737686;
-      padding-left: 6px;
+    .assistant-overlay{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.05);z-index:1000;
     }
-    .setting-label {margin-right: 3px;}
-    .setting-input {
-      border: 1.2px solid #e1e4ef; border-radius: 8px;
-      background: #fff; padding: 6px 14px; min-width: 185px;
-      font-size: 15px; outline: none;
+    .assistant-window{
+      width:90%;max-width:640px;height:90vh;background:#fff;
+      border-radius:var(--radius);box-shadow:var(--shadow);
+      display:flex;flex-direction:column;overflow:hidden;
     }
-    .model-select {
-      border: 1.2px solid #e1e4ef; border-radius: 8px;
-      background: #fff; padding: 7px 13px;
-      font-size: 15px; min-width: 120px;
-      outline: none;
+    .assistant-toggle{
+      position:fixed;bottom:20px;right:20px;width:56px;height:56px;
+      border-radius:50%;background:var(--primary);color:#fff;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);
+      z-index:999;
+    }
+    @media(max-width:700px){
+      .assistant-window{width:96%;height:96vh;}
     }
     @media (max-width:1100px) {
       .container { flex-direction: column; }
@@ -1316,8 +1316,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         <span id="nickname">未登录</span>
       </div>
     </div>
-    <!-- 主区 -->
-    <div class="main">
+  </div>
+
+  <div id="assistant-overlay" class="assistant-overlay">
+    <div class="assistant-window">
       <div class="welcome-block" id="welcome-block">
         <div class="main-logo"><i class="fas fa-graduation-cap"></i></div>
         <div style="font-size:2em;color:#6366f1;font-weight:bold;">欢迎使用考研AI助手</div>
@@ -1330,22 +1332,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
         </div>
       </div>
       <div class="chat-box" id="chat-box" style="display:none;"></div>
-      <!-- 输入区 -->
       <form class="input-bar" id="input-form" onsubmit="return sendMsg()">
         <textarea class="input-area" id="input-text" rows="1" placeholder="请输入你的考研问题，回车发送..." required></textarea>
         <button type="submit" class="input-btn">发送</button>
       </form>
-      <!-- 设置区 -->
-      <div class="setting-bar">
-        <span class="setting-label">API Key：</span>
-        <input class="setting-input" id="api-key" type="password" placeholder="粘贴DeepSeek Key" onblur="saveApiKey()" />
-        <span class="setting-label">模型：</span>
-        <select class="model-select" id="model-select">
-          <option value="deepseek-chat">DeepSeek-Chat</option>
-          <option value="deepseek-reasoner">DeepSeek-Reasoner</option>
-        </select>
-      </div>
     </div>
+  </div>
+  <div id="assistant-toggle" class="assistant-toggle" onclick="toggleAssistant()">
+    <i class="fas fa-comments"></i>
   </div>
 
   <!-- 个人中心弹窗/设置弹窗 -->
@@ -1359,6 +1353,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     let apiKey = localStorage.getItem('deepseek_key')||'';
     let nickname = localStorage.getItem('nickname')||'未登录';
     let model = localStorage.getItem('deepseek_model')||'deepseek-chat';
+    const SYSTEM_PROMPT = '你是考研公共管理方向AI助手，回答尽可能详细、有条理，内容适合背诵和理解，遇到主观性问题要给出学习建议。';
     let currentChat = { id: Date.now(), title: "新对话", messages: [] };
     let chats = chatHistory.length ? [...chatHistory] : [currentChat];
     let chatIdx = 0;
@@ -1397,10 +1392,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       setTimeout(()=>{ box.scrollTop = box.scrollHeight; },10);
     }
     function renderMsg(content){
-      // 支持简单Markdown换行/代码
-      return content.replace(/```([\s\S]*?)```/g, '<pre style="background:#f4f6ff;border-radius:8px;padding:12px;">$1</pre>')
-                    .replace(/\n/g,'<br>')
-                    .replace(/(\*\*|__)(.*?)\1/g, '<b>$2</b>');
+      return marked.parse(content);
     }
     function saveData() {
       localStorage.setItem('ai_history', JSON.stringify(chats));
@@ -1411,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     // ====== 交互方法 ======
     function newChat(){
-      currentChat = { id: Date.now(), title: "新对话", messages: [] };
+      currentChat = { id: Date.now(), title: "新对话", messages: [{role:'system',content:SYSTEM_PROMPT}] };
       chats.unshift(currentChat);
       chatIdx=0;
       renderHistory(); renderChat();
@@ -1425,12 +1417,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
       document.getElementById('input-text').value=q;
       document.getElementById('input-text').focus();
     }
+    function ensureSystem(chat){
+      if(!chat.messages.length || chat.messages[0].role!=='system'){
+        chat.messages.unshift({role:'system',content:SYSTEM_PROMPT});
+      }
+    }
     function sendMsg() {
       let input = document.getElementById('input-text');
       let text = input.value.trim();
       if (!text) return false;
       input.value = '';
-      chats[chatIdx].messages.push({ role: "user", content: text });
+      let chat = chats[chatIdx];
+      ensureSystem(chat);
+      chat.messages.push({ role: "user", content: text });
       renderChat(); saveData();
       // ---- AI请求逻辑 ----
       aiReply(text);
@@ -1455,9 +1454,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // ---- 假AI输出（请替换成API真实结果） ----
     function aiFake(q){
       if(/公共管理/.test(q)||/考研/.test(q)||/理论|背诵|真题/.test(q)){
-        return '【AI总结】<br>本问题属于公共管理学考研高频知识点。<br>1. <b>定义：</b> 公共管理是指政府及相关机构有效配置社会资源、提供公共服务、维护社会秩序的活动。<br>2. <b>理论核心：</b>包括理性决策理论、权变理论、新公共管理等。<br>3. <b>答题建议：</b>答题时注意分条作答，突出重点理论，并结合实际举例阐述。<br><br>更多考点欢迎继续提问！';
+        return '**AI总结**\n本问题属于公共管理学考研高频知识点。\n1. **定义**：公共管理是指政府及相关机构有效配置社会资源、提供公共服务、维护社会秩序的活动。\n2. **理论核心**：包括理性决策理论、权变理论、新公共管理等。\n3. **答题建议**：答题时注意分条作答，突出重点理论，并结合实际举例阐述。\n\n更多考点欢迎继续提问！';
       }
-      return '【AI回复】您的问题已收到，我将尽力给出最有用的考研知识和建议！';
+      return '**AI回复** 您的问题已收到，我将尽力给出最有用的考研知识和建议！';
     }
     // 复制按钮
     function copyMsg(btn, text) {
@@ -1466,18 +1465,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       btn.innerHTML = '<i class="fas fa-check"></i>';
       setTimeout(()=>{btn.innerHTML = '<i class="fas fa-copy"></i>';},1200);
     }
-    // API Key
-    document.getElementById('api-key').value = apiKey;
-    function saveApiKey(){
-      apiKey = document.getElementById('api-key').value;
-      saveData();
-    }
     // 模型选择
-    document.getElementById('model-select').value = model;
-    document.getElementById('model-select').onchange = function() {
-      model = this.value;
-      saveData();
-    };
     // ======= 个人信息/设置 弹窗 =======
     function showProfile(){
       showModal(`<h2>个人信息</h2>
@@ -1500,14 +1488,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
           <b>API Key:</b><br>
           <input type="password" style="font-size:16px;width:100%;padding:7px 16px;border-radius:8px;border:1.2px solid #e1e4ef;" id="key-edit" value="${apiKey}" placeholder="填写你的DeepSeek Key">
         </div>
-        <button class="input-btn" style="padding:8px 24px;" onclick="saveKey()">保存</button>
-        <button class="input-btn" style="padding:8px 24px;background:#eee;color:#555;margin-left:9px;" onclick="closeModal()">取消</button>
+        <div style="text-align:right;">
+          <button class="input-btn" onclick="saveKey()">保存</button>
+          <button class="input-btn" style="background:#eee;color:#555;margin-left:10px;" onclick="clearHistory()">清空记录</button>
+          <button class="input-btn" style="background:#eee;color:#555;margin-left:10px;" onclick="logout()">退出登录</button>
+          <button class="input-btn" style="background:#eee;color:#555;margin-left:10px;" onclick="closeModal()">取消</button>
+        </div>
       `);
     }
     function saveKey(){
       apiKey = document.getElementById('key-edit').value.trim();
       closeModal(); saveData();
-      document.getElementById('api-key').value = apiKey;
+    }
+    function clearHistory(){
+      localStorage.removeItem('ai_history');
+      chats = [{id:Date.now(),title:'新对话',messages:[{role:'system',content:SYSTEM_PROMPT}]}];
+      chatIdx = 0;
+      renderHistory(); renderChat();
+      saveData();
+      closeModal();
+    }
+    function logout(){
+      apiKey='';
+      saveData();
+      closeModal();
     }
     function showModal(html){
       let modal = document.getElementById('modal');
@@ -1517,6 +1521,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     function closeModal(){
       document.getElementById('modal').style.display='none';
+    }
+    function toggleAssistant(){
+      const ov=document.getElementById('assistant-overlay');
+      if(ov.style.display==='flex'){
+        ov.style.display='none';
+      }else{
+        ov.style.display='flex';
+        setTimeout(()=>{document.getElementById('input-text').focus();},30);
+      }
     }
     // 主题切换（明暗）
     function toggleTheme(){
