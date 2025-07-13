@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <title>科学闪卡背诵系统</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     html,body { height: 100%; margin: 0; padding: 0; background: #f5f7fa; color: #222;}
-    body { font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
+    body { font-family: 'Roboto Slab', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
     .container {
       display: grid;
       grid-template-columns: 300px 1fr 320px;
@@ -35,9 +37,10 @@
     .sidebar { align-self: start; }
     .tools-section { align-self: start; }
     .flashcard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
       align-content: flex-start;
       min-height: 700px;
       position: relative;
@@ -46,8 +49,8 @@
     /* ---- 3D闪卡动画样式 ---- */
     .flashcard {
       width: 100%;
-      min-width: 340px;
-      max-width: 430px;
+      min-width: 360px;
+      max-width: 448px;
       height: 300px;
       perspective: 1200px;
       background: transparent;
@@ -93,13 +96,14 @@
       border: 2.5px solid #e0e7ff;
     }
     .flashcard:hover { box-shadow: 0 7px 30px #4b5a7a14; }
-    .card-title {font-size:1.23em;font-weight:700;margin-bottom:9px;}
+    .card-title {font-size:1.23em;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+    .card-title .icon {width:18px;height:18px;color:#059669;}
     .flashcard-tags {margin-bottom: 10px;}
     .tag {display:inline-block;font-size:12px;border-radius:10px;padding:2px 9px 2px 7px;margin-right:6px;}
     .tag.high {background: #e53935;color:#fff;}
     .tag.medium {background: #ff9800;color:#fff;}
     .tag.low {background: #43a047;color:#fff;}
-    .card-clue {font-size:.98em;color:#385380;margin:3px 0 13px 0;}
+    .card-clue {font-size:.98em;color:#6b7280;margin:3px 0 13px 0;}
     .card-category {font-size:14px;color:#4b5563;margin-bottom:7px;}
     .difficulty-dot {display:inline-block;width:9px;height:9px;margin-right:2.5px;border-radius:50%;background:#e0e0e0;}
     .difficulty-dot.active {background: #6366f1;}
@@ -230,12 +234,12 @@
     @media (max-width:1200px) {
       .container {grid-template-columns: 1fr 1fr;gap: 13px;}
       .sidebar, .tools-section {min-height: 410px;}
-      .flashcard-grid {grid-template-columns:1fr;}
+      .flashcard-grid {flex-direction:column;align-items:center;}
     }
     @media (max-width:900px) {
       .container {grid-template-columns: 1fr;gap:7px;padding:8px;}
       .sidebar, .tools-section {position: static;min-height: auto;margin-bottom:12px;}
-      .flashcard-grid {grid-template-columns:1fr;}
+      .flashcard-grid {flex-direction:column;align-items:center;}
     }
     /* 导入弹窗样式 */
     #import-modal-root>div {
@@ -247,6 +251,7 @@
     }
     #import-json {width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;}
     #import-file {margin:10px 0;}
+    .import-hint {background:#f8fafc;border:1px dashed #d1d5db;padding:8px;font-size:13px;margin:8px 0;white-space:pre-wrap;}
     /* 提示动画 */
     @keyframes fadeIn {from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);}}
     .flashcard,.sidebar,.tools-section,.modal-content {animation:fadeIn 0.4s;}
@@ -434,7 +439,7 @@ function renderGrid(showCards = currentCardList) {
     div.innerHTML = `
       <div class="flashcard-inner">
         <div class="flashcard-front">
-          <div class="card-title">${card.front}</div>
+          <div class="card-title"><i data-lucide="book" class="icon"></i>${card.front}</div>
           <div class="flashcard-tags">
             ${card.examFrequency === '高频' ? '<span class="tag high">高频</span>' : ''}
             ${card.level === '重点' ? '<span class="tag medium">重点</span>' : ''}
@@ -594,6 +599,9 @@ function showImportModal() {
     <div class="modal-content">
       <h3>批量导入题库</h3>
       <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
+      <pre class="import-hint">[
+  {"front":"题干","back":"答案","category":"科目","chapter":"章节"}
+]</pre>
       <textarea id="import-json"></textarea>
       <input type="file" id="import-file" accept=".json">
       <div style="text-align:right;margin-top:10px;">
@@ -815,7 +823,7 @@ renderGrid = function(showCards=currentCardList) {
           <div style="position:absolute;top:13px;right:16px;z-index:4;">
             <button title="编辑" onclick="event.stopPropagation();showEditCard('${card.front}')" style="border:none;background:none;font-size:18px;cursor:pointer;">✏️</button>
           </div>
-          <div class="card-title">${card.front}</div>
+          <div class="card-title"><i data-lucide="book" class="icon"></i>${card.front}</div>
           <div class="flashcard-tags">
             ${card.examFrequency === '高频' ? '<span class="tag high">高频</span>' : ''}
             ${card.level === '重点' ? '<span class="tag medium">重点</span>' : ''}
@@ -906,5 +914,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     btn.onmousedown = ()=>{ btn.style.transform="scale(0.97)"; }
     btn.onmouseup = btn.onmouseleave = ()=>{ btn.style.transform=""; }
   });
+  if (window.lucide) lucide.createIcons();
 });
 </script>
