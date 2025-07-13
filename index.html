@@ -421,7 +421,8 @@ if (!cards.length) {
     nextReview: null,
     reviewCount: 0,
     difficulty: 0,
-    mastery: 0
+    mastery: 0,
+    wrongCount: 0
   }];
 }
 
@@ -455,8 +456,8 @@ function updateStats() {
 }
 
 // ============ 侧边栏 分类-章节 二级展开 ==============
-function updateCardList() {
-  const grouped = cards.reduce((acc, card) => {
+function updateCardList(listCards = cards.filter(activeReviewFilter)) {
+  const grouped = listCards.reduce((acc, card) => {
     if (!acc[card.category]) acc[card.category] = {};
     if (!acc[card.category][card.chapter]) acc[card.category][card.chapter] = [];
     acc[card.category][card.chapter].push(card);
@@ -467,7 +468,7 @@ function updateCardList() {
   const allItem = document.createElement('div');
   allItem.className = 'chapter-item';
   allItem.textContent = '全部卡片';
-  allItem.onclick = () => { currentCardList = cards; renderGrid(currentCardList); };
+  allItem.onclick = () => { currentCardList = listCards; renderGrid(currentCardList); };
   list.appendChild(allItem);
   for (let cat in grouped) {
     const catDiv = document.createElement('div');
@@ -501,6 +502,7 @@ function updateCardList() {
 
 // ============ 主卡片渲染/3D动画/正反切换 ==============
 let currentCardList = cards;
+let activeReviewFilter = ()=>true;
 function renderGrid(showCards = currentCardList) {
   const grid = document.getElementById('flashcard-grid');
   grid.innerHTML = '';
@@ -603,12 +605,13 @@ function closeCardModal(e){
 // ============ 搜索过滤 ============
 function filterCards(query) {
   const q = query.trim().toLowerCase();
+  const base = cards.filter(activeReviewFilter);
   if (!q) {
-    renderGrid(cards);
-    currentCardList = cards;
+    renderGrid(base);
+    currentCardList = base;
     return;
   }
-  const filtered = cards.filter(card =>
+  const filtered = base.filter(card =>
     card.front.toLowerCase().includes(q) ||
     card.back.toLowerCase().includes(q) ||
     card.category.toLowerCase().includes(q) ||
@@ -646,19 +649,20 @@ function updateMastery(front, mastery, event) {
   const i = cards.findIndex(c => c.front === front);
   if (i === -1) return;
   cards[i] = spacedRepetition(cards[i], mastery);
+  if (mastery <= 2) cards[i].wrongCount = (cards[i].wrongCount || 0) + 1;
   localStorage.setItem('flashcards', JSON.stringify(cards));
   incrementTodayStudyCount();
   updateStats();
   document.querySelectorAll('.flashcard').forEach(f => f.classList.remove('flipped'));
   setTimeout(() => {
-    // 优先推送需复习卡
-    const due = getDueCards();
+    const base = cards.filter(activeReviewFilter);
+    const due = base.filter(c=>!c.nextReview||new Date(c.nextReview)<=new Date());
     if (due.length) {
       currentCardList = due;
       renderGrid(due);
     } else {
-      renderGrid(cards);
-      currentCardList = cards;
+      currentCardList = base;
+      renderGrid(base);
     }
   }, 330);
 }
@@ -731,7 +735,7 @@ function processImport() {
     if (!Array.isArray(importData)) throw Error('请粘贴JSON数组格式');
     importData.forEach(card => {
       if (!card.front || !card.back || !card.category || !card.chapter) throw Error('每条需含front,back,category,chapter');
-      card.lastReview = null; card.nextReview = null; card.reviewCount = 0; card.difficulty = 0; card.mastery = 0;
+      card.lastReview = null; card.nextReview = null; card.reviewCount = 0; card.difficulty = 0; card.mastery = 0; card.wrongCount = 0;
     });
     // 去重
     const fronts = new Set(cards.map(c => c.front));
@@ -739,7 +743,8 @@ function processImport() {
     cards = cards.concat(newCards);
     localStorage.setItem('flashcards', JSON.stringify(cards));
     document.getElementById('import-modal-root').innerHTML = '';
-    updateCardList(); renderGrid(cards); updateStats();
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats();
     alert('导入成功！新增' + newCards.length + '条');
   } catch (e) {
     alert('导入失败:' + e.message);
@@ -754,10 +759,11 @@ function addNewCard() {
   const chapter = prompt('所属章节?', '未分章');
   cards.push({
     front, back, category, chapter,
-    level: '基础', examFrequency: '低频', lastReview: null, nextReview: null, reviewCount: 0, difficulty: 0, mastery: 0
+    level: '基础', examFrequency: '低频', lastReview: null, nextReview: null, reviewCount: 0, difficulty: 0, mastery: 0, wrongCount: 0
   });
   localStorage.setItem('flashcards', JSON.stringify(cards));
-  updateCardList(); renderGrid(cards); updateStats();
+  const filtered = cards.filter(activeReviewFilter);
+  updateCardList(filtered); renderGrid(filtered); updateStats();
 }
 
 // ============ 笔记系统 ============
@@ -802,8 +808,9 @@ function viewNoteHistory() {
 
 // ============ 页面初始化 ============
 function initializeApp() {
-  updateCardList();
-  renderGrid(cards);
+  const filtered = cards.filter(activeReviewFilter);
+  updateCardList(filtered);
+  renderGrid(filtered);
   updateStats();
   updateCountdown();
   updateNoteCategories();
@@ -820,10 +827,12 @@ window.onload = initializeApp;
 // =========== 扩展1：复习模式切换 ===========
 function showReviewMenu() {
   const opts = [
-    {name:'所有卡片',   filter:()=>true},
-    {name:'只刷到期卡', filter:card=>!card.nextReview||new Date(card.nextReview)<=new Date()},
-    {name:'仅高频考点',filter:card=>card.examFrequency==='高频'},
-    {name:'仅未掌握',  filter:card=>card.mastery<4},
+    {name:'应复习',    filter:card=>!card.nextReview||new Date(card.nextReview)<=new Date()},
+    {name:'今日已学',  filter:card=>card.lastReview && new Date(card.lastReview).toDateString()===new Date().toDateString()},
+    {name:'本周已学',  filter:card=>card.lastReview && (new Date()-new Date(card.lastReview))<=7*86400000},
+    {name:'高频考点',  filter:card=>card.examFrequency==='高频'},
+    {name:'错题本',    filter:card=>(card.wrongCount||0)>=2 || card.mastery<3},
+    {name:'全部卡片',  filter:()=>true},
     {name:'乱序',       filter:()=>true, shuffle:true}
   ];
   let html = '<div class="modal-content"><h3>选择复习模式</h3>';
@@ -835,17 +844,21 @@ function showReviewMenu() {
 }
 function applyReviewMode(idx) {
   const opts = [
-    {name:'所有卡片',   filter:()=>true},
-    {name:'只刷到期卡', filter:card=>!card.nextReview||new Date(card.nextReview)<=new Date()},
-    {name:'仅高频考点',filter:card=>card.examFrequency==='高频'},
-    {name:'仅未掌握',  filter:card=>card.mastery<4},
+    {name:'应复习',    filter:card=>!card.nextReview||new Date(card.nextReview)<=new Date()},
+    {name:'今日已学',  filter:card=>card.lastReview && new Date(card.lastReview).toDateString()===new Date().toDateString()},
+    {name:'本周已学',  filter:card=>card.lastReview && (new Date()-new Date(card.lastReview))<=7*86400000},
+    {name:'高频考点',  filter:card=>card.examFrequency==='高频'},
+    {name:'错题本',    filter:card=>(card.wrongCount||0)>=2 || card.mastery<3},
+    {name:'全部卡片',  filter:()=>true},
     {name:'乱序',       filter:()=>true, shuffle:true}
   ];
   const opt = opts[idx];
-  let filtered = cards.filter(opt.filter);
-  if(opt.shuffle) filtered = filtered.sort(()=>Math.random()-.5);
-  currentCardList = filtered;
-  renderGrid(filtered);
+  activeReviewFilter = opt.filter;
+  let base = cards.filter(opt.filter);
+  if(opt.shuffle) base = base.sort(()=>Math.random()-.5);
+  currentCardList = base;
+  renderGrid(base);
+  updateCardList(base);
   closeModal();
 }
 function showModal(html) {
@@ -902,14 +915,16 @@ function doEditCard(oldFront) {
   cards[i].examFrequency = document.getElementById('edit-high').checked ? '高频' : '低频';
   cards[i].level = document.getElementById('edit-key').checked ? '重点' : '基础';
   localStorage.setItem('flashcards',JSON.stringify(cards));
-  updateCardList(); renderGrid(cards);
+  const filtered = cards.filter(activeReviewFilter);
+  updateCardList(filtered); renderGrid(filtered);
   closeModal();
 }
 function deleteCard(front) {
   if(!confirm('确认删除？')) return;
   cards = cards.filter(c=>c.front!==front);
   localStorage.setItem('flashcards',JSON.stringify(cards));
-  updateCardList(); renderGrid(cards);
+  const filtered = cards.filter(activeReviewFilter);
+  updateCardList(filtered); renderGrid(filtered);
   closeModal();
 }
 
@@ -937,7 +952,8 @@ document.addEventListener('contextmenu',function(e){
     if(!confirm(`要删除“${cat} > ${chap}”下的${cardsIn.length}张卡片？`)) return;
     cards = cards.filter(c=>!(c.category===cat&&c.chapter===chap));
     localStorage.setItem('flashcards',JSON.stringify(cards));
-    updateCardList(); renderGrid(cards);
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered);
   }
 },false);
 
