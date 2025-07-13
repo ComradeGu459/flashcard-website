@@ -1016,246 +1016,80 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 </script>
-<!-- AI助手悬浮按钮 -->
-<div id="ai-helper-btn" style="position:fixed;right:32px;bottom:36px;z-index:9999;">
-  <button onclick="openAIHelper()" style="width:62px;height:62px;border-radius:50%;border:none;box-shadow:0 2px 15px #9ba5cc22;background:#6366f1;color:#fff;font-size:33px;cursor:pointer;">🤖</button>
-</div>
-<!-- AI助手可拖拽/缩放主窗体 -->
-<div id="ai-helper-modal" style="display:none;position:fixed;right:34px;bottom:110px;width:420px;min-width:320px;max-width:97vw;height:550px;min-height:320px;max-height:98vh;z-index:10000;resize:both;overflow:hidden;box-shadow:0 8px 42px #2932762a;border-radius:20px;background:#fff;">
-  <!-- 拖拽顶栏 -->
-  <div id="ai-drag-bar" style="height:38px;cursor:move;background:#f4f7fd;border-bottom:1px solid #ececec;display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 17px;">
-    <span style="font-weight:700;font-size:17px;color:#6366f1;">AI 考研助手</span>
-    <div>
-      <button onclick="exportChatHistory()" title="导出对话" style="background:none;border:none;font-size:17px;color:#36a269;cursor:pointer;margin-right:5px;">⬇️</button>
-      <button onclick="openKeySetting()" title="API Key设置" style="background:none;border:none;font-size:17px;color:#9799bb;cursor:pointer;margin-right:9px;">🔑</button>
-      <button onclick="closeAIHelper()" style="background:none;border:none;font-size:26px;color:#8e98bc;cursor:pointer;">×</button>
-    </div>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>AI 助手演示</title>
+  <style>
+    body { font-family: sans-serif; background: #f7f7f7; }
+    #chat { width: 480px; margin: 50px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0002; padding: 20px; }
+    .msg { margin: 10px 0; }
+    .user { color: #1976d2; font-weight: bold; }
+    .ai { color: #43a047; font-weight: bold; }
+    textarea { width: 95%; height: 60px; }
+    button { padding: 8px 24px; margin-left: 6px; }
+  </style>
+</head>
+<body>
+  <div id="chat">
+    <h2>AI 助手 (Vercel Gateway)</h2>
+    <div id="history"></div>
+    <textarea id="input" placeholder="请输入你的问题..."></textarea>
+    <button onclick="sendMsg()">发送</button>
   </div>
-  <!-- 预设 -->
-  <div id="ai-quick-presets" style="padding:7px 15px 2px 15px;background:#fafaff;border-bottom:1px solid #f0f1f6;display:flex;gap:8px;overflow-x:auto;white-space:nowrap;">
-    <button onclick="presetInsert('帮我总结一下公共管理学核心理论框架。')" class="preset-btn">公共管理学理论</button>
-    <button onclick="presetInsert('请分析当前我国公共服务改革的难点与对策。')" class="preset-btn">公共服务难点</button>
-    <button onclick="presetInsert('模拟考研真题：谈谈“新公共管理”与传统公共管理的区别。')" class="preset-btn">新旧对比</button>
-    <button onclick="presetInsert('考点背诵口诀')" class="preset-btn">背诵口诀</button>
-    <button onclick="presetInsert('请列出近五年公共管理考研高频题。')" class="preset-btn">高频真题</button>
-    <button onclick="presetInsert('')" class="preset-btn">自定义</button>
-  </div>
-  <!-- 对话内容 -->
-  <div id="ai-chat-content" style="height:calc(100% - 38px - 40px - 56px - 36px);overflow-y:auto;padding:15px 14px 7px 14px;font-size:15px;line-height:1.8;color:#353c52;scroll-behavior:smooth;background:#fcfcff;"></div>
-  <!-- 输入区 -->
-  <div style="position:absolute;left:0;bottom:0;width:100%;padding:8px 13px 13px 13px;background:#f7f9fc;display:flex;gap:7px;box-sizing:border-box;">
-    <!-- 语音按钮 -->
-    <button id="ai-mic-btn" onclick="startVoiceInput()" title="语音输入" style="width:40px;height:40px;border-radius:50%;border:none;background:#e2e9fd;color:#6366f1;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🎤</button>
-    <form id="ai-chat-form" style="flex:1;display:flex;gap:7px;" onsubmit="return sendAIMessage();">
-      <input id="ai-chat-input" autocomplete="off" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid #dde2ef;font-size:15px;background:#fff;outline:none;" placeholder="输入你的考研问题/指令，回车发送..." />
-      <select id="ai-model" style="padding:0 8px 0 6px;border-radius:8px;border:1px solid #dde2ef;background:#f9fafd;font-size:15px;color:#656780;">
-        <option value="deepseek-chat">DeepSeek-Chat</option>
-        <option value="deepseek-reasoner">DeepSeek-Reasoner</option>
-      </select>
-      <button type="submit" style="padding:0 18px;height:38px;border-radius:12px;border:none;background:#6366f1;color:#fff;font-size:16px;font-weight:500;cursor:pointer;">发送</button>
-    </form>
-  </div>
-</div>
-<style>
-@media (max-width:600px) {
-  #ai-helper-modal { right:0 !important; bottom:0 !important; width:99vw !important; height:90vh !important; min-width:200px !important; min-height:260px !important; }
-  #ai-helper-btn { right:14px !important; bottom:12px !important; }
-}
-.preset-btn{border:none;background:#eaf0fd;color:#4364ae;border-radius:8px;padding:4px 10px;font-size:14px;cursor:pointer;margin:0 0 4px 0;}
-.preset-btn:hover{background:#d9e6fb;}
-.ai-msg { margin-bottom:12px; display: flex; align-items: flex-start; }
-.ai-user { justify-content: flex-end; }
-.ai-bubble { max-width: 83%; border-radius: 14px; padding: 9px 13px 9px 12px; margin:0 0 0 8px; word-break: break-word; }
-.ai-bubble-user { background: #e9eafe; color: #494a7c; border-bottom-right-radius: 6px; }
-.ai-bubble-ai { background: #f6f7fe; color: #36a269; border-bottom-left-radius: 6px; }
-.ai-avatar { width:32px; height:32px; border-radius:50%; background:#f0f2ff; color:#6366f1; font-size:22px; display:flex; align-items:center; justify-content:center;}
-.ai-avatar-user {background:#d7ebff; color:#4f7fc9;}
-#ai-helper-modal { transition: box-shadow 0.15s; }
-#ai-helper-modal:active, #ai-helper-modal:focus-within { box-shadow:0 8px 62px #29327636; }
-</style>
-<script>
-// --------- 悬浮窗 拖拽与缩放 ---------
-(function(){
-  let drag = false, offsetX = 0, offsetY = 0;
-  const modal = document.getElementById('ai-helper-modal');
-  document.getElementById('ai-drag-bar').onmousedown = function(e){
-    drag = true;
-    offsetX = e.clientX - modal.offsetLeft;
-    offsetY = e.clientY - modal.offsetTop;
-    document.body.style.userSelect='none';
-  };
-  document.onmousemove = function(e){
-    if(drag){
-      let x = e.clientX - offsetX;
-      let y = e.clientY - offsetY;
-      x = Math.max(10, Math.min(window.innerWidth - modal.offsetWidth - 10, x));
-      y = Math.max(10, Math.min(window.innerHeight - modal.offsetHeight - 10, y));
-      modal.style.left = x+"px";
-      modal.style.top = y+"px";
-      modal.style.right = '';
-      modal.style.bottom = '';
-      modal.style.position = 'fixed';
-    }
-  };
-  document.onmouseup = function(){ drag=false; document.body.style.userSelect='auto'; };
-})();
-// --------- UI 与核心逻辑 ---------
-const AI_LOCAL_KEY = "ai_study_chat_history_v2";
-let aiHistory = [];
-let voiceRec = null, voiceActive = false;
+  <script>
+    // ==== 这里粘贴你的 Vercel Gateway API Key！====
+    const apiKey = "p0LCPHXasLQtEUbHI4VAws17";
+    // ==== Gateway chat/completions 接口地址 ====
+    const apiUrl = "https://ai-gateway.vercel.com/api/v1/chat/completions";
+    // ==== 默认用 deepseek-chat ====
+    const model = "deepseek-chat";
 
-function presetInsert(text){
-  const input = document.getElementById('ai-chat-input');
-  input.value = text;
-  input.focus();
-}
-function renderHistory(){
-  const el = document.getElementById('ai-chat-content');
-  el.innerHTML = '';
-  aiHistory.forEach(msg => {
-    if(msg.role==='user'){
-      el.innerHTML += `
-      <div class="ai-msg ai-user">
-        <div class="ai-bubble ai-bubble-user">${escapeHTML(msg.content)}</div>
-        <div class="ai-avatar ai-avatar-user">你</div>
-      </div>`;
-    } else if(msg.role==='assistant'){
-      el.innerHTML += `
-      <div class="ai-msg">
-        <div class="ai-avatar">🤖</div>
-        <div class="ai-bubble ai-bubble-ai">${renderMarkdown(msg.content)}</div>
-      </div>`;
-    }
-  });
-  setTimeout(()=>{el.scrollTop = el.scrollHeight}, 20);
-}
-function saveHistory(){ localStorage.setItem(AI_LOCAL_KEY, JSON.stringify(aiHistory)); }
-function openAIHelper(){
-  document.getElementById('ai-helper-modal').style.display = 'block';
-  aiHistory = JSON.parse(localStorage.getItem(AI_LOCAL_KEY)||"[]");
-  renderHistory();
-  setTimeout(()=>{document.getElementById('ai-chat-input').focus()}, 120);
-}
-function closeAIHelper(){ document.getElementById('ai-helper-modal').style.display = 'none'; }
-function openKeySetting(){
-  const key = prompt('输入你的DeepSeek API KEY（自动本地保存）', localStorage.getItem('deepseek_api_key')||'');
-  if(key) localStorage.setItem('deepseek_api_key', key.trim());
-}
-function exportChatHistory(){
-  let txt = '';
-  aiHistory.forEach(m => {
-    txt += (m.role==='user' ? '你: ' : 'AI: ') + m.content.replace(/\n/g, '\r\n')+'\r\n\r\n';
-  });
-  const blob = new Blob([txt], {type:"text/plain"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = "AI助手对话历史.txt";
-  document.body.appendChild(a); a.click(); setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 100);
-}
-// 语音输入
-function startVoiceInput(){
-  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
-    alert("当前浏览器不支持语音输入（推荐使用Chrome）"); return;
-  }
-  if(voiceActive) { // 终止
-    voiceRec && voiceRec.stop();
-    voiceActive = false;
-    document.getElementById('ai-mic-btn').style.background='#e2e9fd';
-    return;
-  }
-  const rec = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-  voiceRec = rec;
-  rec.continuous = false; rec.lang = "zh-CN";
-  rec.interimResults = false;
-  rec.onstart = function(){ voiceActive = true; document.getElementById('ai-mic-btn').style.background='#b1cbfb'; }
-  rec.onerror = function(e){voiceActive=false;document.getElementById('ai-mic-btn').style.background='#e2e9fd';}
-  rec.onend = function(){voiceActive=false;document.getElementById('ai-mic-btn').style.background='#e2e9fd';}
-  rec.onresult = function(event){
-    let r = event.results[0][0].transcript.trim();
-    if(r){
-      const input = document.getElementById('ai-chat-input');
-      input.value = r;
-      input.focus();
-    }
-  };
-  rec.start();
-}
+    let history = []; // 多轮对话历史
 
-// 发送并流式输出（健壮错误提示）
-async function sendAIMessage(){
-  const input = document.getElementById('ai-chat-input');
-  let msg = input.value.trim();
-  if(!msg) return false;
-  aiHistory.push({role:"user", content:msg});
-  saveHistory(); renderHistory();
-  input.value = "";
-  const el = document.getElementById('ai-chat-content');
-  // 显示AI loading气泡
-  const aid = 'ai_'+Date.now();
-  el.innerHTML += `<div class="ai-msg" id="${aid}"><div class="ai-avatar">🤖</div>
-    <div class="ai-bubble ai-bubble-ai"><span id="${aid}_c" style="white-space:pre-line;color:#adb3c2;">AI助手输出中...</span></div></div>`;
-  el.scrollTop = el.scrollHeight;
+    function addMsg(role, content) {
+      const div = document.createElement("div");
+      div.className = "msg";
+      div.innerHTML = `<span class="${role}">${role === "user" ? "你" : "AI"}:</span> ${content}`;
+      document.getElementById("history").appendChild(div);
+      document.getElementById("history").scrollTop = 99999;
+    }
 
-  try {
-    const key = localStorage.getItem('deepseek_api_key') || prompt('请先填写API Key');
-    if(!key){document.getElementById(aid).remove();return false;}
-    const model = document.getElementById('ai-model').value || "deepseek-chat";
-    // 多轮对话传历史
-    const body = {
-      model: model,
-      messages: [
-        {role: "system", content: "你是考研公共管理方向AI助手，回答尽可能详细、有条理，内容适合背诵和理解，遇到主观性问题要给出学习建议。"},
-        ...aiHistory.slice(-8)
-      ],
-      stream: true
-    };
-    // 兼容stream, 用Fetch+reader
-    const resp = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer "+key },
-      body: JSON.stringify(body)
-    });
-    if(resp.status!==200){
-      const err = await resp.json();
-      throw new Error(err.error?.message || ("API异常: " + resp.status));
+    async function sendMsg() {
+      const input = document.getElementById("input");
+      const question = input.value.trim();
+      if (!question) return;
+      addMsg("user", question);
+      input.value = "";
+
+      // 添加到历史
+      history.push({ role: "user", content: question });
+
+      addMsg("ai", "正在思考...");
+
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: history,
+          stream: false
+        })
+      });
+      const data = await res.json();
+
+      // AI 回答
+      const answer = data.choices?.[0]?.message?.content || "AI 没有返回答案";
+      // 覆盖“正在思考...”
+      const lastDiv = document.querySelector("#history .ai:last-child");
+      if (lastDiv) lastDiv.parentNode.innerHTML = `<span class="ai">AI:</span> ${answer}`;
+      // 存历史
+      history.push({ role: "assistant", content: answer });
     }
-    if(!resp.body) throw new Error("API无返回体");
-    const reader = resp.body.getReader();
-    let full = "", buf = "";
-    const decoder = new TextDecoder();
-    while(true){
-      const {done,value} = await reader.read();
-      if(done) break;
-      buf += decoder.decode(value, {stream:true});
-      let arr = buf.split('\n\n');
-      buf = arr.pop();
-      for(const chunk of arr){
-        const json = chunk.replace(/^data: /,'').trim();
-        if(json==="[DONE]") continue;
-        if(!json) continue;
-        let delta;
-        try { delta = JSON.parse(json); }catch{}
-        if(delta && delta.choices && delta.choices[0].delta && delta.choices[0].delta.content){
-          full += delta.choices[0].delta.content;
-          document.getElementById(aid+"_c").innerHTML = renderMarkdown(escapeHTML(full));
-          el.scrollTop = el.scrollHeight;
-        }
-      }
-    }
-    aiHistory.push({role:"assistant", content:full.trim()});
-    saveHistory(); renderHistory();
-  }catch(e){
-    document.getElementById(aid+"_c").innerHTML = "<span style='color:#f43f5e'>AI助手异常："+escapeHTML(e.message)+"</span>";
-    alert("AI助手错误："+e.message+"\n请检查API KEY和网络环境。");
-  }
-  return false;
-}
-function escapeHTML(str){ return str.replace(/[<>&"]/g, c=>({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
-function renderMarkdown(str){
-  return str.replace(/```([\s\S]+?)```/g, '<pre style="background:#f2f3fa;border-radius:8px;padding:8px 11px;">$1</pre>')
-    .replace(/\n/g, '<br>')
-    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-    .replace(/\*(.+?)\*/g, '<i>$1</i>')
-    .replace(/^\d+\.(.+)$/gm, '<span style="color:#8366f1;font-weight:bold;">$&</span>');
-}
-</script>
+  </script>
+</body>
+</html>
