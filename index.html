@@ -664,14 +664,21 @@ function updateMastery(front, mastery, event) {
   updateStats();
   document.querySelectorAll('.flashcard').forEach(f => f.classList.remove('flipped'));
   setTimeout(() => {
-    const base = cards.filter(activeReviewFilter);
-    const due = base.filter(c=>!c.nextReview||new Date(c.nextReview)<=new Date());
-    if (due.length) {
-      currentCardList = due;
-      renderGrid(due);
+    // 修改：优先计算当前单元的due
+    const currentDue = currentCardList.filter(c => !c.nextReview || new Date(c.nextReview) <= new Date());
+    if (currentDue.length > 0) {
+      // 还有due，留在当前单元渲染due
+      renderGrid(currentDue);
     } else {
-      currentCardList = base;
-      renderGrid(base);
+      // 当前单元无due，询问是否返回总页面
+      if (confirm('本单元已完成复习，是否返回总页面？')) {
+        const base = cards.filter(activeReviewFilter);
+        currentCardList = base;
+        renderGrid(base);
+      } else {
+        // 留在当前单元，渲染所有（即使无due）
+        renderGrid(currentCardList);
+      }
     }
   }, 330);
 }
