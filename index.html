@@ -681,21 +681,12 @@ function updateMastery(front, mastery, event) {
     }, 300);
   }
   setTimeout(() => {
-    // 修改：始终渲染整个当前单元列表（避免消失）
+    // 优化：始终渲染整个当前单元列表（避免消失和闪退）
     const grid = document.getElementById('flashcard-grid');
     grid.style.transition = 'opacity 0.3s ease';
     grid.style.opacity = '0';
-    renderGrid(currentCardList);
+    renderGrid(currentCardList); // 直接渲染所有，不过滤due
     setTimeout(() => { grid.style.opacity = '1'; }, 100);
-    // 可选：如果所有due完成，仍弹确认框
-    const currentDue = currentCardList.filter(c => !c.nextReview || new Date(c.nextReview) <= new Date());
-    if (currentDue.length === 0) {
-      if (confirm('本单元所有卡片已复习，是否返回总页面？')) {
-        const base = cards.filter(activeReviewFilter);
-        currentCardList = base;
-        renderGrid(base);
-      }
-    }
   }, 330);
 }
   
