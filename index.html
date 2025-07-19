@@ -123,19 +123,27 @@
     .flashcard-thumb .thumb-clue {color:#64748b;font-size:0.9em;line-height:1.4;}
 
     /* 大卡片模态 */
-      #card-modal {
-        position: fixed;
-        left: 0; top: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.55);
-        backdrop-filter: blur(3px);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding:40px;
-        overflow-y:auto;
-        z-index: 1500;
-      }
-      #card-modal.active {display:flex; animation: fadeIn 0.25s;}
+#card-modal {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding:40px;
+  overflow-y:auto;
+  z-index: 1500;
+  transition: opacity 0.3s ease; /* 新增：确保模态有过渡动画 */
+  opacity: 1;
+}
+#card-modal.active {display:flex; animation: fadeIn 0.25s;}
+/* ... 其他模态样式 ... */
+
+/* 新增：网格刷新动画（放在模态样式下面） */
+#flashcard-grid {
+  transition: opacity 0.3s ease; /* 新增：网格刷新动画 */
+}
       #card-modal .card-popup {
         background:#fff;
         max-width:720px;
@@ -662,13 +670,27 @@ function updateMastery(front, mastery, event) {
   localStorage.setItem('flashcards', JSON.stringify(cards));
   incrementTodayStudyCount();
   updateStats();
+  // 移除flipped（如果有3D卡片）
   document.querySelectorAll('.flashcard').forEach(f => f.classList.remove('flipped'));
+  // 新增：关闭模态窗口，并添加淡出动画
+  const modal = document.getElementById('card-modal');
+  if (modal.classList.contains('active')) {
+    modal.style.transition = 'opacity 0.3s ease'; // 添加淡出动画
+    modal.style.opacity = '0';
+    setTimeout(() => {
+      closeCardModal(); // 延迟关闭以完成动画
+    }, 300);
+  }
   setTimeout(() => {
     // 修改：优先计算当前单元的due
     const currentDue = currentCardList.filter(c => !c.nextReview || new Date(c.nextReview) <= new Date());
     if (currentDue.length > 0) {
-      // 还有due，留在当前单元渲染due
+      // 还有due，留在当前单元渲染due，并添加刷新动画（如网格淡入）
+      const grid = document.getElementById('flashcard-grid');
+      grid.style.transition = 'opacity 0.3s ease';
+      grid.style.opacity = '0';
       renderGrid(currentDue);
+      setTimeout(() => { grid.style.opacity = '1'; }, 100); // 淡入效果
     } else {
       // 当前单元无due，询问是否返回总页面
       if (confirm('本单元已完成复习，是否返回总页面？')) {
@@ -676,13 +698,12 @@ function updateMastery(front, mastery, event) {
         currentCardList = base;
         renderGrid(base);
       } else {
-        // 留在当前单元，渲染所有（即使无due）
         renderGrid(currentCardList);
       }
     }
-  }, 330);
+  }, 330); // 保持原延迟
 }
-
+  
 // ============ 学习天数/打卡统计 ============
 function getTodayStudyCount() {
   const today = new Date().toISOString().split('T')[0];
