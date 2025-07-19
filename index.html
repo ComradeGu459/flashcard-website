@@ -950,21 +950,81 @@ renderGrid = function(showCards=currentCardList) {
     grid.appendChild(div);
   });
 };
-// 侧边栏章节支持编辑（长按）
-document.addEventListener('contextmenu',function(e){
-  if(e.target.classList.contains('chapter-item')){
-    e.preventDefault();
-    const chap = e.target.textContent;
-    const catDiv = e.target.closest('.category-item');
-    const cat = catDiv.querySelector('.category-header').textContent.replace(/▶/,'').trim();
-    const cardsIn = cards.filter(c=>c.category===cat&&c.chapter===chap);
-    if(!confirm(`要删除“${cat} > ${chap}”下的${cardsIn.length}张卡片？`)) return;
-    cards = cards.filter(c=>!(c.category===cat&&c.chapter===chap));
-    localStorage.setItem('flashcards',JSON.stringify(cards));
-    const filtered = cards.filter(activeReviewFilter);
-    updateCardList(filtered); renderGrid(filtered);
+// =========== 新增：管理题库功能（借鉴Quizlet和Anki的干净表格界面：搜索栏上置、排序下拉、checkbox批量选择、可滚动表格、分页底部） ============
+function showManageLibrary() {
+  let html = '<div class="modal-content" style="max-width:800px; max-height:80vh; overflow-y:auto;">'; // 宽大模态，防遮挡
+  html += '<h3 style="margin-bottom:12px;">管理题库</h3>';
+  html += '<div style="display:flex; gap:10px; margin-bottom:12px;">';
+  html += '<input type="text" id="manage-search" placeholder="搜索题干/答案/科目..." oninput="renderManageTable(this.value)" style="flex:1; padding:8px; border:1px solid #e2e8f0; border-radius:8px;">';
+  html += '<select id="manage-sort" onchange="renderManageTable()" style="padding:8px; border:1px solid #e2e8f0; border-radius:8px;">';
+  html += '<option value="mastery">按掌握度降序</option><option value="wrongCount">按错题次数降序</option><option value="nextReview">按复习时间升序</option><option value="front">按题干A-Z</option>';
+  html += '</select></div>';
+  html += '<table class="manage-table" id="manage-table" style="margin-bottom:16px;"></table>';
+  html += '<div class="pagination" id="manage-pagination"></div>';
+  html += '<div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">';
+  html += '<button class="btn-secondary" onclick="closeModal()">关闭</button>';
+  html += '<button class="btn-primary" onclick="batchExportSelected()" style="background:#4ade80;">导出选中</button>'; // 新增批量导出
+  html += '<button class="btn-primary" onclick="batchDeleteSelected()" style="background:#ef4444; color:#fff;">批量删除</button>';
+  html += '</div></div>';
+  showModal(html);
+  renderManageTable();
+}
+function renderManageTable(query = '', page = 1) {
+  const q = query.toLowerCase();
+  let filtered = cards.filter(card => 
+    card.front.toLowerCase().includes(q) || card.back.toLowerCase().includes(q) || card.category.toLowerCase().includes(q) || card.chapter.toLowerCase().includes(q)
+  );
+  const sort = document.getElementById('manage-sort').value;
+  if (sort === 'mastery') filtered.sort((a,b) => b.mastery - a.mastery);
+  else if (sort === 'wrongCount') filtered.sort((a,b) => b.wrongCount - a.wrongCount);
+  else if (sort === 'nextReview') filtered.sort((a,b) => (new Date(a.nextReview || '9999-12-31') - new Date(b.nextReview || '9999-12-31')));
+  else if (sort === 'front') filtered.sort((a,b) => a.front.localeCompare(b.front));
+  
+  const perPage = 15; // 每页15条，防过多遮挡
+  const start = (page - 1) * perPage;
+  const paginated = filtered.slice(start, start + perPage);
+  
+  let tableHtml = '<thead><tr><th style="width:5%;"><input type="checkbox" onclick="toggleAllCheck(this)"></th><th style="width:30%;">题干</th><th style="width:15%;">科目/章节</th><th style="width:10%;">掌握度</th><th style="width:10%;">错题数</th><th style="width:15%;">下次复习</th><th style="width:15%;">操作</th></tr></thead><tbody>';
+  paginated.forEach(card => {
+    const nextReview = card.nextReview ? new Date(card.nextReview).toLocaleDateString() : '未复习';
+    tableHtml += `<tr><td><input type="checkbox" data-front="${card.front}"></td><td>${truncateText(card.front, 40)}</td><td>${card.category}/${card.chapter}</td><td>${card.mastery}</td><td>${card.wrongCount || 0}</td><td>${nextReview}</td><td><button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick="showEditCard('${card.front}')">编辑</button> <button class="btn-secondary" style="padding:4px 8px; font-size:12px; background:#ef4444; color:#fff;" onclick="deleteCard('${card.front}')">删除</button></td></tr>`;
+  });
+  tableHtml += '</tbody>';
+  document.getElementById('manage-table').innerHTML = tableHtml;
+  
+  // 分页（借鉴Anki的分页设计：简单数字按钮）
+  const pages = Math.ceil(filtered.length / perPage);
+  let pagHtml = '';
+  for (let i = 1; i <= pages; i++) {
+    pagHtml += `<span class="page-btn ${i === page ? 'active' : ''}" onclick="renderManageTable('${query}', ${i})" style="padding:6px 12px; background:${i === page ? '#6366f1' : '#f1f5f9'}; color:${i === page ? '#fff' : '#1e293b'}; border-radius:8px; cursor:pointer; margin:0 4px;">${i}</span>`;
   }
-},false);
+  document.getElementById('manage-pagination').innerHTML = pagHtml;
+}
+function toggleAllCheck(checkbox) {
+  document.querySelectorAll('.manage-table input[type="checkbox"]').forEach(cb => cb.checked = checkbox.checked);
+}
+function batchDeleteSelected() {
+  const selected = Array.from(document.querySelectorAll('.manage-table input[type="checkbox"]:checked')).map(cb => cb.dataset.front);
+  if (selected.length === 0 || !confirm(`确认删除${selected.length}张卡片？`)) return;
+  cards = cards.filter(c => !selected.includes(c.front));
+  localStorage.setItem('flashcards', JSON.stringify(cards));
+  renderManageTable();
+  const filtered = cards.filter(activeReviewFilter);
+  updateCardList(filtered); renderGrid(filtered); updateStats();
+}
+function batchExportSelected() {
+  const selected = Array.from(document.querySelectorAll('.manage-table input[type="checkbox"]:checked')).map(cb => cb.dataset.front);
+  if (selected.length === 0) return alert('请选择卡片');
+  const exportCards = cards.filter(c => selected.includes(c.front));
+  const data = JSON.stringify(exportCards, null, 2);
+  const blob = new Blob([data], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'selected_flashcards_' + Date.now() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 
 // =========== 扩展4：历史学习记录简要查看 ===========
 function viewNoteHistory() {
