@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>科学闪卡背诵系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+    本应用是一个基于浏览器的闪卡学习工具。它支持分类、章节和标签管理，
+    内置间隔重复算法，支持批量导入/导出、错题本、复习模式、笔记系统等功能。
+    在原有功能的基础上引入了标签过滤和卡片链接功能，方便用户构建自己的知识网络。
+  -->
+  <style>
+    html,body { height: 100%; margin: 0; padding: 0; background: #f5f7fa; color: #222; }
+    body { font-family: 'Roboto Slab', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
+    .container {
+      display: grid;
+      grid-template-columns: 300px 1fr 320px;
+      gap: 28px;
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 24px 14px 38px 14px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .sidebar, .tools-section {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 20px #24335608, 0 1px 2px #24335611;
+      padding: 28px 20px 22px 20px;
+      min-width: 0;
+      min-height: 650px;
+      max-height: 92vh;
+      position: sticky;
+      top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+    .sidebar { align-self: start; }
+    .tools-section { align-self: start; }
+    .flashcard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-auto-rows: max-content;
+      gap: 28px;
+      align-items: stretch;
+      justify-items: stretch;
+      padding: 20px;
+      padding-bottom: 40px;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    /* 缩略卡片样式 */
+    .flashcard-thumb {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 120px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      text-align: left;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s;
+    }
+    .flashcard-thumb:hover { transform: scale(1.05); }
+    .flashcard-thumb .thumb-title { font-weight: 600; color: #334155; font-size: 1.05em; margin-bottom: 4px; }
+    .flashcard-thumb .thumb-clue { color: #64748b; font-size: 0.9em; line-height: 1.4; }
+
+    /* 高频标记星星 */
+    .thumb-star {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 18px;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .thumb-star.active {
+      color: #facc15;
+    }
+    .thumb-star:hover {
+      color: #fcd34d;
+    }
+    /* 卡片模态弹窗 */
+    #card-modal {
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      overflow-y: auto;
+      z-index: 1500;
+      transition: opacity 0.3s ease;
+      opacity: 1;
+    }
+    #card-modal.active { display: flex; animation: fadeIn 0.25s; }
+    #card-modal .card-popup {
+      background: #fff;
+      max-width: 720px;
+      width: 100%;
+      max-height: 80vh;
+      padding: 32px;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+    }
+    #card-modal .close-btn {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      background: #f8fafc;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    #card-modal .popup-title { font-size: 1.3em; font-weight: 700; margin-bottom: 12px; }
+    #card-modal .popup-content { flex: 1; overflow-y: auto; line-height: 1.6; margin-bottom: 18px; color: #374151; }
+    /* 优化答案内容排版 */
+    #card-modal .popup-content p {
+      margin: 8px 0;
+      line-height: 1.65;
+    }
+    #card-modal .popup-content strong {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      font-size: 1.05em;
+      color: #1f2937;
+    }
+    #card-modal .popup-content em {
+      font-style: italic;
+      color: #475569;
+    }
+    #card-modal .popup-clue { color: #64748b; margin-bottom: 12px; }
+    #card-modal .mastery-buttons { justify-content: center; margin-top: 10px; }
+    /* 标签过滤区样式 */
+    .tag-filter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #374151;
+      background: #f8fafc;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .tag-filter-header:hover {
+      background: #eef2ff;
+    }
+    #tag-list {
+      margin-top: 6px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    #tag-list.collapsed {
+      display: none;
+    }
+    #tag-list.expanded {
+      display: flex;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .tag-item {
+      display: inline-block;
+      background: #e5e7eb;
+      color: #374151;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tag-item:hover {
+      background: #dbeafe;
+      color: #3730a3;
+    }
+    /* 活跃标签样式与清除按钮 */
+    .tag-item.active {
+      background: #6366f1;
+      color: #fff;
+    }
+    .tag-clear {
+      background: #f3f4f6;
+      color: #374151;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tag-clear:hover {
+      background: #e5e7eb;
+    }
+    /* 学习统计区 */
+    .progress-ring { position: relative; width: 60px; height: 60px; }
+    .progress-ring-circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 4; }
+    .progress-ring-circle {
+      fill: none;
+      /* 使用渐变作为进度颜色，呈现蓝紫过渡 */
+      stroke: url(#progressGradient);
+      stroke-width: 4;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      transition: stroke-dashoffset 0.3s ease;
+    }
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      font-weight: 700;
+      color: #4c1d95;
+      pointer-events: none;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .stat-item {
+      /* 卡片化布局，渐变背景并略带阴影 */
+      background: linear-gradient(135deg, #f0f7ff 0%, #eef5ff 100%);
+      padding: 14px 0 10px 0;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.17s;
+      font-size: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+    }
+    .stat-item.highlight { background: linear-gradient(135deg,#6366f1,#3b82f6); color: #fff; }
+    .stat-label { font-size: 13px; color: #64748b; }
+    .stat-item.highlight .stat-label, .stat-item.highlight .stat-value { color: #fff; }
+    .stat-value { font-size: 20px; font-weight: 600; color: #1a202c; }
+    .study-streak { display: flex; justify-content: space-between; background: #f8fafc; padding: 13px 16px; border-radius: 12px; }
+    .streak-info, .today-count { display: flex; flex-direction: column; align-items: center; }
+    .streak-label, .today-label { font-size: 13px; color: #64748b; }
+    .streak-value, .today-value { font-size: 16px; font-weight: 600; color: #6366f1; }
+
+    /* 连续学习链条：小圆点，活跃时为蓝色，非活跃为淡色 */
+    .chain-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #c7d2fe;
+      display: inline-block;
+    }
+    .chain-icon.active {
+      background: #6366f1;
+    }
+    /* 搜索输入与侧边栏分类样式 */
+    .search-input { width: 100%; padding: 11px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: #f8fafc; margin-bottom: 8px; }
+    .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px #c7d2fe; }
+    .search-box { position: relative; }
+    .search-icon { position: absolute; right: 17px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+    .card-list { list-style: none; padding: 0; margin: 0; }
+    .category-item { margin-bottom: 14px; }
+    .category-header { display: flex; align-items: center; padding: 7px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; transition: all 0.18s; }
+    .category-header:hover { background: #f1f5f9; }
+    .category-header i { margin-right: 8px; transition: transform 0.2s; }
+    .category-header.expanded i { transform: rotate(90deg); }
+    .category-content { margin-left: 20px; padding: 8px 0; display: none; }
+    .category-content.expanded { display: block; }
+    .chapter-item { margin: 4px 0; padding: 4px 12px; border-radius: 7px; cursor: pointer; transition: all 0.18s; }
+    .chapter-item:hover { background: #e0e7ff; color: #6366f1; }
+    /* 按钮样式 */
+    .btn-primary, .btn-secondary, .btn-save {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      outline: none;
+    }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #3b82f6); color: #fff; }
+    .btn-secondary { background: #f1f5f9; color: #1e293b; }
+    .btn-save { background: #dcfce7; color: #15803d; margin-top: 12px; }
+    .btn-primary:hover, .btn-secondary:hover, .btn-save:hover { filter: brightness(1.1); }
+    .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+
+    /* 设置目标按钮样式 */
+    .set-goal-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #7c3aed, #6366f1);
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .set-goal-btn:hover { filter: brightness(1.1); }
+    /* 目标信息 */
+    .goal-info { font-size: 14px; line-height: 1.4; color: #475569; }
+    /* 连续学习链条图标 */
+    .chain-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #e2e8f0;
+    }
+    .chain-icon.active { background: #6366f1; }
+    .chain-icon.inactive { background: #e2e8f0; }
+    /* 回顾模式按钮 */
+    .review-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #60a5fa, #818cf8);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .review-btn:hover { filter: brightness(1.1); }
+    /* 笔记系统UI */
+    /* 笔记区域使用温暖米白配色，并加入轻微阴影，营造舒适阅读感 */
+    .note-section { background: #fdf7e8; border-radius: 16px; padding: 18px 14px 12px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .note-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 9px; }
+    .tab-btn { padding: 8px 18px; border: none; border-radius: 20px; background: #e8f5e9; color: #3b7d3b; cursor: pointer; }
+    .tab-btn.active { background: #34d399; color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .note-controls { display: flex; gap: 10px; margin-bottom: 13px; }
+    .note-select { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f9fafb; }
+    .btn-new-category { padding: 8px 16px; background: #60a5fa; color: white; border: none; border-radius: 20px; cursor: pointer; }
+    .note-editor { display: flex; flex-direction: column; gap: 10px; }
+    .note-title { padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: #ffffff; }
+    .note-editor textarea { height: 120px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical; font-size: 14px; line-height: 1.6; background: #ffffff; }
+    .note-actions { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+
+    /* 标签云样式 */
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+    .tag-cloud .tag-item {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      background: #e0f2fe;
+      color: #0369a1;
+      cursor: pointer;
+    }
+    .tag-cloud .tag-item:hover {
+      background: #bae6fd;
+    }
+    /* 分页按钮 */
+    .page-btn { cursor: pointer; }
+    /* 管理表格样式优化 */
+    .manage-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .manage-table thead th {
+      position: sticky;
+      top: 0;
+      background: #f9fafb;
+      z-index: 1;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 8px;
+    }
+    .manage-table tbody td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .manage-table tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+    .manage-table tbody tr:hover {
+      background: #f3f4f6;
+    }
+    /* 动画 */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .flashcard-thumb, .sidebar, .tools-section, .modal-content { animation: fadeIn 0.4s; }
+
+    /* 导入/通用模态遮罩样式 */
+    #import-modal-root > div {
+      position: fixed;
+      z-index: 1200;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.19);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #import-modal-root .modal-content {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      position: relative;
+      animation: fadeIn 0.3s;
+    }
+  </style>
+  <style>
+    /* Chat widget styles */
+    .chat-toggle-btn {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        background-color: #6f58c9;
+        color: white;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 24px;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        z-index: 1000;
+    }
+    .chat-widget {
+        position: fixed;
+        right: 24px;
+        bottom: 80px;
+        width: 420px;
+        height: 520px;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+    }
+    .chat-widget-header {
+        background: #6f58c9;
+        color: white;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: move;
+        user-select: none;
+    }
+    .chat-widget-header button {
+        background: transparent;
+        color: white;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .chat-task-tabs {
+        display: flex;
+        border-bottom: 1px solid #eee;
+    }
+    .chat-tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        cursor: pointer;
+        font-size: 14px;
+        color: #555;
+    }
+    .chat-tab.active {
+        background: #f5f5fc;
+        color: #6f58c9;
+        font-weight: 600;
+        border-bottom: 2px solid #6f58c9;
+    }
+    .chat-widget-body {
+        flex: 1;
+        padding: 12px;
+        overflow-y: auto;
+        background: #fafafa;
+        display: flex;
+        flex-direction: column;
+    }
+    .chat-message {
+        margin-bottom: 10px;
+        max-width: 90%;
+        word-wrap: break-word;
+        position: relative;
+        padding: 8px 10px;
+    }
+    .chat-message.user {
+        align-self: flex-end;
+        background: #e5e5f7;
+        color: #333;
+        border-radius: 10px 10px 0 10px;
+    }
+    .chat-message.assistant {
+        align-self: flex-start;
+        background: #f1f1f1;
+        color: #333;
+        border-radius: 10px 10px 10px 0;
+    }
+    .chat-copy-btn {
+        position: absolute;
+        right: 6px;
+        bottom: 6px;
+        font-size: 12px;
+        color: #6f58c9;
+        cursor: pointer;
+    }
+    .chat-widget-footer {
+        display: flex;
+        border-top: 1px solid #eee;
+        padding: 8px;
+    }
+    #chat-input {
+        flex: 1;
+        resize: none;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 6px;
+        font-size: 14px;
+        min-height: 40px;
+        max-height: 100px;
+        overflow-y: auto;
+    }
+    .chat-widget-footer button {
+        margin-left: 8px;
+        background: #6f58c9;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    /* 会话控制区域 */
+    .chat-session-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: #f8f8fb;
+    border-bottom: 1px solid #eee;
+    /* Allow controls to wrap onto the next line when there is not enough space */
+    flex-wrap: wrap;
+    }
+    .chat-session-controls select {
+        flex: 1;
+        padding: 4px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        background: #fff;
+    }
+    .chat-session-controls button {
+        padding: 4px 8px;
+        background: #6f58c9;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <h3 style="margin-bottom:14px;">知识导航</h3>
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="搜索卡片..." oninput="filterCards(this.value)">
+        <i class="search-icon">🔍</i>
+      </div>
+      <div class="card-list" id="card-list"></div>
+      <!-- 标签过滤：可折叠的标签列表 -->
+      <div class="tag-filter-header" onclick="toggleTagList()">
+        <span>标签过滤</span><span id="tag-arrow" style="margin-left:4px;">▼</span>
+      </div>
+      <div id="tag-list" class="collapsed"></div>
+      <div class="action-buttons">
+        <button id="btn-import" class="btn-primary"><i>📥</i>导入题库</button>
+        <button id="btn-new" class="btn-secondary"><i>✨</i>新建卡片</button>
+        <button id="btn-manage" class="btn-primary"><i>🗂</i>管理闪卡</button>
+        <button id="btn-review" class="btn-primary"><i>🔁</i>复习模式</button>
+      </div>
+    </div>
+    <!-- 主卡片区域 -->
+    <div class="flashcard-grid" id="flashcard-grid"></div>
+    <!-- 工具栏 -->
+    <div class="tools-section">
+      <div class="tool-card countdown">
+        <span class="countdown-label">距离考研还有</span>
+        <span class="countdown-value" id="countdown">计算中...</span>
+      </div>
+      <div class="study-stats">
+        <div class="stats-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h4 style="margin:0;">学习进度</h4>
+            <!-- 设置目标按钮 -->
+            <button class="set-goal-btn" onclick="setStudyGoal()">设定目标</button>
+          </div>
+          <div class="progress-ring">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <!-- 定义渐变，蓝紫过渡用于进度条 -->
+              <defs>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6366f1"></stop>
+                  <stop offset="100%" stop-color="#8b5cf6"></stop>
+                </linearGradient>
+              </defs>
+              <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24" />
+              <circle class="progress-ring-circle" cx="30" cy="30" r="24" />
+            </svg>
+            <span class="progress-text">0%</span>
+          </div>
+        </div>
+        <!-- 目标和计划信息 -->
+        <div id="goal-info" class="goal-info" style="margin-bottom:12px; font-size:14px; color:#64748b;"></div>
+        <div class="stats-grid">
+          <div class="stat-item"><span class="stat-label">已掌握</span><span class="stat-value" id="stat-mastered">0</span></div>
+          <div class="stat-item"><span class="stat-label">复习中</span><span class="stat-value" id="stat-reviewing">0</span></div>
+          <div class="stat-item"><span class="stat-label">未学习</span><span class="stat-value" id="stat-new">0</span></div>
+          <div class="stat-item highlight"><span class="stat-label">高频考点</span><span class="stat-value" id="stat-high">0</span></div>
+        </div>
+        <div class="study-streak">
+          <div class="streak-info" style="display:flex; flex-direction:column; align-items:flex-start;">
+            <span class="streak-label">连续学习</span>
+            <span class="streak-value" id="stat-streak">0天</span>
+          </div>
+          <!-- 连续学习链条 -->
+          <div id="streak-chain" class="streak-chain" style="display:flex; align-items:center; gap:4px; flex:1; justify-content:center;"></div>
+          <div class="today-count" style="display:flex; flex-direction:column; align-items:flex-end;">
+            <span class="today-label">今日已学</span>
+            <span class="today-value" id="stat-today">0张</span>
+          </div>
+        </div>
+      <!-- 新增：当日学习统计，包含今日新学和今日不熟的卡片数量 -->
+      <div class="stats-grid">
+        <div class="stat-item"><span class="stat-label">今日新学</span><span class="stat-value" id="stat-today-new">0</span></div>
+        <div class="stat-item"><span class="stat-label">今日不熟</span><span class="stat-value" id="stat-today-difficult">0</span></div>
+      </div>
+      <!-- 回顾模式按钮 -->
+      <div class="progress-controls" style="margin-top:12px; text-align:right;">
+        <button class="review-btn" onclick="openReviewModal()">回顾模式</button>
+      </div>
+      </div>
+      <div class="tool-card note-section">
+        <h4>学习笔记</h4>
+        <div class="note-tabs">
+          <button class="tab-btn active" data-tab="quick" onclick="switchNoteTab('quick')">快速笔记</button>
+          <button class="tab-btn" data-tab="organized" onclick="switchNoteTab('organized')">系统笔记</button>
+        </div>
+        <div class="tab-content active" id="quick-note">
+          <textarea placeholder="记录临时想法和笔记..." id="quick-textarea"></textarea>
+        </div>
+        <div class="tab-content" id="organized-note">
+          <div class="note-controls">
+            <select id="note-category" class="note-select"></select>
+            <button class="btn-new-category" onclick="addNoteCategory()">新建分类</button>
+          </div>
+          <!-- 模板选择 -->
+          <div id="template-select-container" style="margin-bottom:8px;">
+            <select id="note-template-select" class="note-select" onchange="applyNoteTemplate()">
+              <option value="">选择模板</option>
+              <option value="summary">考点总结模板</option>
+              <option value="case">案例分析模板</option>
+            </select>
+          </div>
+          <div class="note-editor">
+            <input type="text" class="note-title" placeholder="笔记标题...">
+            <textarea id="organized-textarea" placeholder="系统化的学习笔记..."></textarea>
+            <!-- 标签输入 -->
+            <input type="text" id="note-tags" placeholder="标签（逗号分隔）" style="padding:8px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; background:#ffffff;">
+            <!-- 附件上传 -->
+            <input type="file" id="note-attachment" accept="image/*" multiple style="padding:6px;">
+            <div id="note-attachments-preview" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;"></div>
+            <!-- 标签云显示 -->
+            <div id="tag-cloud" class="tag-cloud"></div>
+          </div>
+        </div>
+        <div class="note-actions">
+          <button class="btn-save" onclick="saveNote()">保存笔记</button>
+          <button class="btn-secondary" onclick="viewNoteHistory()">查看历史</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 卡片详情模态 -->
+  <div id="card-modal" onclick="closeCardModal(event)"></div>
+  <!-- 导入弹窗容器 -->
+  <div id="import-modal-root"></div>
+  <script>
+  // ============ 数据初始化与本地存储 ==============
+  let cards = JSON.parse(localStorage.getItem('flashcards') || '[]');
+  if (!cards.length) {
+    // 默认初始卡片
+    cards = [{
+      front: "公共管理的基本特征",
+      back: "1、公共性：服务对象和目标的公共性\n2、权力性：行政权力和法律保障\n3、服务性：以服务公众为根本宗旨\n4、专业性：需要专业知识和技能",
+      category: "公共管理",
+      chapter: "第一章 公共管理概论",
+      level: "重点",
+      examFrequency: "高频",
+      cardType: "特征分析",
+      clue: "思考：什么使公共管理区别于一般管理？",
+      context: "公共管理是一门专门研究政府管理活动的学科，其特征反映了其本质属性",
+      lastReview: null,
+      nextReview: null,
+      reviewCount: 0,
+      difficulty: 0,
+      mastery: 0,
+      wrongCount: 0,
+      tags: ["管理", "特征"],
+      links: []
+    }];
+  }
+  // 兼容旧数据结构，确保每张卡片都有 tags 和 links 字段
+  cards.forEach(c => {
+    if (!c.tags) c.tags = [];
+    if (!c.links) c.links = [];
+  });
+
+  // 当前选择的标签，用于高亮和清除过滤
+  let selectedTag = null;
+
+  // ============ 学习进度/统计 ==============
+  function statSummary() {
+    const total = cards.length;
+    let mastered = 0, reviewing = 0, unlearned = 0, high = 0;
+    cards.forEach(card => {
+      if (card.mastery >= 4) mastered++;
+      else if (card.mastery >= 1) reviewing++;
+      else unlearned++;
+      if (card.examFrequency === '高频') high++;
+    });
+    return { total, mastered, reviewing, unlearned, high };
+  }
+  function updateStats() {
+    const s = statSummary();
+    document.getElementById('stat-mastered').textContent = s.mastered;
+    document.getElementById('stat-reviewing').textContent = s.reviewing;
+    document.getElementById('stat-new').textContent = s.unlearned;
+    document.getElementById('stat-high').textContent = s.high;
+    // 进度环
+    const percent = s.total ? Math.round((s.mastered + s.reviewing) / s.total * 100) : 0;
+    const circle = document.querySelector('.progress-ring-circle');
+    const radius = 24, circumference = 2 * Math.PI * radius;
+    circle.setAttribute('stroke-dasharray', circumference);
+    circle.setAttribute('stroke-dashoffset', circumference * (1 - percent / 100));
+    document.querySelector('.progress-text').textContent = percent + '%';
+    document.getElementById('stat-today').textContent = getTodayStudyCount() + '张';
+    document.getElementById('stat-streak').textContent = getStudyStreak() + '天';
+    // 渲染连续学习链条和目标信息
+    renderStreakChain();
+    updateGoalInfo();
+    // 检查成就
+    checkAchievements();
+    // 统计今日新学和今日不熟的卡片数量
+    const todayDateStr = new Date().toDateString();
+    let todayNew = 0, todayDifficult = 0;
+    cards.forEach(card => {
+      if (card.lastReview && new Date(card.lastReview).toDateString() === todayDateStr) {
+        // 新学：今日第一次学习（reviewCount 小于等于 1）
+        if ((card.reviewCount || 0) <= 1) todayNew++;
+        // 不熟：今日复习但出现错误或掌握度偏低
+        if ((card.wrongCount || 0) > 0 || card.mastery < 3) todayDifficult++;
+      }
+    });
+    const todayNewEl = document.getElementById('stat-today-new');
+    const todayDiffEl = document.getElementById('stat-today-difficult');
+    if (todayNewEl) todayNewEl.textContent = todayNew;
+    if (todayDiffEl) todayDiffEl.textContent = todayDifficult;
+  }
+
+  // ============ 侧边栏 分类-章节 二级展开 ==============
+  let activeReviewFilter = () => true;
+  let currentCardList = cards;
+  function updateCardList(listCards = cards.filter(activeReviewFilter)) {
+    // 将 AI 生成的卡片分离，以便单独展示
+    const aiCards = listCards.filter(c => c.isAI);
+    const normalCards = listCards.filter(c => !c.isAI);
+    // 按科目和章节对普通卡片分组
+    const grouped = normalCards.reduce((acc, card) => {
+      if (!acc[card.category]) acc[card.category] = {};
+      if (!acc[card.category][card.chapter]) acc[card.category][card.chapter] = [];
+      acc[card.category][card.chapter].push(card);
+      return acc;
+    }, {});
+    const list = document.getElementById('card-list');
+    list.innerHTML = '';
+    // 全部卡片项
+    const allItem = document.createElement('div');
+    allItem.className = 'chapter-item';
+    allItem.textContent = '全部卡片';
+    allItem.onclick = () => { currentCardList = listCards; renderGrid(currentCardList); };
+    list.appendChild(allItem);
+    // 普通卡片的分类与章节展示
+    for (let cat in grouped) {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'category-item';
+      const catHeader = document.createElement('div');
+      catHeader.className = 'category-header';
+      catHeader.innerHTML = `<i>▶</i>${cat}`;
+      const catContent = document.createElement('div');
+      catContent.className = 'category-content';
+      catHeader.onclick = () => {
+        catHeader.classList.toggle('expanded');
+        catContent.classList.toggle('expanded');
+        currentCardList = Object.values(grouped[cat]).flat();
+        renderGrid(currentCardList);
+      };
+      for (let chap in grouped[cat]) {
+        const chapDiv = document.createElement('div');
+        chapDiv.className = 'chapter-item';
+        chapDiv.textContent = chap;
+        chapDiv.onclick = () => {
+          currentCardList = grouped[cat][chap];
+          renderGrid(currentCardList);
+        };
+        catContent.appendChild(chapDiv);
+      }
+      catDiv.appendChild(catHeader);
+      catDiv.appendChild(catContent);
+      list.appendChild(catDiv);
+    }
+    // AI 生成卡片单独显示
+    if (aiCards.length) {
+      const aiDiv = document.createElement('div');
+      aiDiv.className = 'category-item';
+      const aiHeader = document.createElement('div');
+      aiHeader.className = 'category-header';
+      aiHeader.innerHTML = `<i>▶</i>AI生成`;
+      const aiContent = document.createElement('div');
+      aiContent.className = 'category-content';
+      aiHeader.onclick = () => {
+        aiHeader.classList.toggle('expanded');
+        aiContent.classList.toggle('expanded');
+        currentCardList = aiCards;
+        renderGrid(currentCardList);
+      };
+      aiCards.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'chapter-item';
+        item.textContent = c.front;
+        item.onclick = () => {
+          currentCardList = [c];
+          renderGrid(currentCardList);
+        };
+        aiContent.appendChild(item);
+      });
+      aiDiv.appendChild(aiHeader);
+      aiDiv.appendChild(aiContent);
+      list.appendChild(aiDiv);
+    }
+    updateTagList();
+  }
+
+  // ============ 标签过滤 ==============
+  function updateTagList() {
+    const tagListDiv = document.getElementById('tag-list');
+    const tagSet = new Set();
+    cards.forEach(c => {
+      (c.tags || []).forEach(t => tagSet.add(t));
+    });
+    const tags = Array.from(tagSet).sort();
+    let html = '';
+    // 如果有选中的标签，添加清除按钮
+    if (selectedTag) {
+      html += `<span class="tag-clear" onclick="clearTagFilter()">全部</span>`;
+    }
+    html += tags.map(t => {
+      const activeClass = selectedTag === t ? ' active' : '';
+      return `<span class="tag-item${activeClass}" onclick="filterByTag('${t}')">${t}</span>`;
+    }).join('');
+    tagListDiv.innerHTML = html;
+  }
+
+  // 切换标签列表折叠/展开
+  function toggleTagList() {
+    const list = document.getElementById('tag-list');
+    const arrow = document.getElementById('tag-arrow');
+    if (list.classList.contains('collapsed')) {
+      list.classList.remove('collapsed');
+      list.classList.add('expanded');
+      if (arrow) arrow.textContent = '▲';
+    } else {
+      list.classList.remove('expanded');
+      list.classList.add('collapsed');
+      if (arrow) arrow.textContent = '▼';
+    }
+    // 更新头部箭头文本如果显示当前标签也需要反映箭头变化
+    const header = document.querySelector('.tag-filter-header');
+    if (header && !selectedTag) {
+      // Only update arrow when not filtering by tag
+      header.innerHTML = `<span>标签过滤</span><span id="tag-arrow" style="margin-left:4px;">${list.classList.contains('collapsed') ? '▼' : '▲'}</span>`;
+    }
+  }
+  function filterByTag(tag) {
+    // 选中指定标签并应用筛选
+    selectedTag = tag;
+    activeReviewFilter = card => (card.tags || []).includes(tag);
+    currentCardList = cards.filter(activeReviewFilter);
+    updateCardList(currentCardList);
+    renderGrid(currentCardList);
+    updateTagList();
+    // 展开标签列表，提示用户可清除筛选
+    const list = document.getElementById('tag-list');
+    if (list) {
+      list.classList.remove('collapsed');
+      list.classList.add('expanded');
+    }
+    const arrow = document.getElementById('tag-arrow');
+    if (arrow) arrow.textContent = '▲';
+    // 如果在模态中点击标签，关闭模态
+    closeCardModal();
+    // 在标签头部显示当前筛选并提供清除按钮
+    const header = document.querySelector('.tag-filter-header');
+    if (header) {
+      // 在标题中显示当前标签，并添加可点击的清除按钮。使用 event 传入清除函数，避免冒泡。
+      header.innerHTML = `<span>标签过滤：${tag}</span><span style="margin-left:4px;cursor:pointer;" title="清除筛选" onclick="clearTagFilter(event)">✕</span>`;
+    }
+  }
+
+  // 清除标签筛选
+  /**
+   * 清除当前的标签筛选。如果由鼠标事件触发，阻止事件冒泡，避免误触标签头的展开/折叠。
+   * 恢复默认的过滤器、卡片列表和标签标题。
+   * @param {Event} e 可选的事件对象，用于阻止冒泡。
+   */
+  function clearTagFilter(e) {
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
+    selectedTag = null;
+    activeReviewFilter = () => true;
+    currentCardList = cards;
+    updateCardList(cards);
+    renderGrid(cards);
+    updateTagList();
+    // 恢复标签过滤头部文本和箭头状态
+    const header = document.querySelector('.tag-filter-header');
+    if (header) {
+      const listCollapsed = document.getElementById('tag-list').classList.contains('collapsed');
+      header.innerHTML = `<span>标签过滤</span><span id="tag-arrow" style="margin-left:4px;">${listCollapsed ? '▼' : '▲'}</span>`;
+    }
+  }
+
+  // ============ 主卡片渲染 ==============
+  function truncateText(t, len = 15) {
+    return t && t.length > len ? t.slice(0, len) + '…' : (t || '');
+  }
+  function renderGrid(showCards = currentCardList) {
+    const grid = document.getElementById('flashcard-grid');
+    grid.innerHTML = '';
+    showCards.forEach(card => {
+      const div = document.createElement('div');
+      div.className = 'flashcard-thumb';
+      // 构建卡片缩略图，包含标题、线索和高频标记
+      const starActive = card.examFrequency === '高频';
+      div.innerHTML = `<div class="thumb-title">${truncateText(card.front, 40)}</div>` +
+                      `<div class="thumb-clue">${truncateText(card.clue || card.context || '', 40)}</div>` +
+                      `<div class="thumb-star ${starActive ? 'active' : ''}" title="标记为高频考点">★</div>`;
+      div.onclick = () => openCard(card.front);
+      // 绑定高频标记点击事件
+      const star = div.querySelector('.thumb-star');
+      star.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleHighFrequency(card.front);
+        // 切换状态
+        this.classList.toggle('active');
+      });
+      grid.appendChild(div);
+    });
+  }
+  // 格式化卡片内容：支持编号、备注等
+  function formatCardContent(content) {
+    let mainContent = content;
+    let notes = '';
+    // 提取括号中的注释到单独的 notes
+    const noteMatches = content.match(/（[^）]+）/g);
+    if (noteMatches) {
+      notes = noteMatches.join(' ');
+      mainContent = content.replace(/（[^）]+）/g, '');
+    }
+    // 将 Markdown 粗体和斜体转换为 HTML
+    mainContent = mainContent
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    // 处理编号列表
+    if (/1[\.、．]/.test(mainContent)) {
+      const points = mainContent.split(/(?=\d+[\.、．])/)
+        .map(point => point.trim()).filter(point => point.length > 0);
+      let html = '<div class="numbered-list">';
+      points.forEach(point => {
+        const match = point.match(/^(\d+[\.、．])\s*(.+)$/);
+        if (match) {
+          html += `<div class="list-item"><span class="number">${match[1]}</span><span class="content">${match[2]}</span></div>`;
+        } else {
+          html += `<div class="list-item"><span class="content">${point}</span></div>`;
+        }
+      });
+      html += '</div>';
+      if (notes) html += `<div class="note">${notes}</div>`;
+      return html;
+    }
+    // 非编号内容按段落分割，双换行分段，单换行保留为换行
+    const paragraphs = mainContent.split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+    return paragraphs + (notes ? `<div class="note">${notes}</div>` : '');
+  }
+  function openCard(front) {
+    const card = cards.find(c => c.front === front);
+    if (!card) return;
+    const modal = document.getElementById('card-modal');
+    // 渲染标签和链接。使用双引号包裹 onclick 以避免转义问题。
+    const tagsHtml = card.tags && card.tags.length ? `<div style="margin-top:8px;">标签：${card.tags.map(t => `<span class="tag-item" onclick="filterByTag('${t}')">${t}</span>`).join(' ')}</div>` : '';
+    const linksHtml = card.links && card.links.length ? `<div style="margin-top:8px;">相关卡片：${card.links.map(l => `<a href="#" onclick="openCard('${l}');return false;">${l}</a>`).join('，')}</div>` : '';
+    // 构建卡片详情HTML，去掉内联 onclick，使用 data-mastery 存储掌握度
+    modal.innerHTML = `
+      <div class="card-popup" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeCardModal(event)">×</button>
+        <div class="popup-title">${card.front}</div>
+        <div class="popup-content">
+          ${card.clue ? `<div class="popup-clue">${card.clue}</div>` : ''}
+          <div>${formatCardContent(card.back)}</div>
+          ${tagsHtml}
+          ${linksHtml}
+        </div>
+        <div class="mastery-buttons">
+          <button class="btn-primary" data-mastery="1" style="background:#fde68a;color:#b45309;"><span>😅</span>困难</button>
+          <button class="btn-primary" data-mastery="3" style="background:#bae6fd;color:#0369a1;"><span>🤔</span>模糊</button>
+          <button class="btn-primary" data-mastery="5" style="background:#bbf7d0;color:#166534;"><span>✨</span>清晰</button>
+        </div>
+      </div>`;
+    modal.onclick = closeCardModal;
+    modal.classList.add('active');
+    modal.style.opacity = '1';
+    // 绑定掌握度按钮事件
+    const btns = modal.querySelectorAll('.mastery-buttons button');
+    btns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const mastery = parseInt(this.getAttribute('data-mastery'), 10);
+        updateMastery(card.front, mastery, e);
+      });
+    });
+  }
+  function closeCardModal(e) {
+    if (e) e.stopPropagation();
+    const modal = document.getElementById('card-modal');
+    modal.classList.remove('active');
+    modal.innerHTML = '';
+  }
+
+  // ============ 搜索过滤 ==============
+  function filterCards(query) {
+    const q = query.trim().toLowerCase();
+    const base = cards.filter(activeReviewFilter);
+    if (!q) {
+      renderGrid(base);
+      currentCardList = base;
+      return;
+    }
+    const filtered = base.filter(card =>
+      card.front.toLowerCase().includes(q) ||
+      card.back.toLowerCase().includes(q) ||
+      card.category.toLowerCase().includes(q) ||
+      card.chapter.toLowerCase().includes(q) ||
+      (card.level || '').toLowerCase().includes(q) ||
+      (card.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+    currentCardList = filtered;
+    renderGrid(filtered);
+  }
+
+  // ============ 间隔重复算法 ==============
+  function spacedRepetition(card, mastery) {
+    const now = new Date();
+    const interval = Math.pow(2, card.reviewCount || 0) * (mastery / 5);
+    card.lastReview = now.toISOString();
+    card.reviewCount = (card.reviewCount || 0) + 1;
+    card.mastery = mastery;
+    const next = new Date(now);
+    next.setDate(now.getDate() + Math.max(1, Math.round(interval)));
+    card.nextReview = next.toISOString();
+    card.difficulty = Math.max(0, Math.min(5, (card.difficulty || 0) + (mastery <= 2 ? 1 : mastery >= 4 ? -1 : 0)));
+    return card;
+  }
+  function updateMastery(front, mastery, event) {
+    event.stopPropagation();
+    const i = cards.findIndex(c => c.front === front);
+    if (i === -1) return;
+    cards[i] = spacedRepetition(cards[i], mastery);
+    if (mastery <= 2) cards[i].wrongCount = (cards[i].wrongCount || 0) + 1;
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    incrementTodayStudyCount();
+    updateStats();
+    // 刷新卡片列表
+    document.querySelectorAll('.flashcard-thumb').forEach(f => f.classList.remove('flipped'));
+    const modal = document.getElementById('card-modal');
+    if (modal.classList.contains('active')) {
+      modal.style.transition = 'opacity 0.3s ease';
+      modal.style.opacity = '0';
+      setTimeout(() => {
+        closeCardModal();
+      }, 300);
+    }
+    setTimeout(() => {
+      const grid = document.getElementById('flashcard-grid');
+      grid.style.transition = 'opacity 0.3s ease';
+      grid.style.opacity = '0';
+      renderGrid(currentCardList);
+      setTimeout(() => { grid.style.opacity = '1'; }, 100);
+    }, 330);
+  }
+
+  // ============ 学习天数/打卡统计 ==============
+  function getTodayStudyCount() {
+    const today = new Date().toISOString().split('T')[0];
+    return parseInt(localStorage.getItem(`study_count_${today}`) || '0');
+  }
+  function incrementTodayStudyCount() {
+    const today = new Date().toISOString().split('T')[0];
+    const count = getTodayStudyCount();
+    localStorage.setItem(`study_count_${today}`, count + 1);
+  }
+  function getStudyStreak() {
+    let streak = 0;
+    const today = new Date();
+    const curr = new Date(today);
+    while (true) {
+      const dateStr = curr.toISOString().split('T')[0];
+      if (parseInt(localStorage.getItem(`study_count_${dateStr}`) || '0') === 0) break;
+      streak++;
+      curr.setDate(curr.getDate() - 1);
+    }
+    return streak;
+  }
+
+  // 切换高频考点标记：在卡片缩略图点击星标时调用
+  function toggleHighFrequency(front) {
+    const idx = cards.findIndex(c => c.front === front);
+    if (idx === -1) return;
+    const card = cards[idx];
+    // 切换 examFrequency 属性
+    if (card.examFrequency === '高频') {
+      card.examFrequency = '低频';
+    } else {
+      card.examFrequency = '高频';
+    }
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    // 更新统计和标签列表
+    updateStats();
+    updateTagList();
+  }
+
+  // ============ 学习目标与计划 ==============
+  let studyGoal = null;
+  // 加载目标
+  function loadStudyGoal() {
+    const data = localStorage.getItem('studyGoal');
+    studyGoal = data ? JSON.parse(data) : null;
+    updateGoalInfo();
+  }
+  // 设置目标：提示用户输入总目标张数，计算每日/每周计划
+  function setStudyGoal() {
+    const current = studyGoal && studyGoal.target ? studyGoal.target : '';
+    const input = prompt('请输入考研复习的总目标卡片数量，例如 200：', current);
+    if (!input) return;
+    const target = parseInt(input, 10);
+    if (isNaN(target) || target <= 0) {
+      alert('请输入有效的数字');
+      return;
+    }
+    // 计算剩余天数
+    const examDateStr = localStorage.getItem('examDate') || '';
+    const examDate = examDateStr ? new Date(examDateStr) : new Date(new Date().getFullYear(), 11, 23);
+    const now = new Date();
+    let days = Math.ceil((examDate - now) / 86400000);
+    if (days < 1) days = 1;
+    studyGoal = { target, setDate: now.toISOString() };
+    localStorage.setItem('studyGoal', JSON.stringify(studyGoal));
+    updateGoalInfo();
+    alert('目标已设置！系统将自动计算每日和每周计划。');
+  }
+  // 更新目标信息显示
+  function updateGoalInfo() {
+    const infoEl = document.getElementById('goal-info');
+    if (!infoEl) return;
+    if (!studyGoal) {
+      infoEl.textContent = '';
+      return;
+    }
+    const examDateStr = localStorage.getItem('examDate') || '';
+    const examDate = examDateStr ? new Date(examDateStr) : new Date(new Date().getFullYear(), 11, 23);
+    const now = new Date();
+    let days = Math.ceil((examDate - now) / 86400000);
+    if (days < 1) days = 1;
+    const daily = Math.ceil(studyGoal.target / days);
+    const weekly = daily * 7;
+    infoEl.innerHTML = `目标：掌握<strong>${studyGoal.target}</strong>张<br>每日计划：<strong>${daily}</strong>张 &nbsp; 每周计划：<strong>${weekly}</strong>张`;
+  }
+
+  // 渲染连续学习链条，显示彩色圆点表示连续学习天数
+  function renderStreakChain() {
+    const container = document.getElementById('streak-chain');
+    if (!container) return;
+    const streak = getStudyStreak();
+    const count = Math.max(streak, 7);
+    container.innerHTML = '';
+    for (let i = 1; i <= count; i++) {
+      const span = document.createElement('span');
+      span.className = 'chain-icon ' + (i <= streak ? 'active' : 'inactive');
+      container.appendChild(span);
+    }
+  }
+
+  // 成就检测：连续学习达到里程碑时弹窗提示
+  function checkAchievements() {
+    const streak = getStudyStreak();
+    if (streak >= 30 && !localStorage.getItem('badge30')) {
+      alert('🎉 恭喜你连续学习30天！你获得了30天学习徽章！');
+      localStorage.setItem('badge30', '1');
+    } else if (streak >= 7 && !localStorage.getItem('badge7')) {
+      alert('🎉 太棒了！你已经连续学习7天，继续保持！');
+      localStorage.setItem('badge7', '1');
+    }
+  }
+
+  // 打开回顾模式：分析弱项并展示
+  function openReviewModal() {
+    // 按章节统计掌握率
+    const summary = {};
+    cards.forEach(card => {
+      const key = `${card.category}/${card.chapter}`;
+      if (!summary[key]) summary[key] = { total: 0, mastered: 0 };
+      summary[key].total++;
+      if ((card.mastery || 0) >= 4) summary[key].mastered++;
+    });
+    const list = Object.entries(summary).map(([key, val]) => {
+      const rate = val.total ? val.mastered / val.total : 0;
+      return { key, rate };
+    }).sort((a, b) => a.rate - b.rate);
+    let html = '<h3>弱项分析</h3><table style="width:100%; border-collapse:collapse; margin-top:8px; font-size:14px;">';
+    html += '<tr style="background:#f8fafc;"><th style="text-align:left;padding:6px;">章节</th><th style="text-align:left;padding:6px;">掌握率</th></tr>';
+    list.forEach(item => {
+      html += `<tr><td style="padding:6px; border-bottom:1px solid #f1f5f9;">${item.key}</td><td style="padding:6px; border-bottom:1px solid #f1f5f9;">${Math.round(item.rate * 100)}%</td></tr>`;
+    });
+    html += '</table><div style="text-align:right; margin-top:12px;"><button class="btn-secondary" onclick="closeModal()">关闭</button></div>';
+    showModal(html);
+  }
+
+  // ============ AI 闪卡解析与导入 ==============
+  // 从助手回复文本中提取 JSON 数组并解析为对象
+  function parseJsonArray(text) {
+    try {
+      const start = text.indexOf('[');
+      const end   = text.lastIndexOf(']');
+      if (start !== -1 && end !== -1 && end > start) {
+        const jsonStr = text.substring(start, end + 1);
+        return JSON.parse(jsonStr);
+      }
+    } catch (err) {
+      console.error('解析 AI 输出失败', err);
+    }
+    return null;
+  }
+
+  // 导入 AI 生成的卡片数组
+  function importAICards(arr) {
+    if (!Array.isArray(arr)) return;
+    let imported = 0;
+    arr.forEach(item => {
+      if (!item || !item.front || !item.back) return;
+      // 去重：如果已有同名题干则跳过
+      const exists = cards.some(c => c.front === item.front);
+      if (exists) return;
+      const newCard = {
+        front: item.front,
+        back: item.back,
+        category: item.category || '公共管理学',
+        chapter: item.chapter || 'AI生成',
+        tags: item.tags || [],
+        links: item.links || [],
+        level: '重点',
+        examFrequency: '低频',
+        cardType: '',
+        clue: '',
+        context: '',
+        lastReview: null,
+        nextReview: null,
+        reviewCount: 0,
+        difficulty: 0,
+        mastery: 0,
+        wrongCount: 0,
+        isAI: true
+      };
+      cards.push(newCard);
+      imported++;
+    });
+    if (imported > 0) {
+      localStorage.setItem('flashcards', JSON.stringify(cards));
+      // 更新界面：只刷新 AI 列表显示
+      const filtered = cards.filter(activeReviewFilter);
+      updateCardList(filtered);
+      renderGrid(filtered);
+      updateStats();
+      updateTagList();
+      alert('已成功导入 ' + imported + ' 张 AI 生成的闪卡');
+    }
+  }
+
+  // ============ 倒计时 ==============
+  function updateCountdown() {
+    let dt = localStorage.getItem('examDate') || '';
+    let date = dt ? new Date(dt) : new Date(new Date().getFullYear(), 11, 23);
+    const now = new Date();
+    let days = Math.ceil((date - now) / 86400000);
+    if (days < 0) days = 0;
+    document.getElementById('countdown').textContent = days + '天';
+    document.querySelector('.countdown-label').onclick = function() {
+      const input = prompt('自定义目标日期（格式: 2024-12-21）', dt || '');
+      if (input) {
+        localStorage.setItem('examDate', input);
+        updateCountdown();
+      }
+    };
+  }
+
+  // ============ 导入与导出 ==============
+  function showImportModal() {
+    const modalRoot = document.getElementById('import-modal-root');
+    modalRoot.innerHTML = `
+    <div>
+      <div class="modal-content" style="max-width:440px;max-height:80vh;overflow-y:auto;">
+        <h3>批量导入题库</h3>
+        <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
+        <pre class="import-hint" style="background:#f8fafc;border:1px dashed #d1d5db;padding:8px;font-size:13px;margin:8px 0;white-space:pre-wrap;">[
+  {"front":"题干","back":"答案","category":"科目","chapter":"章节","tags":["标签1","标签2"],"links":["关联卡片"]}
+]</pre>
+        <textarea id="import-json" style="width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;"></textarea>
+        <input type="file" id="import-file" accept=".json" style="margin:10px 0;">
+        <div style="text-align:right;margin-top:10px;">
+          <button class="btn-secondary" onclick="document.getElementById('import-modal-root').innerHTML=''">取消</button>
+          <button class="btn-primary" onclick="processImport()">导入</button>
+        </div>
+      </div>
+    </div>`;
+    document.getElementById('import-file').onchange = function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        document.getElementById('import-json').value = ev.target.result;
+      };
+      reader.readAsText(file);
+    };
+  }
+  function processImport() {
+    let importData;
+    try {
+      importData = JSON.parse(document.getElementById('import-json').value);
+      if (!Array.isArray(importData)) throw Error('请粘贴JSON数组格式');
+      importData.forEach(card => {
+        if (!card.front || !card.back || !card.category || !card.chapter) throw Error('每条需含front,back,category,chapter');
+        card.lastReview = null; card.nextReview = null; card.reviewCount = 0; card.difficulty = 0; card.mastery = 0; card.wrongCount = 0;
+        if (!card.tags) card.tags = [];
+        if (!card.links) card.links = [];
+      });
+      // 去重
+      const fronts = new Set(cards.map(c => c.front));
+      const newCards = importData.filter(card => !fronts.has(card.front));
+      cards = cards.concat(newCards);
+      localStorage.setItem('flashcards', JSON.stringify(cards));
+      document.getElementById('import-modal-root').innerHTML = '';
+      // 导入后重置过滤器，刷新目录
+      activeReviewFilter = () => true;
+      updateCardList(cards);
+      renderGrid(cards);
+      updateStats();
+      updateTagList();
+      alert('导入成功！新增' + newCards.length + '条');
+    } catch (e) {
+      alert('导入失败:' + e.message);
+    }
+  }
+  function exportCards() {
+    const data = JSON.stringify(cards, null, 2);
+    const blob = new Blob([data], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'flashcards_backup_' + Date.now() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // ============ 新建卡片 ==============
+  function addNewCard() {
+    const front = prompt('输入题干(正面)...');
+    if (!front) return;
+    const back = prompt('输入答案(背面)...');
+    if (!back) return;
+    const category = prompt('所属科目/分类?', '未分类') || '未分类';
+    const chapter = prompt('所属章节?', '未分章') || '未分章';
+    const tagStr = prompt('输入标签，用逗号分隔(可选)...', '');
+    const linkStr = prompt('输入关联卡片题干，用逗号分隔(可选)...', '');
+    const tags = tagStr ? tagStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const links = linkStr ? linkStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    cards.push({
+      front, back, category, chapter,
+      level: '基础', examFrequency: '低频', lastReview: null, nextReview: null, reviewCount: 0,
+      difficulty: 0, mastery: 0, wrongCount: 0,
+      tags, links
+    });
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+  }
+
+  // ============ 笔记系统 ==============
+  let notes = JSON.parse(localStorage.getItem('flashcardNotes') || '{"quick":{},"organized":{}}');
+  function switchNoteTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.tab-btn[data-tab="' + tab + '"]').classList.add('active');
+    document.getElementById(tab + '-note').classList.add('active');
+  }
+  function saveNote() {
+    const tab = document.querySelector('.tab-btn.active').dataset.tab;
+    const today = new Date().toISOString().split('T')[0];
+    if (tab === 'quick') {
+      notes.quick[today] = document.getElementById('quick-textarea').value;
+    } else {
+      const cat = document.getElementById('note-category').value;
+      const title = document.querySelector('.note-title').value;
+      const content = document.getElementById('organized-textarea').value;
+      if (!cat) return alert('请选择分类');
+      // 获取标签数组
+      const tagsStr = document.getElementById('note-tags').value || '';
+      const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+      // 附件
+      const attachments = currentNoteAttachments && currentNoteAttachments.length ? currentNoteAttachments.slice() : [];
+      if (!notes.organized[cat]) notes.organized[cat] = [];
+      notes.organized[cat].push({ title, content, date: today, tags, attachments });
+      // 清空附件缓存
+      currentNoteAttachments = [];
+      // 清空附件预览
+      const preview = document.getElementById('note-attachments-preview');
+      if (preview) preview.innerHTML = '';
+      // 重置文件输入
+      const attachInput = document.getElementById('note-attachment');
+      if (attachInput) attachInput.value = '';
+      // 清空标签输入
+      document.getElementById('note-tags').value = '';
+    }
+    localStorage.setItem('flashcardNotes', JSON.stringify(notes));
+    alert('笔记已保存');
+    // 更新标签云显示
+    renderTagCloud();
+  }
+  function addNoteCategory() {
+    // 支持多层级分类，用斜杠分隔，如 “公共管理理论/政策执行案例”
+    let catPath = prompt('输入新分类名称（可使用“/”创建层级，例如 公共管理理论/政策执行案例）');
+    if (!catPath) return;
+    catPath = catPath.trim();
+    if (!catPath) return;
+    if (!notes.organized[catPath]) notes.organized[catPath] = [];
+    updateNoteCategories();
+  }
+  function updateNoteCategories() {
+    const sel = document.getElementById('note-category');
+    if (!sel) return;
+    // 构建选项，带缩进表示层级
+    let options = '<option value="">选择分类...</option>';
+    Object.keys(notes.organized).forEach(path => {
+      const parts = path.split('/');
+      const indent = '&nbsp;&nbsp;'.repeat(parts.length - 1);
+      const name   = parts[parts.length - 1];
+      options += `<option value="${path}">${indent}${name}</option>`;
+    });
+    sel.innerHTML = options;
+  }
+
+  // ============ 笔记附件处理 ==============
+  // 存储当前添加的附件，保存后重置
+  let currentNoteAttachments = [];
+  // 处理附件文件选择，生成缩略图并存储 Base64 数据
+  function handleAttachmentChange(event) {
+    const files = event.target.files;
+    currentNoteAttachments = [];
+    const preview = document.getElementById('note-attachments-preview');
+    if (preview) preview.innerHTML = '';
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function() {
+        const dataUrl = reader.result;
+        currentNoteAttachments.push({ name: file.name, data: dataUrl });
+        if (preview) {
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.style.width = '48px';
+          img.style.height = '48px';
+          img.style.objectFit = 'cover';
+          img.style.borderRadius = '4px';
+          preview.appendChild(img);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  function viewNoteHistory(tagFilter = null) {
+    // 构建时间轴式的历史笔记展示
+    let html = '<h3>历史笔记</h3><div class="timeline" style="max-height:70vh; overflow:auto; padding:6px;">';
+    const records = [];
+    // 快速笔记（不参与标签过滤）
+    Object.keys(notes.quick || {}).forEach(date => {
+      // 如果过滤标签，则不包含快速笔记
+      if (!tagFilter) {
+        records.push({
+          title: '快速笔记',
+          content: notes.quick[date],
+          date,
+          tags: [],
+          attachments: []
+        });
+      }
+    });
+    // 系统笔记
+    Object.keys(notes.organized || {}).forEach(cat => {
+      (notes.organized[cat] || []).forEach(note => {
+        // 如果有标签过滤且当前笔记不包含该标签，则跳过
+        if (tagFilter && (!note.tags || !note.tags.includes(tagFilter))) return;
+        records.push({
+          title: `${cat} - ${note.title || ''}`,
+          content: note.content,
+          date: note.date,
+          tags: note.tags || [],
+          attachments: note.attachments || []
+        });
+      });
+    });
+    records.sort((a, b) => b.date.localeCompare(a.date));
+    records.forEach(item => {
+      // 生成标签HTML，点击标签可进一步过滤
+      const tagsHtml = item.tags && item.tags.length ? item.tags.map(t => `<span class="tag-item" style="display:inline-block;background:#d9f99d;color:#365314;padding:2px 6px;border-radius:6px;font-size:12px;margin-right:4px;" onclick="filterNotesByTag('${t}')">#${t}</span>`).join('') : '';
+      // 生成附件缩略图
+      const attachHtml = item.attachments && item.attachments.length ? item.attachments.map(att => `<img src="${att.data}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:4px;">`).join('') : '';
+      html += `<div class="timeline-item" style="margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+        <div class="timeline-header" style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+          <div>
+            <span style="font-weight:600; color:#334155;">${item.date}</span>
+            <span style="margin-left:8px; color:#475569;">${item.title}</span>
+          </div>
+          <span style="font-size:18px; color:#94a3b8;">▼</span>
+        </div>
+        <div class="timeline-content" style="display:none; padding:6px 0 0 0; font-size:14px; color:#475569; line-height:1.5;">
+          <div>${item.content.replace(/\n/g, '<br>')}</div>
+          <div style="margin-top:6px;">${tagsHtml} ${attachHtml}</div>
+        </div>
+      </div>`;
+    });
+    html += '</div><div style="text-align:right; margin-top:8px;"><button class="btn-secondary" onclick="closeModal()">关闭</button></div>';
+    showModal(html);
+  }
+
+  // ============ 标签云与模板功能 ==============
+  // 预定义笔记模板，方便系统化记录
+  const noteTemplates = {
+    summary: `### 考点概述\n\n- **背景**：简述背景与意义。\n- **要点**：分点列出核心内容。\n- **影响**：讨论政策或理论的实际影响。\n- **记忆**：提供一句记忆小技巧或联想。`,
+    case: `### 案例分析\n\n**案例背景**：描述案例发生的背景及相关政策。\n\n**决策过程**：概述政策执行的过程和参与者。\n\n**结果评价**：评估案例结果的成效与不足。\n\n**启示**：总结案例对公共管理的启示。`
+  };
+
+  // 应用所选模板到笔记编辑区
+  function applyNoteTemplate() {
+    const sel = document.getElementById('note-template-select');
+    if (!sel) return;
+    const val = sel.value;
+    const textarea = document.getElementById('organized-textarea');
+    if (val && noteTemplates[val]) {
+      textarea.value = noteTemplates[val];
+    }
+  }
+
+  // 渲染标签云，展示最常使用的标签
+  function renderTagCloud() {
+    const container = document.getElementById('tag-cloud');
+    if (!container) return;
+    const tagCounts = {};
+    // 统计系统笔记的标签
+    Object.keys(notes.organized || {}).forEach(cat => {
+      (notes.organized[cat] || []).forEach(note => {
+        (note.tags || []).forEach(t => {
+          tagCounts[t] = (tagCounts[t] || 0) + 1;
+        });
+      });
+    });
+    const sorted = Object.entries(tagCounts).sort((a,b) => b[1] - a[1]).slice(0, 30);
+    container.innerHTML = sorted.map(([tag]) => `<span class="tag-item" onclick="filterNotesByTag('${tag}')">#${tag}</span>`).join('');
+  }
+
+  // 点击标签云中的标签，过滤历史笔记
+  function filterNotesByTag(tag) {
+    viewNoteHistory(tag);
+  }
+
+  // ============ 复习模式 ==============
+  function showReviewMenu() {
+    // 新增更多复习模式，结合记忆曲线和日常学习需求
+    const opts = [
+      // 默认模式：所有应复习的卡片
+      { name: '应复习', filter: card => !card.nextReview || new Date(card.nextReview) <= new Date() },
+      // 今日学习过的所有卡片
+      { name: '今日已学', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() },
+      // 本周学习过的卡片
+      { name: '本周已学', filter: card => card.lastReview && (new Date() - new Date(card.lastReview)) <= 7 * 86400000 },
+      // 今日新学：今日复习次数为 1 的卡片
+      { name: '今日新学', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() && (card.reviewCount || 0) <= 1 },
+      // 今日不熟：今日复习过但出现错误或掌握度低
+      { name: '今日不熟', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() && ((card.wrongCount || 0) > 0 || card.mastery < 3) },
+      // 即将到期：未来三天内需复习的卡片
+      { name: '即将到期', filter: card => card.nextReview && ((new Date(card.nextReview) - new Date()) / 86400000) <= 3 },
+      // 高频考点
+      { name: '高频考点', filter: card => card.examFrequency === '高频' },
+      // 错题本：错误次数多或掌握度低
+      { name: '错题本', filter: card => (card.wrongCount || 0) >= 2 || card.mastery < 3 },
+      // 全部卡片
+      { name: '全部卡片', filter: () => true },
+      // 乱序：随机排序所有卡片
+      { name: '乱序', filter: () => true, shuffle: true }
+    ];
+    let html = '<h3>选择复习模式</h3>';
+    opts.forEach((opt, i) => {
+      html += `<button class="btn-primary" style="margin:7px 0;width:100%;" onclick="applyReviewMode(${i})">${opt.name}</button>`;
+    });
+    html += `<div style="text-align:right;margin-top:8px;"><button class="btn-secondary" onclick="closeModal()">取消</button></div>`;
+    showModal(html);
+  }
+  function applyReviewMode(idx) {
+    // 复习模式列表需与 showReviewMenu 保持一致
+    const opts = [
+      { name: '应复习', filter: card => !card.nextReview || new Date(card.nextReview) <= new Date() },
+      { name: '今日已学', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() },
+      { name: '本周已学', filter: card => card.lastReview && (new Date() - new Date(card.lastReview)) <= 7 * 86400000 },
+      { name: '今日新学', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() && (card.reviewCount || 0) <= 1 },
+      { name: '今日不熟', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() && ((card.wrongCount || 0) > 0 || card.mastery < 3) },
+      { name: '即将到期', filter: card => card.nextReview && ((new Date(card.nextReview) - new Date()) / 86400000) <= 3 },
+      { name: '高频考点', filter: card => card.examFrequency === '高频' },
+      { name: '错题本', filter: card => (card.wrongCount || 0) >= 2 || card.mastery < 3 },
+      { name: '全部卡片', filter: () => true },
+      { name: '乱序', filter: () => true, shuffle: true }
+    ];
+    const opt = opts[idx];
+    activeReviewFilter = opt.filter;
+    let base = cards.filter(opt.filter);
+    if (opt.shuffle) base = base.sort(() => Math.random() - 0.5);
+    currentCardList = base;
+    renderGrid(base);
+    updateCardList(base);
+    closeModal();
+  }
+
+  // ============ 管理题库界面 ==============
+  function showManageLibrary() {
+    let html = '<h3 style="margin-bottom:12px;">管理题库</h3>';
+    html += '<div style="display:flex; gap:10px; margin-bottom:12px;">';
+    html += '<input type="text" id="manage-search" placeholder="搜索题干/答案/科目..." oninput="renderManageTable(this.value)" style="flex:1; padding:8px; border:1px solid #e2e8f0; border-radius:8px;">';
+    html += '<select id="manage-sort" onchange="renderManageTable()" style="padding:8px; border:1px solid #e2e8f0; border-radius:8px;">';
+    html += '<option value="mastery">按掌握度降序</option>';
+    html += '<option value="wrongCount">按错题次数降序</option>';
+    html += '<option value="nextReview">按复习时间升序</option>';
+    html += '<option value="lastReview">按最后复习时间降序</option>';
+    html += '<option value="reviewCount">按复习次数降序</option>';
+    html += '<option value="front">按题干A-Z</option>';
+    html += '</select></div>';
+    html += '<table class="manage-table" id="manage-table" style="width:100%;margin-bottom:16px;font-size:14px;"></table>';
+    html += '<div class="pagination" id="manage-pagination"></div>';
+    html += '<div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:16px;">';
+    html += '<button class="btn-secondary" onclick="closeModal()">关闭</button>';
+    html += '<button class="btn-primary" onclick="deleteByCategoryOrChapter()" style="background:#fbbf24; color:#fff;">删除章节/科目</button>';
+    html += '<button class="btn-primary" onclick="clearAllCards()" style="background:#ef4444; color:#fff;">清除所有</button>';
+    html += '<button class="btn-primary" onclick="batchExportSelected()" style="background:#4ade80;">导出选中</button>';
+    html += '<button class="btn-primary" onclick="batchDeleteSelected()" style="background:#ef4444;color:#fff;">批量删除</button>';
+    html += '</div>';
+    showModal(html);
+    renderManageTable();
+  }
+  function renderManageTable(query = '', page = 1) {
+    const q = query.toLowerCase();
+    let filtered = cards.filter(card => {
+      const text = q;
+      const inFront   = card.front.toLowerCase().includes(text);
+      const inBack    = card.back.toLowerCase().includes(text);
+      const inCat     = card.category.toLowerCase().includes(text) || card.chapter.toLowerCase().includes(text);
+      const inTags    = (card.tags || []).some(tag => tag.toLowerCase().includes(text));
+      return inFront || inBack || inCat || inTags;
+    });
+    const sort = document.getElementById('manage-sort').value;
+    if (sort === 'mastery') {
+      filtered.sort((a,b) => b.mastery - a.mastery);
+    } else if (sort === 'wrongCount') {
+      filtered.sort((a,b) => (b.wrongCount || 0) - (a.wrongCount || 0));
+    } else if (sort === 'nextReview') {
+      filtered.sort((a,b) => (new Date(a.nextReview || '9999-12-31') - new Date(b.nextReview || '9999-12-31')));
+    } else if (sort === 'lastReview') {
+      // 最近复习时间降序，未复习的排在最后
+      filtered.sort((a,b) => {
+        const da = a.lastReview ? new Date(a.lastReview) : new Date(0);
+        const db = b.lastReview ? new Date(b.lastReview) : new Date(0);
+        return db - da;
+      });
+    } else if (sort === 'reviewCount') {
+      filtered.sort((a,b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+    } else if (sort === 'front') {
+      filtered.sort((a,b) => a.front.localeCompare(b.front));
+    }
+    const perPage = 15;
+    const start = (page - 1) * perPage;
+    const paginated = filtered.slice(start, start + perPage);
+    let tableHtml = '<thead><tr>' +
+      '<th style="width:5%;"><input type="checkbox" onclick="toggleAllCheck(this)"></th>' +
+      '<th style="width:25%;">题干</th>' +
+      '<th style="width:15%;">科目/章节</th>' +
+      '<th style="width:10%;">掌握度</th>' +
+      '<th style="width:10%;">错题数</th>' +
+      '<th style="width:15%;">下次复习</th>' +
+      '<th style="width:15%;">标签</th>' +
+      '<th style="width:10%;">操作</th>' +
+      '</tr></thead><tbody>';
+    paginated.forEach(card => {
+      const nextReview = card.nextReview ? new Date(card.nextReview).toLocaleDateString() : '未复习';
+      const tagStr = (card.tags || []).join(', ');
+      tableHtml += `<tr>` +
+        `<td><input type="checkbox" data-front="${card.front}"></td>` +
+        `<td>${truncateText(card.front, 40)}</td>` +
+        `<td>${card.category}/${card.chapter}</td>` +
+        `<td>${card.mastery}</td>` +
+        `<td>${card.wrongCount || 0}</td>` +
+        `<td>${nextReview}</td>` +
+        `<td>${truncateText(tagStr, 20)}</td>` +
+        `<td>` +
+          `<button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick="showEditCard('${card.front}')">编辑</button> ` +
+          `<button class="btn-secondary" style="padding:4px 8px; font-size:12px; background:#ef4444; color:#fff;" onclick="deleteCard('${card.front}')">删除</button> ` +
+          `<button class="btn-secondary" style="padding:4px 8px; font-size:12px; background:#6366f1; color:#fff;" onclick="openCard('${card.front}')">查看</button>` +
+        `</td>` +
+      `</tr>`;
+    });
+    tableHtml += '</tbody>';
+    document.getElementById('manage-table').innerHTML = tableHtml;
+    // 分页
+    const pages = Math.ceil(filtered.length / perPage);
+    let pagHtml = '';
+    for (let i = 1; i <= pages; i++) {
+      pagHtml += `<span class="page-btn ${i === page ? 'active' : ''}" onclick="renderManageTable('${query}', ${i})" style="padding:6px 12px; background:${i === page ? '#6366f1' : '#f1f5f9'}; color:${i === page ? '#fff' : '#1e293b'}; border-radius:8px; cursor:pointer; margin:0 4px;">${i}</span>`;
+    }
+    document.getElementById('manage-pagination').innerHTML = pagHtml;
+  }
+  function toggleAllCheck(checkbox) {
+    document.querySelectorAll('.manage-table input[type="checkbox"]').forEach(cb => cb.checked = checkbox.checked);
+  }
+  function batchDeleteSelected() {
+    const selected = Array.from(document.querySelectorAll('.manage-table input[type="checkbox"]:checked')).map(cb => cb.dataset.front);
+    if (selected.length === 0 || !confirm(`确认删除${selected.length}张卡片？`)) return;
+    cards = cards.filter(c => !selected.includes(c.front));
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    renderManageTable();
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+  }
+  function batchExportSelected() {
+    const selected = Array.from(document.querySelectorAll('.manage-table input[type="checkbox"]:checked')).map(cb => cb.dataset.front);
+    if (selected.length === 0) return alert('请选择卡片');
+    const exportCards = cards.filter(c => selected.includes(c.front));
+    const data = JSON.stringify(exportCards, null, 2);
+    const blob = new Blob([data], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'selected_flashcards_' + Date.now() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // 删除全部闪卡，谨慎操作
+  function clearAllCards() {
+    if (!confirm('确认清空所有闪卡吗？此操作无法恢复！')) return;
+    cards = [];
+    localStorage.removeItem('flashcards');
+    // 更新界面
+    updateCardList([]);
+    renderGrid([]);
+    updateStats();
+    updateTagList();
+    closeModal();
+    alert('所有闪卡已删除');
+  }
+
+  // 根据科目或章节批量删除闪卡
+  function deleteByCategoryOrChapter() {
+    let cat = prompt('输入要删除的科目名称（可留空）');
+    let chap = prompt('输入要删除的章节名称（可留空）');
+    if (!cat && !chap) return;
+    cat = cat ? cat.trim() : '';
+    chap = chap ? chap.trim() : '';
+    if (!cat && !chap) return;
+    // 删除匹配的卡片
+    cards = cards.filter(card => {
+      if (cat && chap) {
+        return !(card.category === cat && card.chapter === chap);
+      } else if (cat) {
+        return card.category !== cat;
+      } else {
+        return card.chapter !== chap;
+      }
+    });
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered);
+    renderGrid(filtered);
+    updateStats();
+    updateTagList();
+    closeModal();
+    alert('已删除指定的闪卡');
+  }
+
+  // ============ 编辑/删除 卡片 ==============
+  function showEditCard(front) {
+    const i = cards.findIndex(c => c.front === front);
+    if (i === -1) return;
+    const card = cards[i];
+    let html = `
+    <h3>编辑卡片</h3>
+    <label>题干(正面):<input type="text" id="edit-front" value="${card.front}" style="width:95%;margin-bottom:7px;"></label><br>
+    <label>答案(背面):<textarea id="edit-back" style="width:95%;height:70px;">${card.back}</textarea></label><br>
+    <label>科目:<input type="text" id="edit-category" value="${card.category}" style="width:45%;"></label>
+    <label>章节:<input type="text" id="edit-chapter" value="${card.chapter}" style="width:45%;"></label><br>
+    <label>高频:<input type="checkbox" id="edit-high" ${card.examFrequency === '高频' ? 'checked' : ''}></label>
+    <label>重点:<input type="checkbox" id="edit-key" ${card.level === '重点' ? 'checked' : ''}></label><br>
+    <label>标签(逗号分隔):<input type="text" id="edit-tags" value="${(card.tags || []).join(', ')}" style="width:95%;margin:6px 0;"></label><br>
+    <label>链接(关联题干,逗号分隔):<input type="text" id="edit-links" value="${(card.links || []).join(', ')}" style="width:95%;"></label>
+    <div style="text-align:right;margin-top:13px;">
+      <button class="btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="doEditCard('${front}')">保存</button>
+      <button class="btn-primary" style="background:#f44;color:#fff;margin-left:8px;" onclick="deleteCard('${front}')">删除</button>
+    </div>`;
+    showModal(html);
+  }
+  function doEditCard(oldFront) {
+    const i = cards.findIndex(c => c.front === oldFront);
+    if (i === -1) return alert('未找到卡片');
+    const newFront = document.getElementById('edit-front').value.trim();
+    const newBack = document.getElementById('edit-back').value;
+    const newCat = document.getElementById('edit-category').value;
+    const newChap = document.getElementById('edit-chapter').value;
+    cards[i].front = newFront;
+    cards[i].back = newBack;
+    cards[i].category = newCat;
+    cards[i].chapter = newChap;
+    cards[i].examFrequency = document.getElementById('edit-high').checked ? '高频' : '低频';
+    cards[i].level = document.getElementById('edit-key').checked ? '重点' : '基础';
+    cards[i].tags = document.getElementById('edit-tags').value.split(',').map(s => s.trim()).filter(Boolean);
+    cards[i].links = document.getElementById('edit-links').value.split(',').map(s => s.trim()).filter(Boolean);
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+    closeModal();
+  }
+  function deleteCard(front) {
+    if (!confirm('确认删除？')) return;
+    cards = cards.filter(c => c.front !== front);
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+    closeModal();
+  }
+
+  // ============ 通用模态 ==============
+  function showModal(html) {
+    document.getElementById('import-modal-root').innerHTML = `<div><div class="modal-content" style="max-width:800px; max-height:80vh; overflow-y:auto;">${html}</div></div>`;
+  }
+  function closeModal() {
+    document.getElementById('import-modal-root').innerHTML = '';
+  }
+
+  // 页面初始化
+  function initializeApp() {
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered);
+    renderGrid(filtered);
+    updateStats();
+    updateCountdown();
+    // 加载学习目标和渲染目标信息
+    loadStudyGoal();
+    updateNoteCategories();
+    // 绑定附件选择事件
+    const attachInput = document.getElementById('note-attachment');
+    if (attachInput) attachInput.addEventListener('change', handleAttachmentChange);
+    // 恢复笔记输入
+    if (notes.quick) {
+      const latest = Object.keys(notes.quick).sort().pop();
+      if (latest) document.getElementById('quick-textarea').value = notes.quick[latest];
+    }
+    // 绑定侧边栏按钮事件
+    const importBtn = document.getElementById('btn-import');
+    const newBtn    = document.getElementById('btn-new');
+    const manageBtn = document.getElementById('btn-manage');
+    if (importBtn) importBtn.addEventListener('click', showImportModal);
+    if (newBtn)    newBtn.addEventListener('click', addNewCard);
+    if (manageBtn) manageBtn.addEventListener('click', showManageLibrary);
+    const reviewBtn = document.getElementById('btn-review');
+    if (reviewBtn) reviewBtn.addEventListener('click', showReviewMenu);
+    // 渲染标签云
+    renderTagCloud();
+    // 按键绑定：Ctrl+E 导出
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key === 'e') { e.preventDefault(); exportCards(); }
+    });
+  }
+  window.onload = initializeApp;
+  </script>
+
+  <!-- Chat Assistant -->
+  <button class="chat-toggle-btn" onclick="toggleChatWidget()">考研小助手</button>
+  <div class="chat-widget" id="chatWidget">
+    <div class="chat-widget-header" id="chatHeader" onmousedown="startDrag(event)">
+      <span>考研小助手</span>
+      <button onclick="toggleChatWidget()">✕</button>
+    </div>
+    <div class="chat-task-tabs">
+      <div class="chat-tab" data-task="generate" onclick="changeChatTab('generate')">生成闪卡</div>
+      <div class="chat-tab" data-task="recommend" onclick="changeChatTab('recommend')">复习推荐</div>
+      <div class="chat-tab" data-task="summary" onclick="changeChatTab('summary')">笔记总结</div>
+      <div class="chat-tab" data-task="qa" onclick="changeChatTab('qa')">答疑解惑</div>
+      <div class="chat-tab" data-task="progress" onclick="changeChatTab('progress')">进度激励</div>
+    </div>
+    <div class="chat-session-controls">
+      <select id="sessionSelect" onchange="changeChatSession(this.value)"></select>
+      <button onclick="newChatSession()" style="white-space: nowrap;">新建对话</button>
+      <!-- Button to set API key. Allows user to input a new DeepSeek API key at runtime -->
+      <button onclick="setApiKey()" style="white-space: nowrap;">设置Key</button>
+    </div>
+    <div class="chat-widget-body" id="chatBody"></div>
+    <div class="chat-widget-footer">
+      <textarea id="chat-input" placeholder="请输入内容，按Shift+Enter换行" onkeydown="chatInputKeyDown(event)"></textarea>
+      <button onclick="sendChatMessage()">发送</button>
+    </div>
+  </div>
+  <script>
+  // Chat Assistant Implementation
+  // API key，可通过用户设置覆盖
+  let deepseekKey = localStorage.getItem('deepseekApiKey') || 'sk-4c1305b56d93428e9b821586e2df8751';
+  let chatVisible = false;
+  let chatTask = 'generate';
+  const taskPrompts = {
+    generate: `你是一个公共管理考研闪卡生成AI助手，任务是根据用户输入生成 JSON 格式的闪卡。请遵循以下规范：\n1. **输入**：用户提供的关键词或题干，如“政策执行的核心要素”。\n2. **输出**：必须是一个 JSON 数组，数组只包含一个对象，对象字段为 front、back、category、chapter、tags、links，不得输出任何其他文本。\n3. **front**：用疑问句概括题意，50 字以内，例如“什么是政策执行？其核心要素包括哪些？”。\n4. **back**：答案需要详尽（200‑300 字），采用 Markdown 排版，并将内容细致拆分：\n   - **定义**：用一两句话精炼解释概念。\n   - **核心要素/机制**：用有序或无序列表深入分解关键要素，每个要素用一到两句话解释，条目尽量细小。\n   - **实际案例**：结合公共管理热点（如“双碳目标”）写一个案例，说明其与主题的关联。\n   - **优缺点分析**：分别列举优势与局限，可结合实际问题进行分析。\n   - **记忆技巧**：提供口诀或联想，鼓励使用表情符号提升趣味性。\n5. **category**：所属科目，如“公共管理学”；**chapter**：所属章节，如“决策理论”；**tags**：2‑5 个关键词的数组；**links**：关联卡片题干或 URL 的数组，无则为 []。\n6. 保证生成的 JSON 语法正确，内容贴合公共管理考研大纲，语言通俗易懂，便于理解记忆。`,
+    recommend: `你是一个公共管理考研助手，任务是根据用户学习进度推荐复习内容。请按照以下要求：\n1. 输入：用户学习数据（如已掌握多少张，复习中多少张，未学习多少张，最近答错的知识点及次数）。\n2. 分析薄弱点，推荐3-5张闪卡或知识点，优先级为：答错率高的 > 未学习的 > 复习中的。\n3. 输出格式：\n   - 推荐内容：知识点或闪卡标题\n   - 原因：为什么推荐（50字以内）\n   - 复习建议：如何记忆（如联想、例题）\n4. 确保推荐内容与公共管理考研相关，语言简洁。`,
+    summary: `你是一个公共管理考研助手，任务是从用户输入或上传资料中生成简洁笔记。请按照以下要求：\n1. 输入：用户上传的资料片段或输入的文字。\n2. 提取3-5个关键点，每点不超过50字，突出公共管理考研考点。\n3. 输出格式：\n   - 标题：章节或主题\n   - 关键点：编号列出\n   - 备注：适用场景或记忆建议\n4. 语言简洁，符合考研生阅读习惯。`,
+    qa: `你是一个公共管理考研助手，任务是回答用户的问题，提供简明解析。请按照以下要求：\n1. 输入：用户的问题。\n2. 输出：\n   - 答案：100-200字，简洁解释概念，包含1个实际案例。\n   - 记忆建议：简短口诀或联想。\n3. 确保答案符合公共管理考研知识体系，语言通俗。`,
+    progress: `你是一个公共管理考研助手，任务是生成学习进度报告和激励反馈。请按照以下要求：\n1. 输入：用户学习数据（如今日已学多少张，连续学习多少天，掌握比例）。\n2. 输出：\n   - 进度报告：总结今日完成、连续天数、掌握比例（50字以内）。\n   - 激励反馈：鼓励性短语（20字以内）。\n   - 图表建议：描述一个简单图表（如饼图，显示掌握/未掌握比例）。\n3. 语言积极，适合考研生。`
+  };
+  let chatHistories = {};
+  // 当前会话索引，用于每个任务跟踪选择的历史对话
+  let currentSessionIndex = {};
+  function loadChatHistories() {
+    const data = localStorage.getItem('chatHistories');
+    chatHistories = data ? JSON.parse(data) : {};
+    ['generate','recommend','summary','qa','progress'].forEach(t => {
+      if (!chatHistories[t]) chatHistories[t] = [];
+      // 如果是旧格式（直接存储消息数组），则转换为包含单个会话的数组
+      if (chatHistories[t].length > 0 && chatHistories[t][0] && chatHistories[t][0].role) {
+        const msgs = chatHistories[t];
+        const title = msgs[0] && msgs[0].text ? msgs[0].text.substring(0, 20) : '会话1';
+        chatHistories[t] = [{ title: title, messages: msgs }];
+      }
+      // 如果为空则初始化至少一个会话
+      if (chatHistories[t].length === 0) {
+        chatHistories[t].push({ title: '会话1', messages: [] });
+      }
+      // 初始化当前会话索引
+      if (typeof currentSessionIndex[t] === 'undefined') currentSessionIndex[t] = 0;
+    });
+  }
+  function saveChatHistories() {
+    localStorage.setItem('chatHistories', JSON.stringify(chatHistories));
+  }
+  function toggleChatWidget() {
+    chatVisible = !chatVisible;
+    const widget = document.getElementById('chatWidget');
+    widget.style.display = chatVisible ? 'flex' : 'none';
+    if (chatVisible) {
+      renderSessionOptions();
+      renderChatHistory();
+    }
+  }
+  function changeChatTab(task) {
+    chatTask = task;
+    updateTabUI();
+    renderSessionOptions();
+    renderChatHistory();
+  }
+  function updateTabUI() {
+    const tabs = document.querySelectorAll('.chat-tab');
+    tabs.forEach(tab => {
+      if (tab.getAttribute('data-task') === chatTask) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+  }
+
+  // 渲染会话下拉列表
+  function renderSessionOptions() {
+    const select = document.getElementById('sessionSelect');
+    if (!select) return;
+    select.innerHTML = '';
+    const sessions = chatHistories[chatTask] || [];
+    sessions.forEach((session, idx) => {
+      const option = document.createElement('option');
+      option.value = idx;
+      option.textContent = session.title || ('会话' + (idx + 1));
+      select.appendChild(option);
+    });
+    select.value = currentSessionIndex[chatTask] || 0;
+  }
+
+  // 新建对话
+  function newChatSession() {
+    if (!chatHistories[chatTask]) chatHistories[chatTask] = [];
+    const newIndex = chatHistories[chatTask].length + 1;
+    const newSession = { title: '会话' + newIndex, messages: [] };
+    chatHistories[chatTask].push(newSession);
+    currentSessionIndex[chatTask] = chatHistories[chatTask].length - 1;
+    saveChatHistories();
+    renderSessionOptions();
+    renderChatHistory();
+  }
+
+  // 切换当前对话
+  function changeChatSession(idx) {
+    const index = parseInt(idx);
+    if (isNaN(index)) return;
+    currentSessionIndex[chatTask] = index;
+    renderChatHistory();
+  }
+  function renderChatHistory() {
+    const chatBody = document.getElementById('chatBody');
+    chatBody.innerHTML = '';
+    const sessions = chatHistories[chatTask] || [];
+    const sessionIdx = currentSessionIndex[chatTask] || 0;
+    const messages = sessions[sessionIdx] ? sessions[sessionIdx].messages : [];
+    messages.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = 'chat-message ' + msg.role;
+      div.textContent = msg.text;
+      if (msg.role === 'assistant') {
+        const copyBtn = document.createElement('div');
+        copyBtn.className = 'chat-copy-btn';
+        copyBtn.textContent = '复制';
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(msg.text);
+        });
+        div.appendChild(copyBtn);
+      }
+      chatBody.appendChild(div);
+    });
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+  function appendMessage(role, text) {
+    if (!chatHistories[chatTask]) chatHistories[chatTask] = [];
+    // 确保当前会话存在
+    const sessions = chatHistories[chatTask];
+    const idx = currentSessionIndex[chatTask] || 0;
+    if (!sessions[idx]) {
+      sessions[idx] = { title: '会话' + (idx + 1), messages: [] };
+    }
+    // 追加消息
+    sessions[idx].messages.push({ role, text });
+    // 如果这是会话的第一条消息并且来自用户，则用该消息作为标题
+    if (role === 'user' && sessions[idx].messages.length === 1) {
+      sessions[idx].title = text.substring(0, 20);
+    }
+    saveChatHistories();
+    const chatBody = document.getElementById('chatBody');
+    const div = document.createElement('div');
+    div.className = 'chat-message ' + role;
+    div.textContent = text;
+    if (role === 'assistant') {
+      const copyBtn = document.createElement('div');
+      copyBtn.className = 'chat-copy-btn';
+      copyBtn.textContent = '复制';
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(text);
+      });
+      div.appendChild(copyBtn);
+    }
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+  function chatInputKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  }
+  function sendChatMessage() {
+    const textarea = document.getElementById('chat-input');
+    const content = textarea.value.trim();
+    if (!content) return;
+    appendMessage('user', content);
+    textarea.value = '';
+    const messages = [];
+    messages.push({ role: 'system', content: taskPrompts[chatTask] });
+    const sessions = chatHistories[chatTask] || [];
+    const idx = currentSessionIndex[chatTask] || 0;
+    const historyMsgs = sessions[idx] ? sessions[idx].messages : [];
+    historyMsgs.forEach(msg => {
+      messages.push({ role: msg.role === 'user' ? 'user' : 'assistant', content: msg.text });
+    });
+    messages.push({ role: 'user', content });
+    const payload = {
+      // 使用官方推荐模型 deepseek-chat【44111126585802†L65-L69】【44111126585802†L173-L177】
+      model: 'deepseek-chat',
+      messages: messages,
+      stream: false
+    };
+    fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + deepseekKey
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+      const assistantReply = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content ? data.choices[0].message.content.trim() : '抱歉，无法获取回答。';
+      appendMessage('assistant', assistantReply);
+      // 如果是生成闪卡任务，则尝试解析并导入卡片
+      if (chatTask === 'generate') {
+        const arr = parseJsonArray(assistantReply);
+        if (arr && Array.isArray(arr) && arr.length) {
+          importAICards(arr);
+        }
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      appendMessage('assistant', '请求失败，请检查网络或稍后再试。');
+    });
+  }
+
+  // Allow user to set a new DeepSeek API key at runtime. Prompts the user for a key,
+  // updates the global variable and persists it to localStorage. A success alert
+  // is shown when the key is updated. If the input is empty or cancelled, the
+  // key remains unchanged.
+  function setApiKey() {
+    const newKey = prompt('请输入新的 DeepSeek API 密钥：', deepseekKey);
+    if (newKey && newKey.trim()) {
+      deepseekKey = newKey.trim();
+      localStorage.setItem('deepseekApiKey', deepseekKey);
+      alert('API 密钥已更新！');
+    }
+  }
+  // Dragging support
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+  function startDrag(event) {
+    const widget = document.getElementById('chatWidget');
+    dragOffsetX = event.clientX - widget.offsetLeft;
+    dragOffsetY = event.clientY - widget.offsetTop;
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', endDrag);
+  }
+  function onDragMove(event) {
+    const widget = document.getElementById('chatWidget');
+    widget.style.left = (event.clientX - dragOffsetX) + 'px';
+    widget.style.top  = (event.clientY - dragOffsetY) + 'px';
+    widget.style.right = 'auto';
+    widget.style.bottom = 'auto';
+  }
+  function endDrag() {
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', endDrag);
+  }
+  // Initialize chat histories and UI on DOM load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadChatHistories();
+    updateTabUI();
+    renderSessionOptions();
+  });
+  </script>
+</body>
+</html>
