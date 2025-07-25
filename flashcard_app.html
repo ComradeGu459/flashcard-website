@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>科学闪卡背诵系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+    本应用是一个基于浏览器的闪卡学习工具。它支持分类、章节和标签管理，
+    内置间隔重复算法，支持批量导入/导出、错题本、复习模式、笔记系统等功能。
+    在原有功能的基础上引入了标签过滤和卡片链接功能，方便用户构建自己的知识网络。
+  -->
+  <style>
+    html,body { height: 100%; margin: 0; padding: 0; background: #f5f7fa; color: #222; }
+    body { font-family: 'Roboto Slab', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
+    .container {
+      display: grid;
+      grid-template-columns: 300px 1fr 320px;
+      gap: 28px;
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 24px 14px 38px 14px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .sidebar, .tools-section {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 20px #24335608, 0 1px 2px #24335611;
+      padding: 28px 20px 22px 20px;
+      min-width: 0;
+      min-height: 650px;
+      max-height: 92vh;
+      position: sticky;
+      top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+    .sidebar { align-self: start; }
+    .tools-section { align-self: start; }
+    .flashcard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-auto-rows: max-content;
+      gap: 28px;
+      align-items: stretch;
+      justify-items: stretch;
+      padding: 20px;
+      padding-bottom: 40px;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    /* 缩略卡片样式 */
+    .flashcard-thumb {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 120px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform .2s;
+    }
+    .flashcard-thumb:hover { transform: scale(1.05); }
+    .flashcard-thumb .thumb-title { font-weight: 600; color: #334155; font-size: 1.05em; margin-bottom: 4px; }
+    .flashcard-thumb .thumb-clue { color: #64748b; font-size: 0.9em; line-height: 1.4; }
+    /* 卡片模态弹窗 */
+    #card-modal {
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      overflow-y: auto;
+      z-index: 1500;
+      transition: opacity 0.3s ease;
+      opacity: 1;
+    }
+    #card-modal.active { display: flex; animation: fadeIn 0.25s; }
+    #card-modal .card-popup {
+      background: #fff;
+      max-width: 720px;
+      width: 100%;
+      max-height: 80vh;
+      padding: 32px;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+    }
+    #card-modal .close-btn {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      background: #f8fafc;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    #card-modal .popup-title { font-size: 1.3em; font-weight: 700; margin-bottom: 12px; }
+    #card-modal .popup-content { flex: 1; overflow-y: auto; line-height: 1.6; margin-bottom: 18px; color: #374151; }
+    #card-modal .popup-clue { color: #64748b; margin-bottom: 12px; }
+    #card-modal .mastery-buttons { justify-content: center; margin-top: 10px; }
+    /* 标签过滤区样式 */
+    #tag-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag-item {
+      display: inline-block;
+      background: #e5e7eb;
+      color: #374151;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .tag-item:hover {
+      background: #c7d2fe;
+      color: #4338ca;
+    }
+    /* 学习统计区 */
+    .progress-ring { position: relative; width: 60px; height: 60px; }
+    .progress-ring-circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 4; }
+    .progress-ring-circle {
+      fill: none;
+      stroke: #6366f1;
+      stroke-width: 4;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      transition: stroke-dashoffset 0.3s ease;
+    }
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 15px;
+      font-weight: 600;
+      color: #6366f1;
+      pointer-events: none;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .stat-item {
+      background: #f8fafc;
+      padding: 10px 0 6px 0;
+      border-radius: 13px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.17s;
+      font-size: 15px;
+    }
+    .stat-item.highlight { background: linear-gradient(135deg,#6366f1,#3b82f6); color: #fff; }
+    .stat-label { font-size: 13px; color: #64748b; }
+    .stat-item.highlight .stat-label, .stat-item.highlight .stat-value { color: #fff; }
+    .stat-value { font-size: 20px; font-weight: 600; color: #1a202c; }
+    .study-streak { display: flex; justify-content: space-between; background: #f8fafc; padding: 13px 16px; border-radius: 12px; }
+    .streak-info, .today-count { display: flex; flex-direction: column; align-items: center; }
+    .streak-label, .today-label { font-size: 13px; color: #64748b; }
+    .streak-value, .today-value { font-size: 16px; font-weight: 600; color: #6366f1; }
+    /* 搜索输入与侧边栏分类样式 */
+    .search-input { width: 100%; padding: 11px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: #f8fafc; margin-bottom: 8px; }
+    .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px #c7d2fe; }
+    .search-box { position: relative; }
+    .search-icon { position: absolute; right: 17px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+    .card-list { list-style: none; padding: 0; margin: 0; }
+    .category-item { margin-bottom: 14px; }
+    .category-header { display: flex; align-items: center; padding: 7px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; transition: all 0.18s; }
+    .category-header:hover { background: #f1f5f9; }
+    .category-header i { margin-right: 8px; transition: transform 0.2s; }
+    .category-header.expanded i { transform: rotate(90deg); }
+    .category-content { margin-left: 20px; padding: 8px 0; display: none; }
+    .category-content.expanded { display: block; }
+    .chapter-item { margin: 4px 0; padding: 4px 12px; border-radius: 7px; cursor: pointer; transition: all 0.18s; }
+    .chapter-item:hover { background: #e0e7ff; color: #6366f1; }
+    /* 按钮样式 */
+    .btn-primary, .btn-secondary, .btn-save {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      outline: none;
+    }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #3b82f6); color: #fff; }
+    .btn-secondary { background: #f1f5f9; color: #1e293b; }
+    .btn-save { background: #dcfce7; color: #15803d; margin-top: 12px; }
+    .btn-primary:hover, .btn-secondary:hover, .btn-save:hover { filter: brightness(1.1); }
+    .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+    /* 笔记系统UI */
+    .note-section { background: #fff; border-radius: 16px; padding: 18px 14px 12px 14px; }
+    .note-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 9px; }
+    .tab-btn { padding: 8px 18px; border: none; border-radius: 8px; background: #f1f5f9; color: #64748b; cursor: pointer; }
+    .tab-btn.active { background: #6366f1; color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .note-controls { display: flex; gap: 10px; margin-bottom: 13px; }
+    .note-select { flex: 1; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+    .btn-new-category { padding: 8px 16px; background: #4ade80; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .note-editor { display: flex; flex-direction: column; gap: 10px; }
+    .note-title { padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; }
+    .note-editor textarea { height: 100px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical; font-size: 14px; line-height: 1.6; }
+    .note-actions { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+    /* 分页按钮 */
+    .page-btn { cursor: pointer; }
+    /* 动画 */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .flashcard-thumb, .sidebar, .tools-section, .modal-content { animation: fadeIn 0.4s; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <h3 style="margin-bottom:14px;">知识导航</h3>
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="搜索卡片..." oninput="filterCards(this.value)">
+        <i class="search-icon">🔍</i>
+      </div>
+      <div class="card-list" id="card-list"></div>
+      <h4 style="margin-top:10px;">标签过滤</h4>
+      <div id="tag-list"></div>
+      <div class="action-buttons">
+        <button class="btn-primary" onclick="showImportModal()"><i>📥</i>导入题库</button>
+        <button class="btn-secondary" onclick="addNewCard()"><i>✨</i>新建卡片</button>
+      </div>
+    </div>
+    <!-- 主卡片区域 -->
+    <div class="flashcard-grid" id="flashcard-grid"></div>
+    <!-- 工具栏 -->
+    <div class="tools-section">
+      <div class="tool-card countdown">
+        <span class="countdown-label">距离考研还有</span>
+        <span class="countdown-value" id="countdown">计算中...</span>
+      </div>
+      <div class="study-stats">
+        <div class="stats-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+          <h4>学习进度</h4>
+          <div class="progress-ring">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24" />
+              <circle class="progress-ring-circle" cx="30" cy="30" r="24" />
+            </svg>
+            <span class="progress-text">0%</span>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item"><span class="stat-label">已掌握</span><span class="stat-value" id="stat-mastered">0</span></div>
+          <div class="stat-item"><span class="stat-label">复习中</span><span class="stat-value" id="stat-reviewing">0</span></div>
+          <div class="stat-item"><span class="stat-label">未学习</span><span class="stat-value" id="stat-new">0</span></div>
+          <div class="stat-item highlight"><span class="stat-label">高频考点</span><span class="stat-value" id="stat-high">0</span></div>
+        </div>
+        <div class="study-streak">
+          <div class="streak-info">
+            <span class="streak-label">连续学习</span>
+            <span class="streak-value" id="stat-streak">0天</span>
+          </div>
+          <div class="today-count">
+            <span class="today-label">今日已学</span>
+            <span class="today-value" id="stat-today">0张</span>
+          </div>
+        </div>
+      </div>
+      <div class="tool-card note-section">
+        <h4>学习笔记</h4>
+        <div class="note-tabs">
+          <button class="tab-btn active" data-tab="quick" onclick="switchNoteTab('quick')">快速笔记</button>
+          <button class="tab-btn" data-tab="organized" onclick="switchNoteTab('organized')">系统笔记</button>
+        </div>
+        <div class="tab-content active" id="quick-note">
+          <textarea placeholder="记录临时想法和笔记..." id="quick-textarea"></textarea>
+        </div>
+        <div class="tab-content" id="organized-note">
+          <div class="note-controls">
+            <select id="note-category" class="note-select"></select>
+            <button class="btn-new-category" onclick="addNoteCategory()">新建分类</button>
+          </div>
+          <div class="note-editor">
+            <input type="text" class="note-title" placeholder="笔记标题...">
+            <textarea id="organized-textarea" placeholder="系统化的学习笔记..."></textarea>
+          </div>
+        </div>
+        <div class="note-actions">
+          <button class="btn-save" onclick="saveNote()">保存笔记</button>
+          <button class="btn-secondary" onclick="viewNoteHistory()">查看历史</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 卡片详情模态 -->
+  <div id="card-modal" onclick="closeCardModal(event)"></div>
+  <!-- 导入弹窗容器 -->
+  <div id="import-modal-root"></div>
+  <script>
+  // ============ 数据初始化与本地存储 ==============
+  let cards = JSON.parse(localStorage.getItem('flashcards') || '[]');
+  if (!cards.length) {
+    // 默认初始卡片
+    cards = [{
+      front: "公共管理的基本特征",
+      back: "1、公共性：服务对象和目标的公共性\n2、权力性：行政权力和法律保障\n3、服务性：以服务公众为根本宗旨\n4、专业性：需要专业知识和技能",
+      category: "公共管理",
+      chapter: "第一章 公共管理概论",
+      level: "重点",
+      examFrequency: "高频",
+      cardType: "特征分析",
+      clue: "思考：什么使公共管理区别于一般管理？",
+      context: "公共管理是一门专门研究政府管理活动的学科，其特征反映了其本质属性",
+      lastReview: null,
+      nextReview: null,
+      reviewCount: 0,
+      difficulty: 0,
+      mastery: 0,
+      wrongCount: 0,
+      tags: ["管理", "特征"],
+      links: []
+    }];
+  }
+  // 兼容旧数据结构，确保每张卡片都有 tags 和 links 字段
+  cards.forEach(c => {
+    if (!c.tags) c.tags = [];
+    if (!c.links) c.links = [];
+  });
+
+  // ============ 学习进度/统计 ==============
+  function statSummary() {
+    const total = cards.length;
+    let mastered = 0, reviewing = 0, unlearned = 0, high = 0;
+    cards.forEach(card => {
+      if (card.mastery >= 4) mastered++;
+      else if (card.mastery >= 1) reviewing++;
+      else unlearned++;
+      if (card.examFrequency === '高频') high++;
+    });
+    return { total, mastered, reviewing, unlearned, high };
+  }
+  function updateStats() {
+    const s = statSummary();
+    document.getElementById('stat-mastered').textContent = s.mastered;
+    document.getElementById('stat-reviewing').textContent = s.reviewing;
+    document.getElementById('stat-new').textContent = s.unlearned;
+    document.getElementById('stat-high').textContent = s.high;
+    // 进度环
+    const percent = s.total ? Math.round((s.mastered + s.reviewing) / s.total * 100) : 0;
+    const circle = document.querySelector('.progress-ring-circle');
+    const radius = 24, circumference = 2 * Math.PI * radius;
+    circle.setAttribute('stroke-dasharray', circumference);
+    circle.setAttribute('stroke-dashoffset', circumference * (1 - percent / 100));
+    document.querySelector('.progress-text').textContent = percent + '%';
+    document.getElementById('stat-today').textContent = getTodayStudyCount() + '张';
+    document.getElementById('stat-streak').textContent = getStudyStreak() + '天';
+  }
+
+  // ============ 侧边栏 分类-章节 二级展开 ==============
+  let activeReviewFilter = () => true;
+  let currentCardList = cards;
+  function updateCardList(listCards = cards.filter(activeReviewFilter)) {
+    const grouped = listCards.reduce((acc, card) => {
+      if (!acc[card.category]) acc[card.category] = {};
+      if (!acc[card.category][card.chapter]) acc[card.category][card.chapter] = [];
+      acc[card.category][card.chapter].push(card);
+      return acc;
+    }, {});
+    const list = document.getElementById('card-list');
+    list.innerHTML = '';
+    // 全部卡片项
+    const allItem = document.createElement('div');
+    allItem.className = 'chapter-item';
+    allItem.textContent = '全部卡片';
+    allItem.onclick = () => { currentCardList = listCards; renderGrid(currentCardList); };
+    list.appendChild(allItem);
+    for (let cat in grouped) {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'category-item';
+      const catHeader = document.createElement('div');
+      catHeader.className = 'category-header';
+      catHeader.innerHTML = `<i>▶</i>${cat}`;
+      catHeader.onclick = () => {
+        catHeader.classList.toggle('expanded');
+        catContent.classList.toggle('expanded');
+        currentCardList = Object.values(grouped[cat]).flat();
+        renderGrid(currentCardList);
+      };
+      const catContent = document.createElement('div');
+      catContent.className = 'category-content';
+      for (let chap in grouped[cat]) {
+        const chapDiv = document.createElement('div');
+        chapDiv.className = 'chapter-item';
+        chapDiv.textContent = chap;
+        chapDiv.onclick = () => {
+          currentCardList = grouped[cat][chap];
+          renderGrid(currentCardList);
+        };
+        catContent.appendChild(chapDiv);
+      }
+      catDiv.appendChild(catHeader);
+      catDiv.appendChild(catContent);
+      list.appendChild(catDiv);
+    }
+    updateTagList();
+  }
+
+  // ============ 标签过滤 ==============
+  function updateTagList() {
+    const tagListDiv = document.getElementById('tag-list');
+    const tagSet = new Set();
+    cards.forEach(c => {
+      (c.tags || []).forEach(t => tagSet.add(t));
+    });
+    const tags = Array.from(tagSet).sort();
+    tagListDiv.innerHTML = tags.map(t => `<span class="tag-item" onclick="filterByTag('${t}')">${t}</span>`).join('');
+  }
+  function filterByTag(tag) {
+    activeReviewFilter = card => (card.tags || []).includes(tag);
+    currentCardList = cards.filter(activeReviewFilter);
+    updateCardList(currentCardList);
+    renderGrid(currentCardList);
+    // 如果在模态中点击标签，关闭模态
+    closeCardModal();
+  }
+
+  // ============ 主卡片渲染 ==============
+  function truncateText(t, len = 15) {
+    return t && t.length > len ? t.slice(0, len) + '…' : (t || '');
+  }
+  function renderGrid(showCards = currentCardList) {
+    const grid = document.getElementById('flashcard-grid');
+    grid.innerHTML = '';
+    showCards.forEach(card => {
+      const div = document.createElement('div');
+      div.className = 'flashcard-thumb';
+      div.innerHTML = `<div class="thumb-title">${truncateText(card.front, 40)}</div>` +
+                      `<div class="thumb-clue">${truncateText(card.clue || card.context || '', 40)}</div>`;
+      div.onclick = () => openCard(card.front);
+      grid.appendChild(div);
+    });
+  }
+  // 格式化卡片内容：支持编号、备注等
+  function formatCardContent(content) {
+    let mainContent = content;
+    let notes = '';
+    const noteMatches = content.match(/（[^）]+）/g);
+    if (noteMatches) {
+      notes = noteMatches.join(' ');
+      mainContent = content.replace(/（[^）]+）/g, '');
+    }
+    // 处理编号列表
+    if (/1[\.、．]/.test(mainContent)) {
+      const points = mainContent.split(/(?=\d+[\.、．])/)
+        .map(point => point.trim()).filter(point => point.length > 0);
+      let html = '<div class="numbered-list">';
+      points.forEach(point => {
+        const match = point.match(/^(\d+[\.、．])\s*(.+)$/);
+        if (match) {
+          html += `<div class="list-item"><span class="number">${match[1]}</span><span class="content">${match[2]}</span></div>`;
+        } else {
+          html += `<div class="list-item"><span class="content">${point}</span></div>`;
+        }
+      });
+      html += '</div>';
+      if (notes) html += `<div class="note">${notes}</div>`;
+      return html;
+    }
+    return `<p>${mainContent.replace(/\n/g, '<br>')}</p>${notes ? `<div class="note">${notes}</div>` : ''}`;
+  }
+  function openCard(front) {
+    const card = cards.find(c => c.front === front);
+    if (!card) return;
+    const modal = document.getElementById('card-modal');
+    // 渲染标签和链接。使用双引号包裹 onclick 以避免转义问题。
+    const tagsHtml = card.tags && card.tags.length ? `<div style="margin-top:8px;">标签：${card.tags.map(t => `<span class="tag-item" onclick="filterByTag('${t}')">${t}</span>`).join(' ')}</div>` : '';
+    const linksHtml = card.links && card.links.length ? `<div style="margin-top:8px;">相关卡片：${card.links.map(l => `<a href="#" onclick="openCard('${l}');return false;">${l}</a>`).join('，')}</div>` : '';
+    modal.innerHTML = `
+      <div class="card-popup" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeCardModal(event)">×</button>
+        <div class="popup-title">${card.front}</div>
+        <div class="popup-content">
+          ${card.clue ? `<div class="popup-clue">${card.clue}</div>` : ''}
+          <div>${formatCardContent(card.back)}</div>
+          ${tagsHtml}
+          ${linksHtml}
+        </div>
+        <div class="mastery-buttons">
+          <button class="btn-primary" style="background:#fde68a;color:#b45309;" onclick="updateMastery('${card.front}',1,event)"><span>😅</span>困难</button>
+          <button class="btn-primary" style="background:#bae6fd;color:#0369a1;" onclick="updateMastery('${card.front}',3,event)"><span>🤔</span>模糊</button>
+          <button class="btn-primary" style="background:#bbf7d0;color:#166534;" onclick="updateMastery('${card.front}',5,event)"><span>✨</span>清晰</button>
+        </div>
+      </div>`;
+    modal.onclick = closeCardModal;
+    modal.classList.add('active');
+    modal.style.opacity = '1';
+  }
+  function closeCardModal(e) {
+    if (e) e.stopPropagation();
+    const modal = document.getElementById('card-modal');
+    modal.classList.remove('active');
+    modal.innerHTML = '';
+  }
+
+  // ============ 搜索过滤 ==============
+  function filterCards(query) {
+    const q = query.trim().toLowerCase();
+    const base = cards.filter(activeReviewFilter);
+    if (!q) {
+      renderGrid(base);
+      currentCardList = base;
+      return;
+    }
+    const filtered = base.filter(card =>
+      card.front.toLowerCase().includes(q) ||
+      card.back.toLowerCase().includes(q) ||
+      card.category.toLowerCase().includes(q) ||
+      card.chapter.toLowerCase().includes(q) ||
+      (card.level || '').toLowerCase().includes(q) ||
+      (card.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+    currentCardList = filtered;
+    renderGrid(filtered);
+  }
+
+  // ============ 间隔重复算法 ==============
+  function spacedRepetition(card, mastery) {
+    const now = new Date();
+    const interval = Math.pow(2, card.reviewCount || 0) * (mastery / 5);
+    card.lastReview = now.toISOString();
+    card.reviewCount = (card.reviewCount || 0) + 1;
+    card.mastery = mastery;
+    const next = new Date(now);
+    next.setDate(now.getDate() + Math.max(1, Math.round(interval)));
+    card.nextReview = next.toISOString();
+    card.difficulty = Math.max(0, Math.min(5, (card.difficulty || 0) + (mastery <= 2 ? 1 : mastery >= 4 ? -1 : 0)));
+    return card;
+  }
+  function updateMastery(front, mastery, event) {
+    event.stopPropagation();
+    const i = cards.findIndex(c => c.front === front);
+    if (i === -1) return;
+    cards[i] = spacedRepetition(cards[i], mastery);
+    if (mastery <= 2) cards[i].wrongCount = (cards[i].wrongCount || 0) + 1;
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    incrementTodayStudyCount();
+    updateStats();
+    // 刷新卡片列表
+    document.querySelectorAll('.flashcard-thumb').forEach(f => f.classList.remove('flipped'));
+    const modal = document.getElementById('card-modal');
+    if (modal.classList.contains('active')) {
+      modal.style.transition = 'opacity 0.3s ease';
+      modal.style.opacity = '0';
+      setTimeout(() => {
+        closeCardModal();
+      }, 300);
+    }
+    setTimeout(() => {
+      const grid = document.getElementById('flashcard-grid');
+      grid.style.transition = 'opacity 0.3s ease';
+      grid.style.opacity = '0';
+      renderGrid(currentCardList);
+      setTimeout(() => { grid.style.opacity = '1'; }, 100);
+    }, 330);
+  }
+
+  // ============ 学习天数/打卡统计 ==============
+  function getTodayStudyCount() {
+    const today = new Date().toISOString().split('T')[0];
+    return parseInt(localStorage.getItem(`study_count_${today}`) || '0');
+  }
+  function incrementTodayStudyCount() {
+    const today = new Date().toISOString().split('T')[0];
+    const count = getTodayStudyCount();
+    localStorage.setItem(`study_count_${today}`, count + 1);
+  }
+  function getStudyStreak() {
+    let streak = 0;
+    const today = new Date();
+    const curr = new Date(today);
+    while (true) {
+      const dateStr = curr.toISOString().split('T')[0];
+      if (parseInt(localStorage.getItem(`study_count_${dateStr}`) || '0') === 0) break;
+      streak++;
+      curr.setDate(curr.getDate() - 1);
+    }
+    return streak;
+  }
+
+  // ============ 倒计时 ==============
+  function updateCountdown() {
+    let dt = localStorage.getItem('examDate') || '';
+    let date = dt ? new Date(dt) : new Date(new Date().getFullYear(), 11, 23);
+    const now = new Date();
+    let days = Math.ceil((date - now) / 86400000);
+    if (days < 0) days = 0;
+    document.getElementById('countdown').textContent = days + '天';
+    document.querySelector('.countdown-label').onclick = function() {
+      const input = prompt('自定义目标日期（格式: 2024-12-21）', dt || '');
+      if (input) {
+        localStorage.setItem('examDate', input);
+        updateCountdown();
+      }
+    };
+  }
+
+  // ============ 导入与导出 ==============
+  function showImportModal() {
+    const modalRoot = document.getElementById('import-modal-root');
+    modalRoot.innerHTML = `
+    <div>
+      <div class="modal-content" style="max-width:440px;max-height:80vh;overflow-y:auto;">
+        <h3>批量导入题库</h3>
+        <p>粘贴符合格式的JSON数组，或上传.json文件：</p>
+        <pre class="import-hint" style="background:#f8fafc;border:1px dashed #d1d5db;padding:8px;font-size:13px;margin:8px 0;white-space:pre-wrap;">[
+  {"front":"题干","back":"答案","category":"科目","chapter":"章节","tags":["标签1","标签2"],"links":["关联卡片"]}
+]</pre>
+        <textarea id="import-json" style="width:98%;min-height:96px;border-radius:8px;border:1px solid #e0e0e0;padding:7px 10px;font-size:15px;"></textarea>
+        <input type="file" id="import-file" accept=".json" style="margin:10px 0;">
+        <div style="text-align:right;margin-top:10px;">
+          <button class="btn-secondary" onclick="document.getElementById('import-modal-root').innerHTML=''">取消</button>
+          <button class="btn-primary" onclick="processImport()">导入</button>
+        </div>
+      </div>
+    </div>`;
+    document.getElementById('import-file').onchange = function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        document.getElementById('import-json').value = ev.target.result;
+      };
+      reader.readAsText(file);
+    };
+  }
+  function processImport() {
+    let importData;
+    try {
+      importData = JSON.parse(document.getElementById('import-json').value);
+      if (!Array.isArray(importData)) throw Error('请粘贴JSON数组格式');
+      importData.forEach(card => {
+        if (!card.front || !card.back || !card.category || !card.chapter) throw Error('每条需含front,back,category,chapter');
+        card.lastReview = null; card.nextReview = null; card.reviewCount = 0; card.difficulty = 0; card.mastery = 0; card.wrongCount = 0;
+        if (!card.tags) card.tags = [];
+        if (!card.links) card.links = [];
+      });
+      // 去重
+      const fronts = new Set(cards.map(c => c.front));
+      const newCards = importData.filter(card => !fronts.has(card.front));
+      cards = cards.concat(newCards);
+      localStorage.setItem('flashcards', JSON.stringify(cards));
+      document.getElementById('import-modal-root').innerHTML = '';
+      const filtered = cards.filter(activeReviewFilter);
+      updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+      alert('导入成功！新增' + newCards.length + '条');
+    } catch (e) {
+      alert('导入失败:' + e.message);
+    }
+  }
+  function exportCards() {
+    const data = JSON.stringify(cards, null, 2);
+    const blob = new Blob([data], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'flashcards_backup_' + Date.now() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // ============ 新建卡片 ==============
+  function addNewCard() {
+    const front = prompt('输入题干(正面)...');
+    if (!front) return;
+    const back = prompt('输入答案(背面)...');
+    if (!back) return;
+    const category = prompt('所属科目/分类?', '未分类') || '未分类';
+    const chapter = prompt('所属章节?', '未分章') || '未分章';
+    const tagStr = prompt('输入标签，用逗号分隔(可选)...', '');
+    const linkStr = prompt('输入关联卡片题干，用逗号分隔(可选)...', '');
+    const tags = tagStr ? tagStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const links = linkStr ? linkStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    cards.push({
+      front, back, category, chapter,
+      level: '基础', examFrequency: '低频', lastReview: null, nextReview: null, reviewCount: 0,
+      difficulty: 0, mastery: 0, wrongCount: 0,
+      tags, links
+    });
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+  }
+
+  // ============ 笔记系统 ==============
+  let notes = JSON.parse(localStorage.getItem('flashcardNotes') || '{"quick":{},"organized":{}}');
+  function switchNoteTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.tab-btn[data-tab="' + tab + '"]').classList.add('active');
+    document.getElementById(tab + '-note').classList.add('active');
+  }
+  function saveNote() {
+    const tab = document.querySelector('.tab-btn.active').dataset.tab;
+    const today = new Date().toISOString().split('T')[0];
+    if (tab === 'quick') {
+      notes.quick[today] = document.getElementById('quick-textarea').value;
+    } else {
+      const cat = document.getElementById('note-category').value;
+      const title = document.querySelector('.note-title').value;
+      const content = document.getElementById('organized-textarea').value;
+      if (!cat) return alert('请选择分类');
+      if (!notes.organized[cat]) notes.organized[cat] = [];
+      notes.organized[cat].push({ title, content, date: today });
+    }
+    localStorage.setItem('flashcardNotes', JSON.stringify(notes));
+    alert('笔记已保存');
+  }
+  function addNoteCategory() {
+    const cat = prompt('输入新分类名');
+    if (!cat) return;
+    if (!notes.organized[cat]) notes.organized[cat] = [];
+    updateNoteCategories();
+  }
+  function updateNoteCategories() {
+    const sel = document.getElementById('note-category');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">选择分类...</option>' +
+      Object.keys(notes.organized).map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  function viewNoteHistory() {
+    let html = '<h3>历史笔记（最新10条）</h3><ul style="max-height:260px;overflow:auto;">';
+    const recs = [];
+    Object.keys(notes.quick || {}).forEach(date => { recs.push({ txt: notes.quick[date], date }); });
+    Object.keys(notes.organized || {}).forEach(cat => {
+      (notes.organized[cat] || []).forEach(note => { recs.push({ txt: note.title + ' ' + note.content, date: note.date }); });
+    });
+    recs.sort((a, b) => b.date.localeCompare(a.date));
+    recs.slice(0, 10).forEach(r => {
+      html += `<li style="margin-bottom:9px;font-size:14px;"><b>${r.date}</b>：${r.txt.substring(0,80)}...</li>`;
+    });
+    html += '</ul><div style="text-align:right"><button class="btn-secondary" onclick="closeModal()">关闭</button></div>';
+    showModal(html);
+  }
+
+  // ============ 复习模式 ==============
+  function showReviewMenu() {
+    const opts = [
+      { name:'应复习', filter: card => !card.nextReview || new Date(card.nextReview) <= new Date() },
+      { name:'今日已学', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() },
+      { name:'本周已学', filter: card => card.lastReview && (new Date() - new Date(card.lastReview)) <= 7 * 86400000 },
+      { name:'高频考点', filter: card => card.examFrequency === '高频' },
+      { name:'错题本', filter: card => (card.wrongCount || 0) >= 2 || card.mastery < 3 },
+      { name:'全部卡片', filter: () => true },
+      { name:'乱序', filter: () => true, shuffle: true }
+    ];
+    let html = '<h3>选择复习模式</h3>';
+    opts.forEach((opt, i) => {
+      html += `<button class="btn-primary" style="margin:7px 0;width:100%;" onclick="applyReviewMode(${i})">${opt.name}</button>`;
+    });
+    html += `<div style="text-align:right;margin-top:8px;"><button class="btn-secondary" onclick="closeModal()">取消</button></div>`;
+    showModal(html);
+  }
+  function applyReviewMode(idx) {
+    const opts = [
+      { name:'应复习', filter: card => !card.nextReview || new Date(card.nextReview) <= new Date() },
+      { name:'今日已学', filter: card => card.lastReview && new Date(card.lastReview).toDateString() === new Date().toDateString() },
+      { name:'本周已学', filter: card => card.lastReview && (new Date() - new Date(card.lastReview)) <= 7 * 86400000 },
+      { name:'高频考点', filter: card => card.examFrequency === '高频' },
+      { name:'错题本', filter: card => (card.wrongCount || 0) >= 2 || card.mastery < 3 },
+      { name:'全部卡片', filter: () => true },
+      { name:'乱序', filter: () => true, shuffle: true }
+    ];
+    const opt = opts[idx];
+    activeReviewFilter = opt.filter;
+    let base = cards.filter(opt.filter);
+    if (opt.shuffle) base = base.sort(() => Math.random() - 0.5);
+    currentCardList = base;
+    renderGrid(base);
+    updateCardList(base);
+    closeModal();
+  }
+
+  // ============ 管理题库界面 ==============
+  function showManageLibrary() {
+    let html = '<h3 style="margin-bottom:12px;">管理题库</h3>';
+    html += '<div style="display:flex; gap:10px; margin-bottom:12px;">';
+    html += '<input type="text" id="manage-search" placeholder="搜索题干/答案/科目..." oninput="renderManageTable(this.value)" style="flex:1; padding:8px; border:1px solid #e2e8f0; border-radius:8px;">';
+    html += '<select id="manage-sort" onchange="renderManageTable()" style="padding:8px; border:1px solid #e2e8f0; border-radius:8px;">';
+    html += '<option value="mastery">按掌握度降序</option><option value="wrongCount">按错题次数降序</option><option value="nextReview">按复习时间升序</option><option value="front">按题干A-Z</option>';    
+    html += '</select></div>';
+    html += '<table class="manage-table" id="manage-table" style="width:100%;margin-bottom:16px;font-size:14px;"></table>';
+    html += '<div class="pagination" id="manage-pagination"></div>';
+    html += '<div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">';
+    html += '<button class="btn-secondary" onclick="closeModal()">关闭</button>';
+    html += '<button class="btn-primary" onclick="batchExportSelected()" style="background:#4ade80;">导出选中</button>';
+    html += '<button class="btn-primary" onclick="batchDeleteSelected()" style="background:#ef4444;color:#fff;">批量删除</button>';
+    html += '</div>';
+    showModal(html);
+    renderManageTable();
+  }
+  function renderManageTable(query = '', page = 1) {
+    const q = query.toLowerCase();
+    let filtered = cards.filter(card =>
+      card.front.toLowerCase().includes(q) || card.back.toLowerCase().includes(q) || card.category.toLowerCase().includes(q) || card.chapter.toLowerCase().includes(q)
+    );
+    const sort = document.getElementById('manage-sort').value;
+    if (sort === 'mastery') filtered.sort((a,b) => b.mastery - a.mastery);
+    else if (sort === 'wrongCount') filtered.sort((a,b) => (b.wrongCount || 0) - (a.wrongCount || 0));
+    else if (sort === 'nextReview') filtered.sort((a,b) => (new Date(a.nextReview || '9999-12-31') - new Date(b.nextReview || '9999-12-31')));
+    else if (sort === 'front') filtered.sort((a,b) => a.front.localeCompare(b.front));
+    const perPage = 15;
+    const start = (page - 1) * perPage;
+    const paginated = filtered.slice(start, start + perPage);
+    let tableHtml = '<thead><tr><th style="width:5%;"><input type="checkbox" onclick="toggleAllCheck(this)"></th><th style="width:30%;">题干</th><th style="width:15%;">科目/章节</th><th style="width:10%;">掌握度</th><th style="width:10%;">错题数</th><th style="width:15%;">下次复习</th><th style="width:15%;">操作</th></tr></thead><tbody>';
+    paginated.forEach(card => {
+      const nextReview = card.nextReview ? new Date(card.nextReview).toLocaleDateString() : '未复习';
+      tableHtml += `<tr><td><input type="checkbox" data-front="${card.front}"></td><td>${truncateText(card.front, 40)}</td><td>${card.category}/${card.chapter}</td><td>${card.mastery}</td><td>${card.wrongCount || 0}</td><td>${nextReview}</td><td><button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick="showEditCard('${card.front}')">编辑</button> <button class="btn-secondary" style="padding:4px 8px; font-size:12px; background:#ef4444; color:#fff;" onclick="deleteCard('${card.front}')">删除</button></td></tr>`;
+    });
+    tableHtml += '</tbody>';
+    document.getElementById('manage-table').innerHTML = tableHtml;
+    // 分页
+    const pages = Math.ceil(filtered.length / perPage);
+    let pagHtml = '';
+    for (let i = 1; i <= pages; i++) {
+      pagHtml += `<span class="page-btn ${i === page ? 'active' : ''}" onclick="renderManageTable('${query}', ${i})" style="padding:6px 12px; background:${i === page ? '#6366f1' : '#f1f5f9'}; color:${i === page ? '#fff' : '#1e293b'}; border-radius:8px; cursor:pointer; margin:0 4px;">${i}</span>`;
+    }
+    document.getElementById('manage-pagination').innerHTML = pagHtml;
+  }
+  function toggleAllCheck(checkbox) {
+    document.querySelectorAll('.manage-table input[type="checkbox"]').forEach(cb => cb.checked = checkbox.checked);
+  }
+  function batchDeleteSelected() {
+    const selected = Array.from(document.querySelectorAll('.manage-table input[type="checkbox"]:checked')).map(cb => cb.dataset.front);
+    if (selected.length === 0 || !confirm(`确认删除${selected.length}张卡片？`)) return;
+    cards = cards.filter(c => !selected.includes(c.front));
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    renderManageTable();
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+  }
+  function batchExportSelected() {
+    const selected = Array.from(document.querySelectorAll('.manage-table input[type="checkbox"]:checked')).map(cb => cb.dataset.front);
+    if (selected.length === 0) return alert('请选择卡片');
+    const exportCards = cards.filter(c => selected.includes(c.front));
+    const data = JSON.stringify(exportCards, null, 2);
+    const blob = new Blob([data], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'selected_flashcards_' + Date.now() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // ============ 编辑/删除 卡片 ==============
+  function showEditCard(front) {
+    const i = cards.findIndex(c => c.front === front);
+    if (i === -1) return;
+    const card = cards[i];
+    let html = `
+    <h3>编辑卡片</h3>
+    <label>题干(正面):<input type="text" id="edit-front" value="${card.front}" style="width:95%;margin-bottom:7px;"></label><br>
+    <label>答案(背面):<textarea id="edit-back" style="width:95%;height:70px;">${card.back}</textarea></label><br>
+    <label>科目:<input type="text" id="edit-category" value="${card.category}" style="width:45%;"></label>
+    <label>章节:<input type="text" id="edit-chapter" value="${card.chapter}" style="width:45%;"></label><br>
+    <label>高频:<input type="checkbox" id="edit-high" ${card.examFrequency === '高频' ? 'checked' : ''}></label>
+    <label>重点:<input type="checkbox" id="edit-key" ${card.level === '重点' ? 'checked' : ''}></label><br>
+    <label>标签(逗号分隔):<input type="text" id="edit-tags" value="${(card.tags || []).join(', ')}" style="width:95%;margin:6px 0;"></label><br>
+    <label>链接(关联题干,逗号分隔):<input type="text" id="edit-links" value="${(card.links || []).join(', ')}" style="width:95%;"></label>
+    <div style="text-align:right;margin-top:13px;">
+      <button class="btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="doEditCard('${front}')">保存</button>
+      <button class="btn-primary" style="background:#f44;color:#fff;margin-left:8px;" onclick="deleteCard('${front}')">删除</button>
+    </div>`;
+    showModal(html);
+  }
+  function doEditCard(oldFront) {
+    const i = cards.findIndex(c => c.front === oldFront);
+    if (i === -1) return alert('未找到卡片');
+    const newFront = document.getElementById('edit-front').value.trim();
+    const newBack = document.getElementById('edit-back').value;
+    const newCat = document.getElementById('edit-category').value;
+    const newChap = document.getElementById('edit-chapter').value;
+    cards[i].front = newFront;
+    cards[i].back = newBack;
+    cards[i].category = newCat;
+    cards[i].chapter = newChap;
+    cards[i].examFrequency = document.getElementById('edit-high').checked ? '高频' : '低频';
+    cards[i].level = document.getElementById('edit-key').checked ? '重点' : '基础';
+    cards[i].tags = document.getElementById('edit-tags').value.split(',').map(s => s.trim()).filter(Boolean);
+    cards[i].links = document.getElementById('edit-links').value.split(',').map(s => s.trim()).filter(Boolean);
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+    closeModal();
+  }
+  function deleteCard(front) {
+    if (!confirm('确认删除？')) return;
+    cards = cards.filter(c => c.front !== front);
+    localStorage.setItem('flashcards', JSON.stringify(cards));
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered); renderGrid(filtered); updateStats(); updateTagList();
+    closeModal();
+  }
+
+  // ============ 通用模态 ==============
+  function showModal(html) {
+    document.getElementById('import-modal-root').innerHTML = `<div><div class="modal-content" style="max-width:800px; max-height:80vh; overflow-y:auto;">${html}</div></div>`;
+  }
+  function closeModal() {
+    document.getElementById('import-modal-root').innerHTML = '';
+  }
+
+  // 页面初始化
+  function initializeApp() {
+    const filtered = cards.filter(activeReviewFilter);
+    updateCardList(filtered);
+    renderGrid(filtered);
+    updateStats();
+    updateCountdown();
+    updateNoteCategories();
+    // 恢复笔记输入
+    if (notes.quick) {
+      const latest = Object.keys(notes.quick).sort().pop();
+      if (latest) document.getElementById('quick-textarea').value = notes.quick[latest];
+    }
+    // 按键绑定：Ctrl+E 导出
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key === 'e') { e.preventDefault(); exportCards(); }
+    });
+  }
+  window.onload = initializeApp;
+  </script>
+</body>
+</html>
