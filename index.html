@@ -42,7 +42,7 @@
       color: var(--text-main);
       height: 100vh;
       overflow: hidden; 
-      font-size: 16px; /* 恢复全局标准字体 */
+      font-size: 16px; 
     }
 
     /* 布局框架 */
@@ -245,7 +245,7 @@
     .progress-bar-container { flex: 1; max-width: 400px; height: 6px; background: #e2e8f0; border-radius: 3px; margin: 0 20px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
 
-    /* 3D 翻转卡片容器 - 修复镜像问题的核心代码 */
+    /* 3D 翻转卡片容器 */
     .flip-container {
       perspective: 1000px;
       width: 90%;
@@ -315,9 +315,9 @@
     }
     .card-clue { color: var(--text-sub); font-style: italic; margin-bottom: 20px; font-size: 1rem; }
     
-    /* 答案内容排版优化 - 使用 CSS 变量控制字体 */
-    .answer-container {
-      font-size: var(--fs-card-answer); /* 这里的变量由 JS 动态修改 */
+    /* 答案内容排版优化 - 修正：使用 .answer-main 类来应用变量 */
+    .answer-main {
+      font-size: var(--fs-card-answer); /* 动态调整字体大小 */
       line-height: 1.8;
       color: var(--card-ink);
       flex: 1; 
@@ -336,30 +336,19 @@
     .answer-main ul { padding-left: 1.2em; margin-bottom: 1em; }
     .answer-main li { margin-bottom: 0.5em; }
 
-    /* 底部英语词汇区 */
+    /* 底部英语词汇区 - 默认隐藏 */
     .answer-vocab {
       margin-top: 24px;
       padding-top: 16px;
       border-top: 1px dashed #e2e8f0;
-      font-size: 0.9rem; /* 英语部分保持小字体，不随答案放大 */
+      font-size: 0.9rem; 
       color: #64748b;
       background: #f8fafc;
       padding: 16px;
       border-radius: 8px;
+      display: none; /* 默认不显示 */
     }
-    .vocab-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .vocab-label::before { content: ''; display: block; width: 4px; height: 4px; background: #cbd5e1; border-radius: 50%; }
-
+    
     .review-controls {
       margin-top: 20px;
       display: flex;
@@ -629,7 +618,7 @@
     </select>
   </div>
   <div class="chat-body" id="chat-body">
-    <div class="msg ai">你好！我是你的专属考研导师。我可以：<br>1. 生成专业课闪卡（含英语词汇积累，如 *meticulous* 一丝不苟的）。<br>2. 深度解析公管考点与时政。<br>请在上方选择模型并设置 Key。</div>
+    <div class="msg ai">你好！我是你的专属考研导师。我可以：<br>1. 深度解析公管考点与时政。<br>2. 生成结构化的专业课闪卡。<br>请在上方选择模型并设置 Key。</div>
   </div>
   <div class="chat-footer">
     <input type="text" id="chat-input" class="input-field" style="margin:0;" placeholder="输入内容... (Enter发送)" onkeydown="if(event.key==='Enter') sendMessage()">
@@ -719,7 +708,7 @@ function getInitialData() {
   return [{
     id: Date.now(),
     front: "公共管理的核心主体是什么？",
-    back: "**政府**是公共管理的核心主体。\n\n1. 政府拥有合法的强制力。\n2. 同时也包括非政府公共组织（NGO/NPO）。\n\n--- \n*mitigate (v. 减轻)*: Effective management helps mitigate social conflicts.",
+    back: "**政府**是公共管理的核心主体。\n\n1. 政府拥有合法的强制力。\n2. 同时也包括非政府公共组织（NGO/NPO）。",
     category: "公共管理学",
     tags: ["基础", "核心概念", "高频"],
     nextReview: new Date().toISOString(),
@@ -918,7 +907,6 @@ function showReviewCard() {
   const flipper = document.getElementById('review-card-flipper');
   const controls = document.getElementById('review-controls');
   
-  // 关键：重置 flipper 状态
   flipper.classList.remove('flipped');
   controls.classList.remove('visible');
   
@@ -1150,7 +1138,7 @@ function deleteSingleCard(id) {
 function addNewCard() {
   const front = prompt("输入问题 (Front):");
   if (!front) return;
-  const back = prompt("输入答案 (Back) - 如果包含英语积累，请在最后用 '---' 分隔:");
+  const back = prompt("输入答案 (Back):");
   if (!back) return;
   const category = prompt("输入科目分类:", "公共管理学");
   const tagsStr = prompt("输入标签:", "基础, 高频");
@@ -1184,7 +1172,7 @@ function editCard(id) {
   }
   
   const newFront = prompt("修改问题:", card.front);
-  const newBack = prompt("修改答案 (用 --- 分隔英语词汇):", card.back);
+  const newBack = prompt("修改答案:", card.back);
   const newCat = prompt("修改科目:", card.category);
   const newTags = prompt("修改标签 (逗号分隔):", card.tags.join(", "));
   
@@ -1210,10 +1198,10 @@ function showImportModal() {
   
   content.innerHTML = `
     <div style="background:#f0f9ff; border:1px solid #bae6fd; color:#0c4a6e; padding:10px; border-radius:6px; font-size:0.85rem; margin-bottom:10px;">
-      <strong>⚠️ 答案格式提示：</strong><br>
-      JSON 数组。<code>back</code> 字段可用 <code>---</code> 分隔英语词汇。<br>
+      <strong>⚠️ JSON 格式提示：</strong><br>
+      请粘贴合法的 JSON 数组。<br>
     </div>
-    <textarea id="import-area" class="input-field" style="height:150px;font-family:monospace;font-size:12px;" placeholder='[{"front":"题目","back":"答案... \\n--- \\n英语单词","category":"政治","tags":["高频"]}]'></textarea>
+    <textarea id="import-area" class="input-field" style="height:150px;font-family:monospace;font-size:12px;" placeholder='[{"front":"题目","back":"答案","category":"政治","tags":["高频"]}]'></textarea>
     <button class="btn btn-primary btn-block" onclick="executeImport()">确认导入</button>
   `;
   modal.style.display = 'flex';
@@ -1322,7 +1310,6 @@ function parseCardAnswer(text) {
   let rawHtml = escapeHtml(text);
   const parts = rawHtml.split('---');
   let mainContent = parts[0];
-  let vocabContent = parts.length > 1 ? parts.slice(1).join('---') : '';
   
   const mdToHtml = (str) => {
     return str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
@@ -1331,14 +1318,6 @@ function parseCardAnswer(text) {
   };
 
   let html = `<div class="answer-main">${mdToHtml(mainContent)}</div>`;
-  
-  if (vocabContent && vocabContent.trim()) {
-    html += `<div class="answer-vocab">
-              <div class="vocab-label">考研英语积累</div>
-              ${mdToHtml(vocabContent.trim())}
-             </div>`;
-  }
-  
   return html;
 }
 
@@ -1420,7 +1399,7 @@ async function sendMessage() {
 【作答标准】：
 1. **结构化输出**：遵循【定义 -> 核心要素 -> 意义 -> 结论】的逻辑。
 2. **结合时政**：联系中国热点（如：数字政府、共同富裕等）。
-3. **英语植入**：在回答结束，使用分割线 "---" 另起一行，列出 1-2 个考研英语高频难词。
+3. **准确分类**：如果生成闪卡，请根据内容自动判断科目（如：公共管理学、政治、社会研究方法）。如果没有明确线索，默认分类为“AI生成”。
 4. **JSON格式**：如用户要求生成卡片，请返回 [{"front":"...","back":"...","category":"...","tags":["..."]}]。`;
 
     let response, data;
@@ -1463,21 +1442,36 @@ async function sendMessage() {
 
     addMsg('ai', reply);
     
+    // 增强的 JSON 解析逻辑
+    let jsonStr = "";
     if (reply.includes('[') && reply.includes(']')) {
+       // 尝试正则匹配
+       const match = reply.match(/\[\s*\{.*?\}\s*\]/s);
+       if (match) {
+           jsonStr = match[0];
+       } else {
+           // 降级回退：简单的查找
+           const start = reply.indexOf('[');
+           const end = reply.lastIndexOf(']') + 1;
+           jsonStr = reply.substring(start, end);
+       }
+       
+       // 验证是否是有效的卡片 JSON
        try {
-          const jsonStart = reply.indexOf('[');
-          const jsonEnd = reply.lastIndexOf(']') + 1;
-          const jsonStr = reply.substring(jsonStart, jsonEnd);
-          JSON.parse(jsonStr); 
-          const btnId = 'btn-import-' + Date.now();
-          addMsg('ai', `<button id="${btnId}" class="btn btn-primary btn-sm">检测到闪卡数据，点击一键导入</button>`);
-          document.getElementById(btnId).onclick = function() {
-             document.getElementById('import-area').value = jsonStr;
-             executeImport();
-             this.disabled = true;
-             this.textContent = "已导入";
-          };
-       } catch(e) {}
+           const parsed = JSON.parse(jsonStr);
+           if(Array.isArray(parsed) && parsed.length > 0 && parsed[0].front && parsed[0].back) {
+              const btnId = 'btn-import-' + Date.now();
+              addMsg('ai', `<button id="${btnId}" class="btn btn-primary btn-sm">检测到 ${parsed.length} 张闪卡，点击一键导入</button>`);
+              document.getElementById(btnId).onclick = function() {
+                 document.getElementById('import-area').value = jsonStr;
+                 executeImport();
+                 this.disabled = true;
+                 this.textContent = "已导入";
+              };
+           }
+       } catch(e) {
+           console.log("JSON Parse fail inside chat", e);
+       }
     }
 
   } catch (e) {
