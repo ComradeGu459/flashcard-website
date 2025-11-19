@@ -30,7 +30,7 @@
       --highlight-text: #b45309;
 
       /* 字体大小变量 */
-      --fs-card-answer: 1rem; /* 默认答案字体大小 */
+      --fs-card-answer: 1rem;
     }
 
     * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -122,19 +122,19 @@
       gap: 6px;
       padding: 8px 16px;
       border-radius: 8px;
-      border: none;
+      border: 1px solid transparent;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
       font-size: 0.9rem;
       user-select: none;
     }
-    .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
-    .btn-primary { background: var(--primary); color: white; }
+    .btn-sm { padding: 4px 12px; font-size: 0.85rem; }
+    .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
     .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .btn-secondary { background: var(--primary-light); color: var(--primary-dark); }
+    .btn-secondary { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary-light); }
     .btn-secondary:hover { background: #c7d2fe; }
-    .btn-ghost { background: transparent; color: var(--text-sub); }
+    .btn-ghost { background: transparent; color: var(--text-sub); border-color: transparent; }
     .btn-ghost:hover { background: #f1f5f9; }
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-danger:hover { background: #fecaca; }
@@ -151,7 +151,6 @@
       font-size: 1rem;
     }
     .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-    select.input-field { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 30px; }
 
     /* 侧边栏分类列表 */
     .nav-section { margin-bottom: 20px; }
@@ -171,7 +170,7 @@
     .nav-item i { margin-right: 8px; font-style: normal; width: 20px; text-align: center; }
     .count-badge { margin-left: auto; background: #e2e8f0; font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; }
 
-    /* 闪卡样式 - 列表视图 */
+    /* 闪卡样式 */
     .card-thumb {
       background: white;
       border-radius: 12px;
@@ -187,48 +186,21 @@
     }
     .card-thumb:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
     .card-thumb .card-meta { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 8px; display: flex; justify-content: space-between; }
-    
-    .card-thumb .card-title { 
-      font-weight: 600; 
-      font-size: 1.1rem; 
-      line-height: 1.5; 
-      color: var(--text-main); 
-      flex: 1; 
-      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
-      margin-bottom: 12px;
-    }
-    
+    .card-thumb .card-title { font-weight: 600; font-size: 1.1rem; line-height: 1.5; color: var(--text-main); flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
     .card-thumb .card-tags { margin-top: auto; display: flex; flex-wrap: wrap; gap: 4px; }
     .tag-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: var(--bg-body); color: var(--text-sub); margin-right: 4px; }
     
-    .card-actions {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      opacity: 0;
-      transition: opacity 0.2s;
-      display: flex;
-      gap: 4px;
-    }
+    .card-actions { position: absolute; top: 12px; right: 12px; opacity: 0; transition: opacity 0.2s; display: flex; gap: 4px; }
     .card-thumb:hover .card-actions { opacity: 1; }
-    .icon-btn {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem;
-      cursor: pointer;
-      border: 1px solid #e2e8f0;
-    }
+    .icon-btn { width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; border: 1px solid #e2e8f0; }
     .icon-btn:hover { background: white; color: var(--primary); border-color: var(--primary); }
 
-    /* 状态指示灯 */
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .status-new { background: #94a3b8; }
     .status-learning { background: var(--warning); }
     .status-mastered { background: var(--success); }
 
-    /* 沉浸式复习模式 (Overlay) */
+    /* 沉浸式复习模式 */
     #review-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(248, 250, 252, 0.95);
@@ -245,207 +217,98 @@
     .progress-bar-container { flex: 1; max-width: 400px; height: 6px; background: #e2e8f0; border-radius: 3px; margin: 0 20px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
 
-    /* 3D 翻转卡片容器 */
-    .flip-container {
-      perspective: 1000px;
-      width: 90%;
-      max-width: 720px; 
-      height: 70vh; 
-      min-height: 400px;
-      margin: 20px;
-      position: relative;
-    }
-    .flipper {
-      transition: 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
-      transform-style: preserve-3d;
-      position: relative;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-    
+    .flip-container { perspective: 1000px; width: 90%; max-width: 720px; height: 70vh; min-height: 400px; margin: 20px; position: relative; }
+    .flipper { transition: 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d; position: relative; width: 100%; height: 100%; cursor: pointer; }
     .flipper.flipped { transform: rotateY(180deg); }
     
     .front, .back {
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden; /* Safari */
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      border-radius: 24px;
-      background: var(--card-paper);
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      border-radius: 24px; background: var(--card-paper);
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid rgba(0,0,0,0.05);
+      padding: 40px; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.05);
     }
+    .front { z-index: 2; transform: rotateY(0deg); align-items: center; justify-content: center; text-align: center; background: linear-gradient(145deg, #ffffff, #f8fafc); }
+    .back { transform: rotateY(180deg); background: #ffffff; overflow-y: auto; justify-content: flex-start; text-align: left; }
     
-    /* 正面 */
-    .front { 
-      z-index: 2; 
-      transform: rotateY(0deg); 
-      align-items: center; 
-      justify-content: center;
-      text-align: center; 
-      background: linear-gradient(145deg, #ffffff, #f8fafc);
-    }
-    
-    /* 背面 */
-    .back { 
-      transform: rotateY(180deg); 
-      background: #ffffff; 
-      overflow-y: auto; 
-      justify-content: flex-start; 
-      text-align: left;
-    }
-    
-    /* 滚动条美化 */
-    .back::-webkit-scrollbar { width: 6px; }
-    .back::-webkit-scrollbar-track { background: transparent; }
-    .back::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
-
-    /* 卡片内容字体 */
-    .card-content-lg { 
-      font-size: 1.6rem; 
-      font-weight: 800; 
-      color: var(--text-main); 
-      line-height: 1.4; 
-      margin-bottom: 16px; 
-    }
+    .card-content-lg { font-size: 1.6rem; font-weight: 800; color: var(--text-main); line-height: 1.4; margin-bottom: 16px; }
     .card-clue { color: var(--text-sub); font-style: italic; margin-bottom: 20px; font-size: 1rem; }
     
-    /* 答案内容排版优化 - 修正：使用 .answer-main 类来应用变量 */
-    .answer-main {
-      font-size: var(--fs-card-answer); /* 动态调整字体大小 */
-      line-height: 1.8;
-      color: var(--card-ink);
-      flex: 1; 
-      padding-right: 8px;
-      transition: font-size 0.2s; /* 平滑过渡 */
-    }
-    
+    .answer-main { font-size: var(--fs-card-answer); line-height: 1.8; color: var(--card-ink); flex: 1; padding-right: 8px; transition: font-size 0.2s; }
     .answer-main p { margin-bottom: 1em; }
-    .answer-main strong { 
-      color: var(--highlight-text); 
-      background: var(--highlight-bg); 
-      padding: 0 4px; 
-      border-radius: 4px; 
-      font-weight: 700;
-    }
+    .answer-main strong { color: var(--highlight-text); background: var(--highlight-bg); padding: 0 4px; border-radius: 4px; font-weight: 700; }
     .answer-main ul { padding-left: 1.2em; margin-bottom: 1em; }
     .answer-main li { margin-bottom: 0.5em; }
 
-    /* 底部英语词汇区 - 默认隐藏 */
-    .answer-vocab {
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px dashed #e2e8f0;
-      font-size: 0.9rem; 
-      color: #64748b;
-      background: #f8fafc;
-      padding: 16px;
-      border-radius: 8px;
-      display: none; /* 默认不显示 */
-    }
-    
-    .review-controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 15px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
+    .review-controls { margin-top: 20px; display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .review-controls.visible { opacity: 1; pointer-events: auto; }
-    
-    .grade-btn {
-      padding: 12px 24px;
-      border-radius: 12px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
-      color: white;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      flex: 1;
-      font-size: 1rem;
-    }
-    .grade-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .grade-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); flex: 1; font-size: 1rem; }
     .grade-btn:active { transform: scale(0.98); }
     .grade-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
     .grade-2 { background: linear-gradient(135deg, #f59e0b, #d97706); }
     .grade-3 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
     .grade-4 { background: linear-gradient(135deg, #22c55e, #16a34a); }
 
-    /* 统计卡片 */
-    .stat-card {
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      color: #0c4a6e;
-    }
+    .stat-card { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; padding: 16px; margin-bottom: 16px; color: #0c4a6e; }
     .stat-card.highlight { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
     .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
     .stat-label { font-size: 0.85rem; opacity: 0.9; }
 
-    /* 聊天组件优化 */
+    /* Chat Widget - Optimized for resizing and tables */
     .chat-widget {
       position: fixed; bottom: 90px; right: 20px;
-      width: 380px; height: 550px;
+      width: 400px; height: 600px;
       background: white;
       border-radius: 16px;
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
       display: none;
       flex-direction: column;
       z-index: 1500;
       border: 1px solid var(--border);
       overflow: hidden;
+      /* 允许用户调节大小 */
+      resize: both;
+      min-width: 320px;
+      min-height: 400px;
+      max-width: 90vw;
+      max-height: 90vh;
     }
     .chat-header { background: var(--primary); color: white; padding: 12px 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: grab; }
     .chat-body { flex: 1; padding: 16px; overflow-y: auto; background: #f8fafc; font-size: 0.95rem; }
     .chat-footer { position: relative; padding: 12px; border-top: 1px solid var(--border); background: white; display: flex; gap: 8px; z-index: 5; }
     .chat-settings { padding: 8px 12px; background: #f1f5f9; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
-    .msg { margin-bottom: 12px; max-width: 85%; padding: 10px 14px; border-radius: 12px; line-height: 1.5; word-wrap: break-word; }
-    .msg.user { background: var(--primary); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; }
+    
+    .msg { margin-bottom: 12px; max-width: 85%; padding: 10px 14px; border-radius: 12px; line-height: 1.6; word-wrap: break-word; }
+    .msg.user { background: var(--primary); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; white-space: pre-wrap; }
     .msg.ai { background: white; border: 1px solid var(--border); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg strong { color: #b91c1c; }
 
-    /* 管理面板列表 */
+    /* Chat Table Styles */
+    .msg table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.85em; background: #fff; border-radius: 4px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .msg th, .msg td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
+    .msg th { background: #f1f5f9; font-weight: 600; color: var(--text-main); }
+    .msg tr:nth-child(even) { background: #f8fafc; }
+    /* Chat Code Block Styles */
+    .msg pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 0.85em; margin: 8px 0; }
+    .msg code { font-family: monospace; background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 3px; }
+    .msg pre code { background: transparent; padding: 0; }
+
+    /* Management Panel */
     .manage-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
     .manage-tab { padding: 8px 16px; cursor: pointer; color: var(--text-sub); font-weight: 500; }
     .manage-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
-    
     .manage-list { list-style: none; padding: 0; margin: 0; }
     .manage-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; background: white; }
     .manage-item:hover { background: #f8fafc; }
-    .manage-item:last-child { border-bottom: none; }
-    
     .manage-tag-group { background: #fff; border-radius: 8px; padding: 0; margin-bottom: 12px; border: 1px solid var(--border); overflow: hidden; }
     .manage-tag-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f1f5f9; font-weight: 600; color: var(--primary-dark); }
-    
     .check-box-wrapper { display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden; }
     .item-checkbox { width: 16px; height: 16px; cursor: pointer; }
 
-    /* 设置倒计时区域 */
-    .countdown-container {
-      margin-top: auto; 
-      text-align: center; 
-      color: var(--text-sub); 
-      font-size: 0.85rem;
-      background: #f1f5f9;
-      border-radius: 8px;
-      padding: 10px;
-      cursor: pointer;
-    }
+    .countdown-container { margin-top: auto; text-align: center; color: var(--text-sub); font-size: 0.85rem; background: #f1f5f9; border-radius: 8px; padding: 10px; cursor: pointer; }
     .countdown-container:hover { background: #e2e8f0; }
 
-    /* 响应式适配 */
-    @media (max-width: 1024px) {
-      .app-container { grid-template-columns: 240px 1fr; }
-      .tools-panel { display: none; }
-    }
+    @media (max-width: 1024px) { .app-container { grid-template-columns: 240px 1fr; } .tools-panel { display: none; } }
     @media (max-width: 768px) {
       .app-container { grid-template-columns: 1fr; }
       .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; width: 80%; box-shadow: var(--shadow-lg); z-index: 100; }
@@ -454,7 +317,6 @@
       .flip-container { width: 95%; height: 50vh; }
       .chat-widget { width: 90%; right: 5%; bottom: 20px; height: 60vh; }
     }
-
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
@@ -495,9 +357,7 @@
 
     <div class="nav-section">
       <div class="nav-title">📚 科目分类</div>
-      <div id="subject-list">
-        <!-- 动态生成科目列表 -->
-      </div>
+      <div id="subject-list"></div>
     </div>
 
     <div class="nav-section">
@@ -525,17 +385,12 @@
     <div class="content-header">
       <h2 style="margin:0; font-size:1.5rem;" id="grid-title">全部卡片</h2>
       <div style="display:flex; gap:10px;">
-        <button class="btn btn-secondary" onclick="shuffleGrid()" title="打乱顺序进行随机抽查">
-          🔀 随机乱序
-        </button>
+        <button class="btn btn-secondary" onclick="shuffleGrid()" title="打乱顺序进行随机抽查">🔀 随机乱序</button>
       </div>
     </div>
     
-    <div class="flashcard-grid" id="grid">
-      <!-- 卡片将通过 JS 渲染 -->
-    </div>
+    <div class="flashcard-grid" id="grid"></div>
     
-    <!-- 空状态提示 -->
     <div id="empty-state" style="display:none; text-align:center; padding:60px; color:var(--text-sub);">
       <div style="font-size:3rem; margin-bottom:20px;">🍃</div>
       <p>暂无卡片，快去添加或让 AI 生成吧！</p>
@@ -571,7 +426,7 @@
   </div>
 </div>
 
-<!-- 沉浸式复习界面 (Overlay) -->
+<!-- 沉浸式复习界面 -->
 <div id="review-overlay" onclick="handleOverlayClick(event)">
   <div class="review-header">
     <button class="btn btn-ghost" onclick="endReview()">✕ 退出</button>
@@ -580,22 +435,18 @@
     </div>
     <span style="font-weight:bold; color:var(--text-sub);" id="review-counter">0/0</span>
   </div>
-
   <div class="flip-container" onclick="flipCard()">
     <div class="flipper" id="review-card-flipper">
       <div class="front">
-        <div class="card-content-lg" id="review-front">题目内容</div>
-        <div class="card-clue" id="review-clue">线索...</div>
+        <div class="card-content-lg" id="review-front"></div>
+        <div class="card-clue" id="review-clue"></div>
         <div style="margin-top:auto; color:var(--text-sub); font-size:0.9rem;">(点击翻看答案)</div>
       </div>
-      <div class="back" id="review-back-container">
-        <!-- 答案内容容器 -->
-      </div>
+      <div class="back" id="review-back-container"></div>
     </div>
   </div>
-
   <div class="review-controls" id="review-controls">
-    <button class="grade-btn grade-1" onclick="rateCard(1)">忘记/错误 (1)</button>
+    <button class="grade-btn grade-1" onclick="rateCard(1)">忘记 (1)</button>
     <button class="grade-btn grade-2" onclick="rateCard(2)">困难 (2)</button>
     <button class="grade-btn grade-3" onclick="rateCard(3)">良好 (3)</button>
     <button class="grade-btn grade-4" onclick="rateCard(4)">简单 (4)</button>
@@ -608,7 +459,10 @@
 <div class="chat-widget" id="chat-widget">
   <div class="chat-header" onmousedown="dragChat(event)">
     <span>🎓 考研伴学 AI (专业版)</span>
-    <span style="cursor:pointer" onclick="toggleChat()">✕</span>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span style="cursor:pointer; font-size:1.2rem;" onclick="clearChatHistory()" title="清空记录">🗑️</span>
+      <span style="cursor:pointer" onclick="toggleChat()">✕</span>
+    </div>
   </div>
   <div class="chat-settings">
     <span style="font-size:0.8rem;">模型:</span>
@@ -618,7 +472,7 @@
     </select>
   </div>
   <div class="chat-body" id="chat-body">
-    <div class="msg ai">你好！我是你的专属考研导师。我可以：<br>1. 深度解析公管考点与时政。<br>2. 生成结构化的专业课闪卡。<br>请在上方选择模型并设置 Key。</div>
+    <div class="msg ai">你好！我是你的专属考研导师。我专注于公共管理专业课的深度解析与卡片生成。请在上方设置 API Key 开始使用。</div>
   </div>
   <div class="chat-footer">
     <input type="text" id="chat-input" class="input-field" style="margin:0;" placeholder="输入内容... (Enter发送)" onkeydown="if(event.key==='Enter') sendMessage()">
@@ -641,67 +495,34 @@
 </div>
 
 <script>
-// ================= 数据层 =================
 const STORAGE_KEY = 'mpa_flashcards_pro';
 const STATS_KEY = 'mpa_stats_pro';
 const NOTES_KEY = 'mpa_quick_notes';
 const SETTINGS_KEY = 'mpa_settings_v1';
+const CHAT_HISTORY_KEY = 'mpa_chat_history_v1';
 
 const API_CONFIG = {
-  deepseek: {
-    name: 'DeepSeek',
-    storageKey: 'deepseek_api_key',
-    url: 'https://api.deepseek.com/chat/completions'
-  },
-  gemini: {
-    name: 'Gemini',
-    storageKey: 'gemini_api_key',
-    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent'
-  }
+  deepseek: { name: 'DeepSeek', storageKey: 'deepseek_api_key', url: 'https://api.deepseek.com/chat/completions' },
+  gemini: { name: 'Gemini', storageKey: 'gemini_api_key', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent' }
 };
 let currentProvider = 'deepseek';
 
-let cards = [];
-let reviewQueue = []; 
-let currentReviewIndex = 0;
-let currentFilter = 'all'; 
-let manageViewMode = 'subject';
-let appSettings = {
-  cardFontSize: 'normal', // normal, medium, large
-  examName: '研究生考试',
-  examDate: new Date(new Date().getFullYear(), 11, 21).toISOString().split('T')[0]
-};
+let cards = [], reviewQueue = [], currentReviewIndex = 0, currentFilter = 'all', manageViewMode = 'subject', chatHistory = [];
+let appSettings = { cardFontSize: 'normal', examName: '研究生考试', examDate: new Date(new Date().getFullYear(), 11, 21).toISOString().split('T')[0] };
 
 function initData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     cards = raw ? JSON.parse(raw) : getInitialData();
-    cards.forEach(c => {
-      if (!c.tags) c.tags = [];
-      if (!c.category) c.category = "未分类"; 
-      if (!c.fs) c.fs = 2.5; 
-      if (!c.interval) c.interval = 0;
-    });
-    
+    cards.forEach(c => { if (!c.tags) c.tags = []; if (!c.category) c.category = "未分类"; if (!c.fs) c.fs = 2.5; if (!c.interval) c.interval = 0; });
     const rawSettings = localStorage.getItem(SETTINGS_KEY);
     if(rawSettings) appSettings = JSON.parse(rawSettings);
-    
-  } catch (e) {
-    console.error("Data load error", e);
-    cards = getInitialData();
-  }
-  
-  applySettings(); 
-  updateStats();
-  updateSubjectList(); 
-  renderGrid();
-  loadNote();
-  
+    const rawChat = localStorage.getItem(CHAT_HISTORY_KEY);
+    if (rawChat) { chatHistory = JSON.parse(rawChat); renderChatHistory(); }
+  } catch (e) { console.error("Data error", e); cards = getInitialData(); }
+  applySettings(); updateStats(); updateSubjectList(); renderGrid(); loadNote();
   const savedProvider = localStorage.getItem('preferred_api_provider');
-  if (savedProvider && API_CONFIG[savedProvider]) {
-    document.getElementById('api-provider').value = savedProvider;
-    updateApiProvider();
-  }
+  if (savedProvider && API_CONFIG[savedProvider]) { document.getElementById('api-provider').value = savedProvider; updateApiProvider(); }
 }
 
 function getInitialData() {
@@ -709,61 +530,31 @@ function getInitialData() {
     id: Date.now(),
     front: "公共管理的核心主体是什么？",
     back: "**政府**是公共管理的核心主体。\n\n1. 政府拥有合法的强制力。\n2. 同时也包括非政府公共组织（NGO/NPO）。",
-    category: "公共管理学",
-    tags: ["基础", "核心概念", "高频"],
-    nextReview: new Date().toISOString(),
-    mastery: 0, 
-    interval: 0,
-    fs: 2.5
+    category: "公共管理学", tags: ["基础", "核心概念", "高频"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5
   }];
 }
 
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
-  updateStats();
-  updateSubjectList();
-}
-
-function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings));
-  applySettings();
-}
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(cards)); updateStats(); updateSubjectList(); }
+function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); applySettings(); }
 
 function applySettings() {
-  // 应用卡片专用字体
   const root = document.documentElement;
-  if(appSettings.cardFontSize === 'medium') {
-    root.style.setProperty('--fs-card-answer', '1.2rem');
-  } else if(appSettings.cardFontSize === 'large') {
-    root.style.setProperty('--fs-card-answer', '1.4rem');
-  } else {
-    root.style.setProperty('--fs-card-answer', '1rem');
-  }
-  
-  // 应用倒计时
+  if(appSettings.cardFontSize === 'medium') root.style.setProperty('--fs-card-answer', '1.2rem');
+  else if(appSettings.cardFontSize === 'large') root.style.setProperty('--fs-card-answer', '1.4rem');
+  else root.style.setProperty('--fs-card-answer', '1rem');
   document.getElementById('countdown-title').textContent = `距离${appSettings.examName}`;
-  const now = new Date();
-  const target = new Date(appSettings.examDate);
-  const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  const now = new Date(), target = new Date(appSettings.examDate), diff = Math.ceil((target - now) / 86400000);
   document.getElementById('countdown-days').textContent = diff > 0 ? diff : 0;
 }
 
-// ================= UI 渲染层 =================
-
 function updateSubjectList() {
   const subjects = {};
-  cards.forEach(c => {
-    const cat = c.category || "未分类";
-    subjects[cat] = (subjects[cat] || 0) + 1;
-  });
-
+  cards.forEach(c => { const cat = c.category || "未分类"; subjects[cat] = (subjects[cat] || 0) + 1; });
   const listEl = document.getElementById('subject-list');
   listEl.innerHTML = '';
-  
   Object.keys(subjects).sort().forEach(sub => {
     const div = document.createElement('div');
-    div.className = 'nav-item';
-    div.onclick = () => filterBySubject(sub);
+    div.className = 'nav-item'; div.onclick = () => filterBySubject(sub);
     div.innerHTML = `<i>📖</i> ${sub} <span class="count-badge">${subjects[sub]}</span>`;
     listEl.appendChild(div);
   });
@@ -775,102 +566,58 @@ function renderGrid(sourceCards = null) {
     if (currentFilter === 'all') displayCards = cards;
     else if (currentFilter === 'wrong') displayCards = cards.filter(c => c.mastery < 2 && c.interval > 0);
     else if (currentFilter === 'high_freq') displayCards = cards.filter(c => (c.tags||[]).includes("高频"));
-    else if (currentFilter.startsWith('subject:')) {
-      const sub = currentFilter.split(':')[1];
-      displayCards = cards.filter(c => c.category === sub);
-    }
+    else if (currentFilter.startsWith('subject:')) { const sub = currentFilter.split(':')[1]; displayCards = cards.filter(c => c.category === sub); }
   }
-
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  
-  if (!displayCards || displayCards.length === 0) {
-    document.getElementById('empty-state').style.display = 'block';
-    document.getElementById('count-total').textContent = cards.length;
-    return;
-  } else {
-    document.getElementById('empty-state').style.display = 'none';
-  }
-
+  if (!displayCards || displayCards.length === 0) { document.getElementById('empty-state').style.display = 'block'; return; }
+  document.getElementById('empty-state').style.display = 'none';
   displayCards.forEach(card => {
-    const el = document.createElement('div');
-    el.className = 'card-thumb';
-    el.onclick = () => previewSingleCard(card.id);
-    
-    let statusClass = 'status-new';
-    if (card.mastery >= 4) statusClass = 'status-mastered';
-    else if (card.interval > 0) statusClass = 'status-learning';
-
+    const el = document.createElement('div'); el.className = 'card-thumb'; el.onclick = () => previewSingleCard(card.id);
+    let statusClass = card.mastery >= 4 ? 'status-mastered' : (card.interval > 0 ? 'status-learning' : 'status-new');
     const catBadge = card.category ? `<span class="tag-pill" style="background:#f3f4f6;color:#4b5563;">${card.category}</span>` : '';
-    const tagsHtml = card.tags.slice(0,3).map(t => {
-      const style = t === '高频' ? 'background:#fef3c7;color:#d97706;' : '';
-      return `<span class="tag-pill" style="${style}">${t}</span>`;
-    }).join('');
-    
+    const tagsHtml = card.tags.slice(0,3).map(t => `<span class="tag-pill" style="${t==='高频'?'background:#fef3c7;color:#d97706;':''}">${t}</span>`).join('');
     el.innerHTML = `
-      <div class="card-actions">
-        <div class="icon-btn" title="编辑" onclick="event.stopPropagation(); editCard(${card.id})">✎</div>
-      </div>
-      <div class="card-meta">
-        <span><span class="status-dot ${statusClass}"></span>${new Date(card.nextReview).toLocaleDateString()}</span>
-        <span>${card.mastery}/4</span>
-      </div>
+      <div class="card-actions"><div class="icon-btn" title="编辑" onclick="event.stopPropagation(); editCard(${card.id})">✎</div></div>
+      <div class="card-meta"><span><span class="status-dot ${statusClass}"></span>${new Date(card.nextReview).toLocaleDateString()}</span><span>${card.mastery}/4</span></div>
       <div class="card-title">${escapeHtml(card.front)}</div>
-      <div class="card-tags">${catBadge} ${tagsHtml}</div>
-    `;
+      <div class="card-tags">${catBadge} ${tagsHtml}</div>`;
     grid.appendChild(el);
   });
-  
   updateSidebarCounts();
 }
 
 function previewSingleCard(id) {
-  const card = cards.find(c => c.id === id);
-  if (!card) return;
-  reviewQueue = [card]; 
-  currentReviewIndex = 0;
-  document.getElementById('review-overlay').classList.add('active');
-  showReviewCard();
+  const card = cards.find(c => c.id === id); if (!card) return;
+  reviewQueue = [card]; currentReviewIndex = 0;
+  document.getElementById('review-overlay').classList.add('active'); showReviewCard();
 }
 
 function shuffleGrid() {
-  let currentCards = [];
-  if (currentFilter === 'all') currentCards = [...cards];
-  else if (currentFilter === 'wrong') currentCards = cards.filter(c => c.mastery < 2 && c.interval > 0);
+  let currentCards = [...cards]; 
+  // Apply current filter if needed
+  if (currentFilter === 'wrong') currentCards = cards.filter(c => c.mastery < 2 && c.interval > 0);
   else if (currentFilter === 'high_freq') currentCards = cards.filter(c => (c.tags||[]).includes("高频"));
-  else if (currentFilter.startsWith('subject:')) {
-    const sub = currentFilter.split(':')[1];
-    currentCards = cards.filter(c => c.category === sub);
-  }
-
-  for (let i = currentCards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
-  }
+  else if (currentFilter.startsWith('subject:')) currentCards = cards.filter(c => c.category === currentFilter.split(':')[1]);
   
-  renderGrid(currentCards);
-  alert("🔀 已打乱卡片顺序，点击任意卡片开始背诵！");
+  for (let i = currentCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1)); [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
+  }
+  renderGrid(currentCards); alert("🔀 已打乱卡片顺序！");
 }
 
 function updateSidebarCounts() {
   document.getElementById('count-total').textContent = cards.length;
   document.getElementById('count-wrong').textContent = cards.filter(c => c.mastery < 2 && c.interval > 0).length;
-  const now = new Date();
-  const dueCount = cards.filter(c => new Date(c.nextReview) <= now).length;
-  document.getElementById('count-due').textContent = dueCount;
+  document.getElementById('count-due').textContent = cards.filter(c => new Date(c.nextReview) <= new Date()).length;
 }
 
 function updateStats() {
   const stats = JSON.parse(localStorage.getItem(STATS_KEY) || '{"streak":0, "lastDate":null, "todayCount":0}');
   const today = new Date().toDateString();
   if (stats.lastDate !== today) {
-    if (stats.lastDate === new Date(Date.now() - 86400000).toDateString()) {
-      stats.streak++;
-    } else {
-      stats.streak = 1; 
-    }
-    stats.todayCount = 0;
-    stats.lastDate = today;
+    if (stats.lastDate === new Date(Date.now() - 86400000).toDateString()) stats.streak++; else stats.streak = 1;
+    stats.todayCount = 0; stats.lastDate = today;
     localStorage.setItem(STATS_KEY, JSON.stringify(stats));
   }
   document.getElementById('stat-streak').textContent = stats.streak + ' 天';
@@ -879,42 +626,20 @@ function updateStats() {
   document.getElementById('stat-learning').textContent = cards.filter(c => c.interval > 0 && c.mastery < 4).length;
 }
 
-// ================= 沉浸式复习逻辑 =================
-
 function startFocusedReview() {
-  const now = new Date();
-  reviewQueue = cards.filter(c => new Date(c.nextReview) <= now)
-                     .sort((a,b) => a.mastery - b.mastery) 
-                     .slice(0, 50); 
-  
-  if (reviewQueue.length === 0) {
-    alert("太棒了！当前没有待复习的卡片。\n你可以点击“全部卡片”或“随机乱序”进行巩固。");
-    return;
-  }
-
-  currentReviewIndex = 0;
-  document.getElementById('review-overlay').classList.add('active');
-  showReviewCard();
+  reviewQueue = cards.filter(c => new Date(c.nextReview) <= new Date()).sort((a,b) => a.mastery - b.mastery).slice(0, 50);
+  if (reviewQueue.length === 0) { alert("当前没有待复习的卡片！"); return; }
+  currentReviewIndex = 0; document.getElementById('review-overlay').classList.add('active'); showReviewCard();
 }
 
 function showReviewCard() {
-  if (currentReviewIndex >= reviewQueue.length) {
-    endReview(true);
-    return;
-  }
-  
+  if (currentReviewIndex >= reviewQueue.length) { endReview(true); return; }
   const card = reviewQueue[currentReviewIndex];
-  const flipper = document.getElementById('review-card-flipper');
-  const controls = document.getElementById('review-controls');
-  
-  flipper.classList.remove('flipped');
-  controls.classList.remove('visible');
-  
+  document.getElementById('review-card-flipper').classList.remove('flipped');
+  document.getElementById('review-controls').classList.remove('visible');
   document.getElementById('review-front').innerHTML = `<div style="font-size:0.9rem;color:#6366f1;margin-bottom:8px;">${card.category||'未分类'}</div>` + card.front;
   document.getElementById('review-clue').textContent = card.clue || "";
-  
   document.getElementById('review-back-container').innerHTML = parseCardAnswer(card.back);
-  
   const progress = ((currentReviewIndex) / reviewQueue.length) * 100;
   document.getElementById('review-progress').style.width = `${progress}%`;
   document.getElementById('review-counter').textContent = `${currentReviewIndex + 1}/${reviewQueue.length}`;
@@ -922,601 +647,222 @@ function showReviewCard() {
 
 function flipCard() {
   const flipper = document.getElementById('review-card-flipper');
-  if (!flipper.classList.contains('flipped')) {
-    flipper.classList.add('flipped');
-    setTimeout(() => {
-      document.getElementById('review-controls').classList.add('visible');
-    }, 300);
-  }
+  if (!flipper.classList.contains('flipped')) { flipper.classList.add('flipped'); setTimeout(() => { document.getElementById('review-controls').classList.add('visible'); }, 300); }
 }
 
-function handleOverlayClick(e) {
-  if (e.target.id === 'review-overlay') {
-    endReview();
-  }
-}
-
+function handleOverlayClick(e) { if (e.target.id === 'review-overlay') endReview(); }
 function rateCard(quality) {
   const card = reviewQueue[currentReviewIndex];
-  
-  if (quality >= 3) {
-    if (card.interval === 0) card.interval = 1;
-    else if (card.interval === 1) card.interval = 6;
-    else card.interval = Math.round(card.interval * card.fs);
-    card.mastery = Math.min(4, card.mastery + 1);
-  } else {
-    card.interval = 1;
-    card.mastery = Math.max(0, card.mastery - 1);
-  }
-  
-  card.fs = card.fs + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-  if (card.fs < 1.3) card.fs = 1.3;
-
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + card.interval);
-  card.nextReview = nextDate.toISOString();
-  
-  const originalIndex = cards.findIndex(c => c.id === card.id);
-  if (originalIndex !== -1) {
-    cards[originalIndex] = card;
-  }
-
-  recordStudyAction();
-  saveData();
-
-  currentReviewIndex++;
-  showReviewCard();
+  if (quality >= 3) { card.interval = card.interval === 0 ? 1 : (card.interval === 1 ? 6 : Math.round(card.interval * card.fs)); card.mastery = Math.min(4, card.mastery + 1); } 
+  else { card.interval = 1; card.mastery = Math.max(0, card.mastery - 1); }
+  card.fs = Math.max(1.3, card.fs + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+  const nextDate = new Date(); nextDate.setDate(nextDate.getDate() + card.interval); card.nextReview = nextDate.toISOString();
+  const originalIndex = cards.findIndex(c => c.id === card.id); if (originalIndex !== -1) cards[originalIndex] = card;
+  const stats = JSON.parse(localStorage.getItem(STATS_KEY)); stats.todayCount++; localStorage.setItem(STATS_KEY, JSON.stringify(stats)); document.getElementById('stat-today').textContent = stats.todayCount;
+  saveData(); currentReviewIndex++; showReviewCard();
 }
-
-function endReview(finished = false) {
-  if (finished) alert("🎉 复习完成！真棒！");
-  document.getElementById('review-overlay').classList.remove('active');
-  renderGrid(); 
-}
-
-function recordStudyAction() {
-  const stats = JSON.parse(localStorage.getItem(STATS_KEY));
-  stats.todayCount++;
-  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
-  document.getElementById('stat-today').textContent = stats.todayCount;
-}
-
-// ================= 设置功能 =================
+function endReview(finished = false) { if (finished) alert("🎉 复习完成！"); document.getElementById('review-overlay').classList.remove('active'); renderGrid(); }
 
 function showSettingsModal() {
-  const modal = document.getElementById('modal-root');
-  const content = document.getElementById('modal-content');
   document.getElementById('modal-title').textContent = "⚙️ 系统设置";
-  
-  content.innerHTML = `
-    <div style="margin-bottom:20px;">
-      <h4 style="margin-bottom:10px;">📖 卡片答案字号</h4>
-      <div style="display:flex; gap:10px;">
-        <button class="btn btn-secondary ${appSettings.cardFontSize === 'normal' ? 'btn-primary' : ''}" onclick="updateFontSize('normal')">标准</button>
-        <button class="btn btn-secondary ${appSettings.cardFontSize === 'medium' ? 'btn-primary' : ''}" onclick="updateFontSize('medium')">中号</button>
-        <button class="btn btn-secondary ${appSettings.cardFontSize === 'large' ? 'btn-primary' : ''}" onclick="updateFontSize('large')">大号 (护眼)</button>
-      </div>
-    </div>
-    <div style="margin-bottom:20px;">
-      <h4 style="margin-bottom:10px;">⏳ 考研倒计时</h4>
-      <div class="input-group">
-        <label style="display:block;margin-bottom:5px;font-size:0.9rem;">目标名称:</label>
-        <input type="text" id="set-exam-name" class="input-field" value="${appSettings.examName}">
-      </div>
-      <div class="input-group">
-        <label style="display:block;margin-bottom:5px;font-size:0.9rem;">目标日期:</label>
-        <input type="date" id="set-exam-date" class="input-field" value="${appSettings.examDate}">
-      </div>
-      <button class="btn btn-primary btn-block" onclick="updateCountdownSetting()">保存倒计时</button>
-    </div>
-  `;
-  modal.style.display = 'flex';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="margin-bottom:20px;"><h4 style="margin-bottom:10px;">📖 卡片答案字号</h4><div style="display:flex; gap:10px;">
+      <button class="btn btn-secondary ${appSettings.cardFontSize==='normal'?'btn-primary':''}" onclick="updateFontSize('normal')">标准</button>
+      <button class="btn btn-secondary ${appSettings.cardFontSize==='medium'?'btn-primary':''}" onclick="updateFontSize('medium')">中号</button>
+      <button class="btn btn-secondary ${appSettings.cardFontSize==='large'?'btn-primary':''}" onclick="updateFontSize('large')">大号</button>
+    </div></div>
+    <div style="margin-bottom:20px;"><h4 style="margin-bottom:10px;">⏳ 考研倒计时</h4>
+      <div class="input-group"><label>目标名称:</label><input type="text" id="set-exam-name" class="input-field" value="${appSettings.examName}"></div>
+      <div class="input-group"><label>目标日期:</label><input type="date" id="set-exam-date" class="input-field" value="${appSettings.examDate}"></div>
+      <button class="btn btn-primary btn-block" onclick="updateCountdownSetting()">保存</button>
+    </div>`;
+  document.getElementById('modal-root').style.display = 'flex';
 }
-
-function updateFontSize(size) {
-  appSettings.cardFontSize = size;
-  saveSettings();
-  showSettingsModal(); 
+function updateFontSize(size) { appSettings.cardFontSize = size; saveSettings(); showSettingsModal(); }
+function updateCountdownSetting() { 
+  const name = document.getElementById('set-exam-name').value, date = document.getElementById('set-exam-date').value;
+  if(name && date) { appSettings.examName = name; appSettings.examDate = date; saveSettings(); alert('已保存'); closeModal(); }
 }
-
-function updateCountdownSetting() {
-  const name = document.getElementById('set-exam-name').value;
-  const date = document.getElementById('set-exam-date').value;
-  if(name && date) {
-    appSettings.examName = name;
-    appSettings.examDate = date;
-    saveSettings();
-    alert('设置已保存！');
-    closeModal();
-  } else {
-    alert('请填写完整信息');
-  }
-}
-
-// ================= 功能函数：管理与导入 =================
 
 function showManageModal(mode = 'subject') {
   manageViewMode = mode;
-  const modal = document.getElementById('modal-root');
-  const content = document.getElementById('modal-content');
   document.getElementById('modal-title').textContent = "🔧 题库管理";
-  
-  let html = `
-    <div class="manage-tabs">
-      <div class="manage-tab ${mode === 'subject' ? 'active' : ''}" onclick="showManageModal('subject')">按科目分组</div>
-      <div class="manage-tab ${mode === 'list' ? 'active' : ''}" onclick="showManageModal('list')">全部列表 (批量)</div>
-    </div>
-    <div style="max-height: 60vh; overflow-y: auto;">
-  `;
-
+  const content = document.getElementById('modal-content');
+  let html = `<div class="manage-tabs"><div class="manage-tab ${mode==='subject'?'active':''}" onclick="showManageModal('subject')">按科目</div><div class="manage-tab ${mode==='list'?'active':''}" onclick="showManageModal('list')">全部</div></div><div style="max-height:60vh;overflow-y:auto;">`;
   if (mode === 'subject') {
-    const grouped = {};
-    cards.forEach(c => {
-      const cat = c.category || "未分类";
-      if(!grouped[cat]) grouped[cat] = [];
-      grouped[cat].push(c);
-    });
-    
+    const grouped = {}; cards.forEach(c => { const cat = c.category || "未分类"; if(!grouped[cat]) grouped[cat]=[]; grouped[cat].push(c); });
     Object.keys(grouped).forEach(cat => {
-      html += `
-        <div class="manage-tag-group">
-          <div class="manage-tag-header">
-            <span>📖 ${cat} (${grouped[cat].length})</span>
-            <button class="btn btn-danger btn-sm" onclick="deleteByCategory('${cat}')">删除此科目</button>
-          </div>
-          <ul class="manage-list">
-            ${grouped[cat].map(c => `
-              <li class="manage-item">
-                <span style="font-size:0.9rem; color:#334155;">${escapeHtml(c.front).substring(0, 30)}...</span>
-                <button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-      `;
+      html += `<div class="manage-tag-group"><div class="manage-tag-header"><span>📖 ${cat} (${grouped[cat].length})</span><button class="btn btn-danger btn-sm" onclick="deleteByCategory('${cat}')">删除分类</button></div><ul class="manage-list">
+        ${grouped[cat].map(c => `<li class="manage-item"><span>${escapeHtml(c.front).substring(0,30)}...</span><button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button></li>`).join('')}</ul></div>`;
     });
   } else {
-    html += `
-      <div style="margin-bottom:10px; display:flex; gap:10px;">
-        <button class="btn btn-danger btn-sm" onclick="batchDelete()">删除选中</button>
-        <input type="text" class="input-field" style="padding:4px 8px;" placeholder="筛选..." oninput="filterManageList(this.value)">
-      </div>
-      <ul class="manage-list" id="manage-all-list">
-        ${cards.map(c => `
-          <li class="manage-item" data-text="${c.front.toLowerCase()}">
-            <div class="check-box-wrapper">
-              <input type="checkbox" class="item-checkbox" value="${c.id}">
-              <div style="display:flex; flex-direction:column;">
-                <span style="font-size:0.9rem; color:#334155;">${escapeHtml(c.front).substring(0, 35)}...</span>
-                <span style="font-size:0.75rem; color:#64748b;">${c.category} | ${c.tags.join(', ')}</span>
-              </div>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button>
-          </li>
-        `).join('')}
-      </ul>
-    `;
+    html += `<div style="margin-bottom:10px;display:flex;gap:10px;"><button class="btn btn-danger btn-sm" onclick="batchDelete()">删除选中</button><input type="text" class="input-field" style="padding:4px 8px;" placeholder="筛选..." oninput="filterManageList(this.value)"></div><ul class="manage-list" id="manage-all-list">
+      ${cards.map(c => `<li class="manage-item" data-text="${c.front.toLowerCase()}"><div class="check-box-wrapper"><input type="checkbox" class="item-checkbox" value="${c.id}"><div style="display:flex;flex-direction:column;"><span>${escapeHtml(c.front).substring(0,35)}...</span><span style="font-size:0.75rem;color:#64748b;">${c.category}</span></div></div><button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button></li>`).join('')}</ul>`;
   }
-  
-  if (cards.length === 0) html += '<p style="text-align:center;color:#94a3b8;">暂无卡片数据</p>';
-  html += '</div>';
-  content.innerHTML = html;
-  modal.style.display = 'flex';
+  content.innerHTML = html + '</div>';
+  document.getElementById('modal-root').style.display = 'flex';
 }
-
-function filterManageList(text) {
-  const items = document.querySelectorAll('#manage-all-list .manage-item');
-  items.forEach(item => {
-    item.style.display = item.dataset.text.includes(text.toLowerCase()) ? 'flex' : 'none';
-  });
-}
-
-function batchDelete() {
-  const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-  if (checkboxes.length === 0) return alert("请先选择卡片");
-  if (!confirm(`确定删除选中的 ${checkboxes.length} 张卡片吗？`)) return;
-  
-  const idsToDelete = Array.from(checkboxes).map(cb => parseFloat(cb.value));
-  cards = cards.filter(c => !idsToDelete.includes(c.id));
-  saveData();
-  renderGrid();
-  showManageModal('list');
-}
-
-function deleteByCategory(cat) {
-  if(!confirm(`确定要删除科目 "${cat}" 下的所有卡片吗？`)) return;
-  cards = cards.filter(c => (c.category || "未分类") !== cat);
-  saveData();
-  renderGrid();
-  showManageModal('subject');
-}
-
-function deleteSingleCard(id) {
-  if (!confirm("确定删除此卡片？")) return;
-  cards = cards.filter(c => c.id !== id);
-  saveData();
-  renderGrid();
-  if(document.getElementById('modal-root').style.display === 'flex') {
-    showManageModal(manageViewMode);
-  }
-}
+function filterManageList(text) { document.querySelectorAll('#manage-all-list .manage-item').forEach(item => item.style.display = item.dataset.text.includes(text.toLowerCase()) ? 'flex' : 'none'); }
+function batchDelete() { const ids = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(cb => parseFloat(cb.value)); if(ids.length===0 || !confirm(`删除 ${ids.length} 张?`)) return; cards = cards.filter(c => !ids.includes(c.id)); saveData(); renderGrid(); showManageModal('list'); }
+function deleteByCategory(cat) { if(confirm(`删除科目 "${cat}" 下所有卡片?`)) { cards = cards.filter(c => (c.category||"未分类") !== cat); saveData(); renderGrid(); showManageModal('subject'); } }
 
 function addNewCard() {
-  const front = prompt("输入问题 (Front):");
-  if (!front) return;
-  const back = prompt("输入答案 (Back):");
-  if (!back) return;
-  const category = prompt("输入科目分类:", "公共管理学");
-  const tagsStr = prompt("输入标签:", "基础, 高频");
-  
-  const tags = tagsStr ? tagsStr.split(/,|，/).map(t=>t.trim()).filter(t=>t) : [];
-
-  const newCard = {
-    id: Date.now(),
-    front: front,
-    back: back,
-    category: category || "未分类",
-    tags: tags,
-    nextReview: new Date().toISOString(),
-    mastery: 0,
-    interval: 0,
-    fs: 2.5
-  };
-  
-  cards.unshift(newCard);
-  saveData();
-  renderGrid();
+  const front = prompt("输入问题 (Front):"); if(!front) return;
+  const back = prompt("输入答案 (Back):"); if(!back) return;
+  const category = prompt("科目:", "公共管理学");
+  cards.unshift({ id: Date.now(), front, back, category: category||"未分类", tags: ["手动"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 });
+  saveData(); renderGrid();
 }
-
 function editCard(id) {
   const card = cards.find(c => c.id === id);
-  if(!confirm(`编辑卡片：${card.front}\n点击确定进入编辑，点击取消删除卡片`)) {
-    if(confirm("确定要删除这张卡片吗？")) {
-      deleteSingleCard(id);
-    }
-    return;
-  }
-  
-  const newFront = prompt("修改问题:", card.front);
-  const newBack = prompt("修改答案:", card.back);
-  const newCat = prompt("修改科目:", card.category);
-  const newTags = prompt("修改标签 (逗号分隔):", card.tags.join(", "));
-  
-  if (newFront && newBack) {
-    card.front = newFront;
-    card.back = newBack;
-    card.category = newCat || card.category;
-    if (newTags !== null) {
-       card.tags = newTags.split(/,|，/).map(t=>t.trim()).filter(t=>t);
-    }
-    saveData();
-    renderGrid();
-    if(document.getElementById('modal-root').style.display === 'flex') {
-        showManageModal(manageViewMode);
-    }
-  }
+  if(!confirm(`编辑：${card.front}\n(取消则删除)`)) { if(confirm("删除此卡片?")) { cards = cards.filter(c => c.id !== id); saveData(); renderGrid(); if(document.getElementById('modal-root').style.display==='flex') showManageModal(manageViewMode); } return; }
+  const f = prompt("问题:", card.front), b = prompt("答案:", card.back), c = prompt("科目:", card.category);
+  if(f && b) { card.front = f; card.back = b; card.category = c; saveData(); renderGrid(); if(document.getElementById('modal-root').style.display==='flex') showManageModal(manageViewMode); }
 }
-
 function showImportModal() {
-  const modal = document.getElementById('modal-root');
-  const content = document.getElementById('modal-content');
   document.getElementById('modal-title').textContent = "导入题库 (JSON)";
-  
-  content.innerHTML = `
-    <div style="background:#f0f9ff; border:1px solid #bae6fd; color:#0c4a6e; padding:10px; border-radius:6px; font-size:0.85rem; margin-bottom:10px;">
-      <strong>⚠️ JSON 格式提示：</strong><br>
-      请粘贴合法的 JSON 数组。<br>
-    </div>
-    <textarea id="import-area" class="input-field" style="height:150px;font-family:monospace;font-size:12px;" placeholder='[{"front":"题目","back":"答案","category":"政治","tags":["高频"]}]'></textarea>
-    <button class="btn btn-primary btn-block" onclick="executeImport()">确认导入</button>
-  `;
-  modal.style.display = 'flex';
+  document.getElementById('modal-content').innerHTML = `<div style="background:#f0f9ff;border:1px solid #bae6fd;padding:10px;border-radius:6px;margin-bottom:10px;font-size:0.85rem;">粘贴 JSON 数组。无需英语单词。</div><textarea id="import-area" class="input-field" style="height:150px;"></textarea><button class="btn btn-primary btn-block" onclick="executeImport()">导入</button>`;
+  document.getElementById('modal-root').style.display = 'flex';
 }
-
 function executeImport() {
   try {
-    const json = document.getElementById('import-area').value;
-    const data = JSON.parse(json);
-    if (!Array.isArray(data)) throw new Error("格式不是数组");
-    
+    const data = JSON.parse(document.getElementById('import-area').value);
+    if(!Array.isArray(data)) throw new Error();
     let count = 0;
-    data.forEach(item => {
-      if (item.front && item.back) {
-        let tags = item.tags || [];
-        if (typeof tags === 'string') tags = [tags];
-        if (item.front.includes("高频") && !tags.includes("高频")) tags.push("高频");
-
-        cards.push({
-          id: Date.now() + Math.random(),
-          front: item.front,
-          back: item.back,
-          category: item.category || "未分类",
-          tags: tags,
-          nextReview: new Date().toISOString(),
-          mastery: 0,
-          interval: 0,
-          fs: 2.5
-        });
-        count++;
-      }
-    });
-    saveData();
-    closeModal();
-    renderGrid();
-    alert(`成功导入 ${count} 张卡片`);
-  } catch (e) {
-    alert("导入失败，JSON 格式错误");
-  }
+    data.forEach(item => { if(item.front && item.back) { if(!cards.some(c=>c.front===item.front)) { cards.push({ id: Date.now()+Math.random(), front: item.front, back: item.back, category: item.category||"未分类", tags: item.tags||["导入"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 }); count++; } } });
+    saveData(); closeModal(); renderGrid(); alert(`导入 ${count} 张`);
+  } catch(e) { alert("格式错误"); }
 }
-
 function exportCards() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards));
-  const node = document.createElement('a');
-  node.setAttribute("href", dataStr);
-  node.setAttribute("download", "mpa_flashcards_backup.json");
-  document.body.appendChild(node);
-  node.click();
-  node.remove();
+  const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards)); a.download = "mpa_flashcards.json"; document.body.appendChild(a); a.click(); a.remove();
 }
-
-function closeModal() {
-  document.getElementById('modal-root').style.display = 'none';
-}
-
-function filterCards(keyword) {
-  if (!keyword) {
-    renderGrid();
-    return;
-  }
-  const lower = keyword.toLowerCase();
-  const filtered = cards.filter(c => c.front.toLowerCase().includes(lower) || c.back.toLowerCase().includes(lower));
-  renderGrid(filtered);
-}
-
-function filterByStatus(type) {
-  currentFilter = type;
-  updateNavActiveState();
-  document.getElementById('grid-title').textContent = type === 'wrong' ? '错题本' : '高频考点';
-  renderGrid();
-}
-
-function filterBySubject(subject) {
-  currentFilter = 'subject:' + subject;
-  updateNavActiveState();
-  document.getElementById('grid-title').textContent = subject;
-  renderGrid();
-}
-
-function resetFilter() {
-  currentFilter = 'all';
-  updateNavActiveState();
-  document.getElementById('grid-title').textContent = '全部卡片';
-  renderGrid();
-}
-
-function updateNavActiveState() {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  if (currentFilter === 'all') document.getElementById('nav-all').classList.add('active');
-}
-
-function loadNote() {
-  document.getElementById('quick-note').value = localStorage.getItem(NOTES_KEY) || "";
-}
-function saveNote() {
-  localStorage.setItem(NOTES_KEY, document.getElementById('quick-note').value);
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function parseCardAnswer(text) {
-  let rawHtml = escapeHtml(text);
-  const parts = rawHtml.split('---');
-  let mainContent = parts[0];
+function closeModal() { document.getElementById('modal-root').style.display = 'none'; }
+function filterCards(kw) { if(!kw) { renderGrid(); return; } const l = kw.toLowerCase(); renderGrid(cards.filter(c => c.front.toLowerCase().includes(l) || c.back.toLowerCase().includes(l))); }
+function filterByStatus(t) { currentFilter = t; updateNavActiveState(); renderGrid(); }
+function filterBySubject(s) { currentFilter = 'subject:'+s; updateNavActiveState(); renderGrid(); }
+function resetFilter() { currentFilter = 'all'; updateNavActiveState(); renderGrid(); }
+function updateNavActiveState() { document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); if(currentFilter==='all') document.getElementById('nav-all').classList.add('active'); }
+function loadNote() { document.getElementById('quick-note').value = localStorage.getItem(NOTES_KEY) || ""; }
+function saveNote() { localStorage.setItem(NOTES_KEY, document.getElementById('quick-note').value); }
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function parseCardAnswer(t) { return `<div class="answer-main">${parseMarkdown(t)}</div>`; }
+function parseMarkdown(t) {
+  let h = escapeHtml(t);
+  h = h.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`([^`]+)`/g, '<code>$1</code>');
   
-  const mdToHtml = (str) => {
-    return str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
-              .replace(/\*(.*?)\*/g, '<em>$1</em>') 
-              .replace(/\n/g, '<br>'); 
-  };
-
-  let html = `<div class="answer-main">${mdToHtml(mainContent)}</div>`;
-  return html;
-}
-
-function parseMarkdown(text) {
-  let html = escapeHtml(text);
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
-  html = html.replace(/\n/g, '<br>'); 
-  return html;
-}
-
-// ================= AI 助手逻辑 =================
-
-let chatVisible = false;
-function toggleChat() {
-  const w = document.getElementById('chat-widget');
-  chatVisible = !chatVisible;
-  w.style.display = chatVisible ? 'flex' : 'none';
-}
-
-function updateApiProvider() {
-  const select = document.getElementById('api-provider');
-  currentProvider = select.value;
-  localStorage.setItem('preferred_api_provider', currentProvider);
+  // Table Parsing Logic
+  let lines = h.split('\n');
+  let inTable = false;
+  let newLines = [];
   
-  const btn = document.getElementById('btn-set-key');
-  btn.textContent = `🔑 设置 ${API_CONFIG[currentProvider].name} Key`;
+  for(let i=0; i<lines.length; i++) {
+      let line = lines[i].trim();
+      if (line.startsWith('|') && line.endsWith('|')) {
+          if (!inTable) { newLines.push('<div style="overflow-x:auto;"><table>'); inTable = true; }
+          if (line.match(/^\|[\s-:]+\|[\s-:]+\|/)) continue; // Skip separator row
+          let cells = line.substring(1, line.length-1).split('|').map(c => `<td>${c.trim()}</td>`).join('');
+          newLines.push(`<tr>${cells}</tr>`);
+      } else {
+          if (inTable) { newLines.push('</table></div>'); inTable = false; }
+          newLines.push(line + '<br>');
+      }
+  }
+  if(inTable) newLines.push('</table></div>');
+  return newLines.join('');
 }
 
-function setApiKey() {
-  const config = API_CONFIG[currentProvider];
-  const oldKey = localStorage.getItem(config.storageKey) || "";
-  const key = prompt(`请输入 ${config.name} API Key:`, oldKey);
-  if (key) {
-    localStorage.setItem(config.storageKey, key);
-    alert(`${config.name} Key 已保存！`);
-  }
-}
+// AI & Chat Logic
+function toggleChat() { const w = document.getElementById('chat-widget'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
+function updateApiProvider() { currentProvider = document.getElementById('api-provider').value; localStorage.setItem('preferred_api_provider', currentProvider); document.getElementById('btn-set-key').textContent = `🔑 设置 ${API_CONFIG[currentProvider].name} Key`; }
+function setApiKey() { const k = prompt("API Key:", localStorage.getItem(API_CONFIG[currentProvider].storageKey)||""); if(k) { localStorage.setItem(API_CONFIG[currentProvider].storageKey, k); alert("Saved"); } }
+function dragChat(e) { if(e.target.tagName==='SPAN') return; const el = document.getElementById('chat-widget'); let sx = e.clientX-el.getBoundingClientRect().left, sy = e.clientY-el.getBoundingClientRect().top; const mm = (ev) => { el.style.left = ev.pageX-sx+'px'; el.style.top = ev.pageY-sy+'px'; el.style.bottom = 'auto'; el.style.right = 'auto'; }; document.addEventListener('mousemove', mm); el.onmouseup = () => document.removeEventListener('mousemove', mm); }
 
-function dragChat(e) {
-  const el = document.getElementById('chat-widget');
-  let shiftX = e.clientX - el.getBoundingClientRect().left;
-  let shiftY = e.clientY - el.getBoundingClientRect().top;
-  function moveAt(pageX, pageY) {
-    el.style.left = pageX - shiftX + 'px';
-    el.style.top = pageY - shiftY + 'px';
-    el.style.bottom = 'auto';
-    el.style.right = 'auto';
-  }
-  function onMouseMove(event) { moveAt(event.pageX, event.pageY); }
-  document.addEventListener('mousemove', onMouseMove);
-  el.onmouseup = function() {
-    document.removeEventListener('mousemove', onMouseMove);
-    el.onmouseup = null;
-  };
+function renderChatHistory() {
+    const b = document.getElementById('chat-body'); b.innerHTML = '';
+    if(chatHistory.length===0) { b.innerHTML = '<div class="msg ai">你好！我是你的专属考研导师。请设置 Key 开始。</div>'; return; }
+    chatHistory.forEach(m => {
+        const d = document.createElement('div'); d.className = `msg ${m.role}`;
+        if(m.role==='ai') {
+            d.innerHTML = parseMarkdown(m.text);
+            // Check for JSON and add button back if it was an import response
+            if(m.text.includes('[') && m.text.includes(']')) {
+                // Simple check to re-add button visually
+                 try {
+                   let match = m.text.match(/\[\s*\{.*?\}\s*\]/s);
+                   let jsonStr = match ? match[0] : null;
+                   if (jsonStr && JSON.parse(jsonStr).length > 0) {
+                       const btn = document.createElement('button');
+                       btn.className = 'btn btn-primary btn-sm';
+                       btn.style.marginTop = '8px';
+                       btn.textContent = "检测到闪卡数据 (点击导入)";
+                       btn.onclick = function() { document.getElementById('import-area').value = jsonStr; executeImport(); this.disabled=true; this.textContent="已导入"; };
+                       d.appendChild(btn);
+                   }
+                 } catch(e){}
+            }
+        } else d.innerText = m.text;
+        b.appendChild(d);
+    });
+    b.scrollTop = b.scrollHeight;
 }
+function clearChatHistory() { if(confirm('清空记录?')) { chatHistory=[]; localStorage.removeItem(CHAT_HISTORY_KEY); renderChatHistory(); } }
+function saveChatHistory() { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(chatHistory)); }
 
 async function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
+  const inp = document.getElementById('chat-input'); const txt = inp.value.trim(); if(!txt) return;
+  addMsg('user', txt); inp.value = '';
+  const cfg = API_CONFIG[currentProvider], key = localStorage.getItem(cfg.storageKey);
+  if(!key) { addMsg('ai', "请先设置 API Key"); return; }
   
-  addMsg('user', text);
-  input.value = '';
-
-  const config = API_CONFIG[currentProvider];
-  const apiKey = localStorage.getItem(config.storageKey);
-  
-  if (!apiKey) {
-    addMsg('ai', `请先点击下方按钮设置 ${config.name} API Key。`);
-    return;
-  }
-
-  addMsg('ai', '正在思考...', true); 
-  
+  const ld = document.createElement('div'); ld.className='msg ai'; ld.innerText='思考中...'; document.getElementById('chat-body').appendChild(ld);
   try {
-    const systemPrompt = `你是一位资深的中国公共管理考研命题组专家和阅卷组长。你的目标是帮助考生生成高质量的闪卡，并解答专业问题。
-
-【作答标准】：
-1. **结构化输出**：遵循【定义 -> 核心要素 -> 意义 -> 结论】的逻辑。
-2. **结合时政**：联系中国热点（如：数字政府、共同富裕等）。
-3. **准确分类**：如果生成闪卡，请根据内容自动判断科目（如：公共管理学、政治、社会研究方法）。如果没有明确线索，默认分类为“AI生成”。
-4. **JSON格式**：如用户要求生成卡片，请返回 [{"front":"...","back":"...","category":"...","tags":["..."]}]。`;
-
-    let response, data;
+    let prompt = `你是一位中国公共管理考研命题专家。
+    1. **结构化输出**：定义 -> 核心要素 -> 意义。
+    2. **结合时政**：联系中国数字政府、共同富裕等热点。
+    3. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目"}]。
+    4. **表格**：使用 Markdown 表格语法。`;
     
-    if (currentProvider === 'deepseek') {
-      response = await fetch(config.url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [{role: "system", content: systemPrompt}, {role: "user", content: text}],
-          stream: false
-        })
-      });
-      data = await response.json();
-    } else if (currentProvider === 'gemini') {
-      const url = `${config.url}?key=${apiKey}`;
-      response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nUser Question: " + text }] }]
-        })
-      });
-      data = await response.json();
-    }
-
-    const loadingMsg = document.querySelector('.msg.ai:last-child');
-    if (loadingMsg && loadingMsg.textContent === '正在思考...') loadingMsg.remove();
-
-    let reply = '';
-    if (currentProvider === 'deepseek' && data.choices) {
-      reply = data.choices[0].message.content;
-    } else if (currentProvider === 'gemini' && data.candidates) {
-      reply = data.candidates[0].content.parts[0].text;
+    let res, data, reply;
+    if(currentProvider==='deepseek') {
+        res = await fetch(cfg.url, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`}, body:JSON.stringify({ model:"deepseek-chat", messages:[{role:"system",content:prompt},{role:"user",content:txt}], stream:false }) });
+        data = await res.json(); reply = data.choices[0].message.content;
     } else {
-      reply = 'API 调用失败，请检查 Key 或网络。';
-      console.error(data);
+        res = await fetch(`${cfg.url}?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{role:"user",parts:[{text:prompt+"\n"+txt}]}] }) });
+        data = await res.json(); reply = data.candidates[0].content.parts[0].text;
     }
-
-    addMsg('ai', reply);
+    ld.remove();
+    const msgDiv = addMsg('ai', reply);
     
-    // 增强的 JSON 解析逻辑
-    let jsonStr = "";
+    // JSON Detection & Button
     if (reply.includes('[') && reply.includes(']')) {
-       // 尝试正则匹配
-       const match = reply.match(/\[\s*\{.*?\}\s*\]/s);
-       if (match) {
-           jsonStr = match[0];
-       } else {
-           // 降级回退：简单的查找
-           const start = reply.indexOf('[');
-           const end = reply.lastIndexOf(']') + 1;
-           jsonStr = reply.substring(start, end);
-       }
-       
-       // 验证是否是有效的卡片 JSON
-       try {
-           const parsed = JSON.parse(jsonStr);
-           if(Array.isArray(parsed) && parsed.length > 0 && parsed[0].front && parsed[0].back) {
-              const btnId = 'btn-import-' + Date.now();
-              addMsg('ai', `<button id="${btnId}" class="btn btn-primary btn-sm">检测到 ${parsed.length} 张闪卡，点击一键导入</button>`);
-              document.getElementById(btnId).onclick = function() {
-                 document.getElementById('import-area').value = jsonStr;
-                 executeImport();
-                 this.disabled = true;
-                 this.textContent = "已导入";
-              };
-           }
-       } catch(e) {
-           console.log("JSON Parse fail inside chat", e);
-       }
+        let match = reply.match(/\[\s*\{.*?\}\s*\]/s);
+        let jsonStr = match ? match[0] : reply.substring(reply.indexOf('['), reply.lastIndexOf(']')+1);
+        try {
+            let parsed = JSON.parse(jsonStr);
+            if(Array.isArray(parsed) && parsed.length>0 && parsed[0].front) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary btn-sm'; btn.style.marginTop='8px'; btn.textContent = `一键导入 ${parsed.length} 张卡片`;
+                btn.onclick = function() { 
+                    let count=0; parsed.forEach(p=>{ if(!cards.some(c=>c.front===p.front)){ cards.push({id:Date.now()+Math.random(), front:p.front, back:p.back, category:p.category||"AI生成", tags:p.tags||["AI"], nextReview:new Date().toISOString(), mastery:0, interval:0, fs:2.5}); count++; } });
+                    saveData(); renderGrid(); updateSubjectList(); this.disabled=true; this.textContent=`成功导入 ${count} 张`; alert(`导入成功`);
+                };
+                msgDiv.appendChild(btn);
+            }
+        } catch(e){}
     }
-
-  } catch (e) {
-    console.error(e);
-    addMsg('ai', '网络请求出错。');
-  }
+  } catch(e) { ld.remove(); addMsg('ai', "请求出错"); console.error(e); }
 }
-
-function addMsg(role, text, isLoading=false) {
-  const body = document.getElementById('chat-body');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  if (!isLoading && role === 'ai') {
-      div.innerHTML = parseMarkdown(text); 
-  } else {
-      div.innerHTML = text; 
-  }
-  body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+function addMsg(role, text) {
+    const d = document.createElement('div'); d.className = `msg ${role}`;
+    if(role==='ai') d.innerHTML = parseMarkdown(text); else d.innerText = text;
+    document.getElementById('chat-body').appendChild(d);
+    document.getElementById('chat-body').scrollTop = document.getElementById('chat-body').scrollHeight;
+    chatHistory.push({role, text}); saveChatHistory();
+    return d;
 }
 
 window.onload = initData;
-
-document.addEventListener('keydown', (e) => {
-  if (document.getElementById('review-overlay').classList.contains('active')) {
-    if (e.key === ' ' || e.key === 'Enter') flipCard();
-    if (document.getElementById('review-controls').classList.contains('visible')) {
-      if (e.key === '1') rateCard(1);
-      if (e.key === '2') rateCard(2);
-      if (e.key === '3') rateCard(3);
-      if (e.key === '4') rateCard(4);
-    }
-    if (e.key === 'Escape') endReview();
-  }
-});
+document.addEventListener('keydown', (e) => { if(document.getElementById('review-overlay').classList.contains('active')) { if(e.key===' '||e.key==='Enter') flipCard(); if(['1','2','3','4'].includes(e.key)) rateCard(parseInt(e.key)); if(e.key==='Escape') endReview(); } });
 </script>
 </body>
 </html>
