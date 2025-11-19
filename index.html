@@ -572,7 +572,7 @@
 </div>
 
 <!-- 沉浸式复习界面 (Overlay) -->
-<div id="review-overlay">
+<div id="review-overlay" onclick="handleOverlayClick(event)">
   <div class="review-header">
     <button class="btn btn-ghost" onclick="endReview()">✕ 退出</button>
     <div class="progress-bar-container">
@@ -927,6 +927,12 @@ function flipCard() {
     setTimeout(() => {
       document.getElementById('review-controls').classList.add('visible');
     }, 300);
+  }
+}
+
+function handleOverlayClick(e) {
+  if (e.target.id === 'review-overlay') {
+    endReview();
   }
 }
 
