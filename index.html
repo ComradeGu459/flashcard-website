@@ -26,11 +26,11 @@
       /* 卡片背面专用配色 */
       --card-paper: #ffffff;
       --card-ink: #334155;
-      --highlight-bg: rgba(253, 224, 71, 0.3);
-      --highlight-text: #b45309;
+      --highlight-bg: rgba(253, 224, 71, 0.4);
+      --highlight-text: #000000;
 
       /* 字体大小变量 */
-      --fs-card-answer: 1rem; /* 默认答案字体大小 */
+      --fs-card-answer: 1rem; 
     }
 
     * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -187,42 +187,15 @@
     }
     .card-thumb:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
     .card-thumb .card-meta { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 8px; display: flex; justify-content: space-between; }
-    
-    .card-thumb .card-title { 
-      font-weight: 600; 
-      font-size: 1.1rem; 
-      line-height: 1.5; 
-      color: var(--text-main); 
-      flex: 1; 
-      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
-      margin-bottom: 12px;
-    }
-    
+    .card-thumb .card-title { font-weight: 600; font-size: 1.1rem; line-height: 1.5; color: var(--text-main); flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
     .card-thumb .card-tags { margin-top: auto; display: flex; flex-wrap: wrap; gap: 4px; }
     .tag-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: var(--bg-body); color: var(--text-sub); margin-right: 4px; }
     
-    .card-actions {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      opacity: 0;
-      transition: opacity 0.2s;
-      display: flex;
-      gap: 4px;
-    }
+    .card-actions { position: absolute; top: 12px; right: 12px; opacity: 0; transition: opacity 0.2s; display: flex; gap: 4px; }
     .card-thumb:hover .card-actions { opacity: 1; }
-    .icon-btn {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem;
-      cursor: pointer;
-      border: 1px solid #e2e8f0;
-    }
+    .icon-btn { width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; border: 1px solid #e2e8f0; }
     .icon-btn:hover { background: white; color: var(--primary); border-color: var(--primary); }
 
-    /* 状态指示灯 */
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .status-new { background: #94a3b8; }
     .status-learning { background: var(--warning); }
@@ -231,19 +204,23 @@
     /* 沉浸式复习模式 (Overlay) */
     #review-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(248, 250, 252, 0.95);
-      backdrop-filter: blur(5px);
+      background: rgba(15, 23, 42, 0.92); /* 深色磨砂背景 */
+      backdrop-filter: blur(8px);
       z-index: 2000;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      transition: opacity 0.3s ease;
     }
     #review-overlay.active { display: flex; animation: fadeIn 0.3s; }
 
-    .review-header { position: absolute; top: 0; left: 0; right: 0; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 3000;}
-    .progress-bar-container { flex: 1; max-width: 400px; height: 6px; background: #e2e8f0; border-radius: 3px; margin: 0 20px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+    .review-header { position: absolute; top: 0; left: 0; right: 0; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 3000; color: white; }
+    .review-header .btn-ghost { color: #cbd5e1; } 
+    .review-header .btn-ghost:hover { background: rgba(255,255,255,0.1); color: white; }
+    
+    .progress-bar-container { flex: 1; max-width: 400px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; margin: 0 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #818cf8; width: 0%; transition: width 0.3s; }
 
     /* 3D 翻转卡片容器 */
     .flip-container { 
@@ -256,7 +233,7 @@
       position: relative; 
     }
     .flipper { 
-      transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1); 
+      transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); 
       transform-style: preserve-3d; 
       position: relative; 
       width: 100%; 
@@ -264,89 +241,148 @@
       cursor: pointer; 
       will-change: transform;
     }
+    
     .flipper.flipped { transform: rotateY(180deg); }
     
     .front, .back {
       backface-visibility: hidden; 
-      -webkit-backface-visibility: hidden;
+      -webkit-backface-visibility: hidden; 
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      border-radius: 24px; background: var(--card-paper);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border-radius: 20px; 
+      background: var(--card-paper);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       padding: 40px; display: flex; flex-direction: column; 
-      border: 1px solid rgba(0,0,0,0.05);
       transform: translateZ(0); 
     }
     
-    /* 正面 */
+    /* 正面 - 绝对居中 */
     .front { 
       z-index: 2; 
       transform: rotateY(0deg); 
       align-items: center; 
       justify-content: center; 
       text-align: center; 
-      background: linear-gradient(145deg, #ffffff, #f8fafc);
-      position: relative;
+      background: #ffffff;
+      border-top: 6px solid var(--primary); 
     }
     
-    .card-category-label {
-      position: absolute;
-      top: 40px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      color: var(--primary);
-      font-weight: 600;
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
+    .card-category-label { 
+      position: absolute; top: 30px; left: 0; right: 0; text-align: center; 
+      color: var(--text-sub); font-weight: 600; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;
     }
-
-    .card-bottom-hint {
-      position: absolute;
-      bottom: 40px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      color: var(--text-sub);
-      font-size: 0.9rem;
-      opacity: 0.8;
+    .card-bottom-hint { 
+      position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; 
+      color: #94a3b8; font-size: 0.85rem; 
     }
+    .question-wrapper { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; }
 
-    .question-wrapper {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      z-index: 1; 
+    /* 背面 - 默认布局 */
+    .back { 
+      transform: rotateY(180deg); 
+      background: #ffffff; 
+      overflow-y: auto; 
+      justify-content: flex-start; 
+      text-align: left; 
+      border-top: 6px solid #10b981; 
     }
-
-    .back { transform: rotateY(180deg); background: #ffffff; overflow-y: auto; justify-content: flex-start; text-align: left; }
+    
+    /* 动态布局类：居中模式 (flex 覆盖) */
+    .back.layout-center { 
+      justify-content: center; 
+      align-items: center; 
+      text-align: center; 
+      overflow-y: hidden; /* 短内容不需要滚动 */
+    }
     
     .back::-webkit-scrollbar { width: 6px; }
     .back::-webkit-scrollbar-track { background: transparent; }
-    .back::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
+    .back::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 3px; }
 
-    .card-content-lg { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1.4; margin-bottom: 10px; }
-    .card-clue { color: var(--text-sub); font-style: italic; font-size: 1rem; }
+    .card-content-lg { font-size: 1.9rem; font-weight: 800; color: #1e293b; line-height: 1.4; margin-bottom: 15px; letter-spacing: -0.5px; }
+    .card-clue { color: #64748b; font-style: italic; font-size: 1.05rem; margin-top: 10px; }
     
-    .answer-main { font-size: var(--fs-card-answer); line-height: 1.8; color: var(--card-ink); flex: 1; padding-right: 8px; transition: font-size 0.2s; }
+    /* 答案内容主容器 - 关键优化 */
+    .answer-main {
+      width: 100%;
+      font-size: var(--fs-card-answer); 
+      line-height: 1.85;
+      color: #334155;
+      transition: font-size 0.2s;
+    }
+    
+    /* === 智能排版分级规则 (Smart Typography Levels) === */
+    
+    /* Level 1: 极短文本 (如名词解释核心) - 超大字，居中 */
+    .answer-main.text-xl { 
+      font-size: calc(var(--fs-card-answer) * 2.4); 
+      line-height: 1.3; 
+      font-weight: 700; 
+      text-align: center; 
+      color: #0f172a; /* 更黑一点 */
+    }
+    
+    /* Level 2: 短文本 - 大字，居中 */
+    .answer-main.text-lg { 
+      font-size: calc(var(--fs-card-answer) * 1.8); 
+      line-height: 1.5; 
+      font-weight: 600; 
+      text-align: center; 
+    }
+    
+    /* Level 3: 中等文本 - 中字，居中 */
+    .answer-main.text-md { 
+      font-size: calc(var(--fs-card-answer) * 1.3); 
+      line-height: 1.6; 
+      text-align: center; 
+    }
+    
+    /* Level 4: 长文本/复杂内容 - 默认字号，左对齐 */
+    .answer-main.text-sm { 
+      font-size: var(--fs-card-answer); 
+      text-align: left; 
+    }
+    
     .answer-main p { margin-bottom: 1em; }
-    .answer-main strong { color: var(--highlight-text); background: var(--highlight-bg); padding: 0 4px; border-radius: 4px; font-weight: 700; }
-    .answer-main ul { padding-left: 1.2em; margin-bottom: 1em; }
-    .answer-main li { margin-bottom: 0.5em; }
+    .answer-main strong { 
+        color: var(--highlight-text); 
+        background: linear-gradient(to top, var(--highlight-bg) 40%, transparent 40%); 
+        padding: 0 2px; 
+        font-weight: 700; 
+    }
+    /* 列表优化 */
+    .answer-main ul { 
+      padding-left: 1.4em; 
+      margin-bottom: 1em; 
+      /* 如果父容器是居中的，列表应该根据内容自适应并居中显示，而不是左侧贴边 */
+      display: inline-block; 
+      text-align: left; 
+      width: auto;
+      max-width: 100%;
+    }
+    /* 强制列表左对齐（针对长文本） */
+    .answer-main.text-sm ul { display: block; }
 
     .answer-vocab { margin-top: 24px; padding-top: 16px; border-top: 1px dashed #e2e8f0; font-size: 0.9rem; color: #64748b; background: #f8fafc; padding: 16px; border-radius: 8px; display: none; }
     
     .review-controls { margin-top: 20px; display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .review-controls.visible { opacity: 1; pointer-events: auto; }
-    .grade-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); flex: 1; font-size: 1rem; }
-    .grade-btn:active { transform: scale(0.98); }
-    .grade-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    .grade-2 { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .grade-3 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-    .grade-4 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    
+    .grade-btn { padding: 14px 24px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); flex: 1; font-size: 1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .grade-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+    .grade-btn:active { transform: scale(0.96); }
+    .grade-1 { background: linear-gradient(145deg, #ef4444, #b91c1c); }
+    .grade-2 { background: linear-gradient(145deg, #f59e0b, #b45309); }
+    .grade-3 { background: linear-gradient(145deg, #3b82f6, #1d4ed8); }
+    .grade-4 { background: linear-gradient(145deg, #10b981, #047857); }
 
-    .stat-card { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; padding: 16px; margin-bottom: 16px; color: #0c4a6e; }
+    /* 统计卡片 */
+    .stat-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      color: #0c4a6e;
+    }
     .stat-card.highlight { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
     .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
     .stat-label { font-size: 0.85rem; opacity: 0.9; }
@@ -531,14 +567,14 @@
   <div class="flip-container" onclick="flipCard()">
     <div class="flipper" id="review-card-flipper">
       <div class="front">
-        <!-- 新增结构：科目独立 -->
+        <!-- 科目独立显示 -->
         <div class="card-category-label" id="review-category"></div>
-        <!-- 新增结构：问题居中 -->
+        <!-- 问题绝对居中 -->
         <div class="question-wrapper">
             <div class="card-content-lg" id="review-front"></div>
             <div class="card-clue" id="review-clue"></div>
         </div>
-        <!-- 新增结构：提示底部 -->
+        <!-- 底部提示 -->
         <div class="card-bottom-hint">(点击翻看答案)</div>
       </div>
       <div class="back" id="review-back-container"></div>
@@ -737,12 +773,46 @@ function showReviewCard() {
   document.getElementById('review-card-flipper').classList.remove('flipped');
   document.getElementById('review-controls').classList.remove('visible');
   
-  // 新的 DOM 注入逻辑，保持结构
+  // 新的 DOM 注入逻辑
   document.getElementById('review-category').textContent = card.category || '未分类';
   document.getElementById('review-front').textContent = card.front;
   document.getElementById('review-clue').textContent = card.clue || "";
   
-  document.getElementById('review-back-container').innerHTML = parseCardAnswer(card.back);
+  // 核心：自适应排版算法 (Adaptive Typography)
+  const backContainer = document.getElementById('review-back-container');
+  // 移除 HTML 标签，仅统计纯文本长度
+  const rawText = card.back.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  const len = rawText.length;
+  // 检测复杂元素（表格、代码块）
+  const hasComplex = card.back.includes('```') || card.back.includes('|'); 
+
+  backContainer.className = 'back'; // 重置类名
+  let html = parseCardAnswer(card.back);
+  
+  // 根据字数智能分级
+  if (hasComplex) {
+      // 有表格/代码，强制标准左对齐
+      html = html.replace('answer-main', 'answer-main text-sm');
+  } else {
+      if (len <= 15) {
+          // 极简模式：超大字 + 居中
+          backContainer.classList.add('layout-center');
+          html = html.replace('answer-main', 'answer-main text-xl');
+      } else if (len <= 50) {
+          // 短句模式：大字 + 居中
+          backContainer.classList.add('layout-center');
+          html = html.replace('answer-main', 'answer-main text-lg');
+      } else if (len <= 120) {
+          // 中篇模式：中字 + 居中
+          backContainer.classList.add('layout-center');
+          html = html.replace('answer-main', 'answer-main text-md');
+      } else {
+          // 长文模式：标准字 + 左对齐
+          html = html.replace('answer-main', 'answer-main text-sm');
+      }
+  }
+  
+  backContainer.innerHTML = html;
   const progress = ((currentReviewIndex) / reviewQueue.length) * 100;
   document.getElementById('review-progress').style.width = `${progress}%`;
   document.getElementById('review-counter').textContent = `${currentReviewIndex + 1}/${reviewQueue.length}`;
@@ -769,7 +839,7 @@ function endReview(finished = false) { if (finished) alert("🎉 复习完成！
 function showSettingsModal() {
   document.getElementById('modal-title').textContent = "⚙️ 系统设置";
   document.getElementById('modal-content').innerHTML = `
-    <div style="margin-bottom:20px;"><h4 style="margin-bottom:10px;">📖 卡片答案字号</h4><div style="display:flex; gap:10px;">
+    <div style="margin-bottom:20px;"><h4 style="margin-bottom:10px;">📖 卡片答案字号 (基准)</h4><div style="display:flex; gap:10px;">
       <button class="btn btn-secondary ${appSettings.cardFontSize==='normal'?'btn-primary':''}" onclick="updateFontSize('normal')">标准</button>
       <button class="btn btn-secondary ${appSettings.cardFontSize==='medium'?'btn-primary':''}" onclick="updateFontSize('medium')">中号</button>
       <button class="btn btn-secondary ${appSettings.cardFontSize==='large'?'btn-primary':''}" onclick="updateFontSize('large')">大号</button>
@@ -822,96 +892,21 @@ function editCard(id) {
   const f = prompt("问题:", card.front), b = prompt("答案:", card.back), c = prompt("科目:", card.category);
   if(f && b) { card.front = f; card.back = b; card.category = c; saveData(); renderGrid(); if(document.getElementById('modal-root').style.display==='flex') showManageModal(manageViewMode); }
 }
-
 function showImportModal() {
   document.getElementById('modal-title').textContent = "导入题库 (JSON)";
   document.getElementById('modal-content').innerHTML = `
-    <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:12px;border-radius:8px;margin-bottom:15px;font-size:0.9rem;color:#0c4a6e;">
-      <strong>📋 数据格式要求：</strong>
-      <ul style="margin:5px 0 10px 20px;padding:0;">
-        <li>文件类型：JSON 数组</li>
-        <li>必需字段：<code>front</code> (问题), <code>back</code> (答案)</li>
-        <li>可选字段：<code>category</code> (科目), <code>tags</code> (标签数组)</li>
-      </ul>
-      <div style="background:#e0f2fe;padding:8px;border-radius:4px;font-family:monospace;font-size:0.85rem;color:#0284c7;">
-        [<br>
-        &nbsp;&nbsp;{<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"front": "题目示例",<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"back": "答案内容",<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"category": "公共管理学"<br>
-        &nbsp;&nbsp;}<br>
-        ]
-      </div>
-    </div>
-    
-    <div style="margin-bottom:15px;">
-      <label style="display:block;margin-bottom:6px;font-weight:600;">方式 1: 上传文件 (.json)</label>
-      <input type="file" id="import-file" accept=".json" class="input-field" style="padding:8px;">
-    </div>
-    
-    <div style="margin-bottom:15px;">
-      <label style="display:block;margin-bottom:6px;font-weight:600;">方式 2: 粘贴文本</label>
-      <textarea id="import-area" class="input-field" style="height:120px;font-family:monospace;font-size:12px;" placeholder="在此处粘贴 JSON 数组..."></textarea>
-    </div>
-    
-    <button class="btn btn-primary btn-block" onclick="executeImport()">确认导入</button>
-  `;
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:10px;border-radius:6px;margin-bottom:10px;font-size:0.85rem;">粘贴 JSON 数组。</div><textarea id="import-area" class="input-field" style="height:150px;"></textarea><button class="btn btn-primary btn-block" onclick="executeImport()">导入</button>`;
   document.getElementById('modal-root').style.display = 'flex';
 }
-
 function executeImport() {
-  const fileInput = document.getElementById('import-file');
-  const textArea = document.getElementById('import-area');
-  
-  const processData = (jsonStr) => {
-    try {
-      const data = JSON.parse(jsonStr);
-      if(!Array.isArray(data)) throw new Error("Root must be an array");
-      
-      let count = 0;
-      data.forEach(item => {
-        if(item.front && item.back) {
-          if(!cards.some(c => c.front === item.front)) {
-             cards.push({
-               id: Date.now() + Math.random(),
-               front: item.front,
-               back: item.back,
-               category: item.category || "未分类",
-               tags: item.tags || ["导入"],
-               nextReview: new Date().toISOString(),
-               mastery: 0,
-               interval: 0,
-               fs: 2.5
-             });
-             count++;
-          }
-        }
-      });
-      
-      saveData();
-      renderGrid();
-      updateSubjectList(); 
-      closeModal();
-      alert(`成功导入 ${count} 张新卡片！(已自动过滤重复项)`);
-      
-    } catch(e) {
-      alert("格式错误：请检查 JSON 语法是否正确，必须是对象数组。");
-      console.error(e);
-    }
-  };
-
-  if (fileInput.files.length > 0) {
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => processData(e.target.result);
-    reader.readAsText(file);
-  } else if (textArea.value.trim()) {
-    processData(textArea.value.trim());
-  } else {
-    alert("请选择文件或粘贴内容");
-  }
+  try {
+    const data = JSON.parse(document.getElementById('import-area').value);
+    if(!Array.isArray(data)) throw new Error();
+    let count = 0;
+    data.forEach(item => { if(item.front && item.back) { if(!cards.some(c=>c.front===item.front)) { cards.push({ id: Date.now()+Math.random(), front: item.front, back: item.back, category: item.category||"未分类", tags: item.tags||["导入"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 }); count++; } } });
+    saveData(); closeModal(); renderGrid(); alert(`导入 ${count} 张`);
+  } catch(e) { alert("格式错误"); }
 }
-
 function exportCards() {
   const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards)); a.download = "mpa_flashcards.json"; document.body.appendChild(a); a.click(); a.remove();
 }
@@ -928,17 +923,12 @@ function parseCardAnswer(t) { return `<div class="answer-main">${parseMarkdown(t
 function parseMarkdown(t) {
   let h = escapeHtml(t);
   h = h.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`([^`]+)`/g, '<code>$1</code>');
-  
-  // Table Parsing Logic
-  let lines = h.split('\n');
-  let inTable = false;
-  let newLines = [];
-  
+  let lines = h.split('\n'), inTable = false, newLines = [];
   for(let i=0; i<lines.length; i++) {
       let line = lines[i].trim();
       if (line.startsWith('|') && line.endsWith('|')) {
           if (!inTable) { newLines.push('<div style="overflow-x:auto;"><table>'); inTable = true; }
-          if (line.match(/^\|[\s-:]+\|[\s-:]+\|/)) continue; // Skip separator row
+          if (line.match(/^\|[\s-:]+\|[\s-:]+\|/)) continue;
           let cells = line.substring(1, line.length-1).split('|').map(c => `<td>${c.trim()}</td>`).join('');
           newLines.push(`<tr>${cells}</tr>`);
       } else {
@@ -963,9 +953,7 @@ function renderChatHistory() {
         const d = document.createElement('div'); d.className = `msg ${m.role}`;
         if(m.role==='ai') {
             d.innerHTML = parseMarkdown(m.text);
-            // Check for JSON and add button back if it was an import response
             if(m.text.includes('[') && m.text.includes(']')) {
-                // Simple check to re-add button visually
                  try {
                    let match = m.text.match(/\[\s*\{.*?\}\s*\]/s);
                    let jsonStr = match ? match[0] : null;
@@ -1012,7 +1000,6 @@ async function sendMessage() {
     ld.remove();
     const msgDiv = addMsg('ai', reply);
     
-    // JSON Detection & Button
     if (reply.includes('[') && reply.includes(']')) {
         let match = reply.match(/\[\s*\{.*?\}\s*\]/s);
         let jsonStr = match ? match[0] : reply.substring(reply.indexOf('['), reply.lastIndexOf(']')+1);
