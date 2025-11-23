@@ -268,26 +268,28 @@
     
     .front { z-index: 2; transform: rotateY(0deg); display: grid; place-items: center; text-align: center; border-top: 8px solid var(--primary); }
     .back { z-index: 1; transform: rotateY(180deg); overflow-y: auto; justify-content: flex-start; text-align: left; border-top: 8px solid #10b981; }
+    
+    /* 背面居中模式 (Flex 覆盖) */
     .back.layout-center { justify-content: center; align-items: center; text-align: center; }
     
     .back::-webkit-scrollbar { width: 6px; }
     .back::-webkit-scrollbar-track { background: transparent; }
     .back::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 3px; }
 
-    /* 修复：卡片内容排版，防止换行问题 */
+    /* 修复：正面问题排版，避免孤字换行 */
     .card-content-lg { 
-        font-size: 2.2rem; 
-        font-weight: 800; 
-        color: #1e293b; 
-        line-height: 1.3; 
-        margin: 0; 
-        letter-spacing: -0.5px; 
-        /* 移除固定宽度限制，改用 padding */
-        width: 100%;
-        padding: 0 10px;
-        word-wrap: break-word; /* 防止长单词溢出 */
+        font-weight: 800; color: #1e293b; line-height: 1.3; margin: 0; letter-spacing: -0.5px; 
+        width: 100%; padding: 0 20px;
+        word-wrap: break-word; 
+        text-wrap: balance; /* 核心修复：智能平衡换行 */
+        transition: font-size 0.2s;
     }
-    
+    /* 动态字号 - 正面 */
+    .card-content-lg.text-xl { font-size: 2.6rem; }
+    .card-content-lg.text-lg { font-size: 2.2rem; }
+    .card-content-lg.text-md { font-size: 1.6rem; }
+    .card-content-lg.text-sm { font-size: 1.3rem; line-height: 1.5; }
+
     .card-clue { color: #64748b; font-style: italic; font-size: 1.1rem; margin-top: 15px; }
     .card-category-label { position: absolute; top: 30px; left: 0; right: 0; text-align: center; color: var(--text-sub); font-weight: 600; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
     .card-bottom-hint { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: #94a3b8; font-size: 0.85rem; opacity: 0.8; }
@@ -299,12 +301,28 @@
     .split-connector::before { right: 120%; } .split-connector::after { left: 120%; }
 
     .answer-main { width: 100%; font-size: var(--fs-card-answer); line-height: 1.8; color: #334155; transition: font-size 0.2s; }
+    
+    /* 动态字号 - 背面 */
     .answer-main.text-xl { font-size: 2.4rem; font-weight: 800; color: #0f172a; line-height: 1.3; text-align: center; }
     .answer-main.text-lg { font-size: 1.8rem; font-weight: 700; line-height: 1.4; text-align: center; }
     .answer-main.text-md { font-size: 1.4rem; font-weight: 500; line-height: 1.6; text-align: center; }
     .answer-main.text-sm { font-size: 1.1rem; font-weight: 400; text-align: left; }
+    
     .answer-main strong { color: #000; background: linear-gradient(to top, rgba(253, 224, 71, 0.5) 50%, transparent 50%); padding: 0 2px; }
     
+    /* 列表优化 */
+    .back[class*="layout-center"] .answer-main ul, 
+    .back[class*="layout-center"] .answer-main ol { 
+        display: inline-block; text-align: left; width: auto; max-width: 100%; 
+        padding-left: 1.2em; margin: 0 auto;
+    }
+
+    /* 表格美化 */
+    .answer-main table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.9em; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .answer-main th, .answer-main td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; }
+    .answer-main th { background-color: #f1f5f9; font-weight: 700; color: var(--text-main); border-bottom: 2px solid #cbd5e1; }
+    .answer-main tr:nth-child(even) { background-color: #fcfcfc; }
+
     .answer-extend { margin-top: 25px; padding: 15px; border-top: 1px dashed #cbd5e1; font-size: 0.95rem; color: #64748b; background: #f8fafc; border-radius: 8px; text-align: left; line-height: 1.6; width: 100%; }
     .answer-extend h3 { font-size: 1rem; margin: 0 0 8px 0; color: #475569; }
 
@@ -329,11 +347,17 @@
     .msg.user { background: var(--primary); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; white-space: pre-wrap; }
     .msg.ai { background: white; border: 1px solid var(--border); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg strong { color: #b91c1c; }
-
+    
+    /* Chat Table Styles (V12.5) */
+    .msg table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.85em; background: #fff; border-radius: 4px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .msg th, .msg td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
+    .msg th { background: #f1f5f9; font-weight: 600; color: var(--text-main); border-bottom: 2px solid #cbd5e1; }
+    .msg tr:nth-child(even) { background: #f8fafc; }
+    
     .countdown-container { margin-top: auto; text-align: center; color: var(--text-sub); font-size: 0.85rem; background: #f1f5f9; border-radius: 8px; padding: 10px; cursor: pointer; }
     .countdown-container:hover { background: #e2e8f0; }
 
-    /* Manage Modal - 修复版 */
+    /* Manage Modal */
     .manage-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
     .manage-tab { padding: 8px 16px; cursor: pointer; color: var(--text-sub); font-weight: 500; }
     .manage-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
@@ -870,6 +894,7 @@ function showReviewCard() {
   if(card.isFavorite) favBtn.classList.add('active');
   else favBtn.classList.remove('active');
 
+  // 核心逻辑：根据字数动态设置布局和字体
   const rawText = card.back;
   const splitMarkers = ['###', '---'];
   let mainText = rawText;
@@ -885,6 +910,14 @@ function showReviewCard() {
           break;
       }
   }
+
+  const frontLen = card.front.length;
+  const frontEl = document.getElementById('review-front');
+  frontEl.className = 'card-content-lg';
+  if (frontLen < 10) frontEl.classList.add('text-xl');
+  else if (frontLen < 20) frontEl.classList.add('text-lg');
+  else if (frontLen < 35) frontEl.classList.add('text-md');
+  else frontEl.classList.add('text-sm');
 
   const rawLen = mainText.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().length;
   const hasComplex = mainText.includes('|'); 
