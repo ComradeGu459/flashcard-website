@@ -48,7 +48,7 @@
     /* 布局框架 */
     .app-container {
       display: grid;
-      grid-template-columns: 280px 1fr 320px; /* 右侧宽度适配新工具栏 */
+      grid-template-columns: 280px 1fr 320px;
       height: 100vh;
       max-width: 1800px;
       margin: 0 auto;
@@ -105,7 +105,7 @@
       padding-bottom: 80px;
     }
 
-    /* 右侧工具栏 - V5.0 样式 */
+    /* 右侧工具栏 */
     .tools-panel {
       background: var(--bg-card);
       border-left: 1px solid var(--border);
@@ -243,15 +243,48 @@
     .card-content-lg { font-size: 1.9rem; font-weight: 800; color: #1e293b; line-height: 1.4; margin-bottom: 15px; letter-spacing: -0.5px; }
     .card-clue { color: #64748b; font-style: italic; font-size: 1.05rem; margin-top: 10px; }
     
+    /* === 智能排版 V2 (答案区域) === */
     .answer-main { width: 100%; font-size: var(--fs-card-answer); line-height: 1.85; color: #334155; transition: font-size 0.2s; }
-    .answer-main.text-xl { font-size: calc(var(--fs-card-answer) * 2.4); line-height: 1.3; font-weight: 700; text-align: center; color: #0f172a; }
-    .answer-main.text-lg { font-size: calc(var(--fs-card-answer) * 1.8); line-height: 1.5; font-weight: 600; text-align: center; }
-    .answer-main.text-md { font-size: calc(var(--fs-card-answer) * 1.3); line-height: 1.6; text-align: center; }
-    .answer-main.text-sm { font-size: var(--fs-card-answer); text-align: left; }
-    .answer-main p { margin-bottom: 1em; }
+    
+    /* 核心答案部分：大字体，居中 */
+    .answer-core { 
+      text-align: center; 
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    /* 根据字数自动调整核心答案大小 */
+    .answer-core.text-xl { font-size: calc(var(--fs-card-answer) * 2.2); line-height: 1.3; font-weight: 700; color: #0f172a; }
+    .answer-core.text-lg { font-size: calc(var(--fs-card-answer) * 1.6); line-height: 1.5; font-weight: 600; }
+    .answer-core.text-md { font-size: calc(var(--fs-card-answer) * 1.3); line-height: 1.6; }
+    .answer-core.text-sm { font-size: var(--fs-card-answer); text-align: left; } /* 长文左对齐 */
+
+    /* 拓展解析部分：弱化显示 */
+    .answer-extended {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #f8fafc; /* 浅灰背景 */
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.95rem; /* 字号较小 */
+      color: #64748b; /* 颜色较淡 */
+      text-align: left; /* 始终左对齐 */
+      line-height: 1.6;
+      width: 100%;
+    }
+    .answer-extended h3, .answer-extended h4 { 
+      font-size: 1rem; 
+      color: #475569; 
+      margin: 0 0 8px 0; 
+      border-bottom: 1px dashed #cbd5e1; 
+      padding-bottom: 4px;
+    }
+
+    .answer-main p { margin-bottom: 0.8em; }
     .answer-main strong { color: var(--highlight-text); background: linear-gradient(to top, var(--highlight-bg) 40%, transparent 40%); padding: 0 2px; font-weight: 700; }
-    .answer-main ul { padding-left: 1.4em; margin-bottom: 1em; display: inline-block; text-align: left; width: auto; max-width: 100%; }
-    .answer-main.text-sm ul { display: block; }
+    .answer-main ul { padding-left: 1.4em; margin-bottom: 1em; }
+    
+    /* 英语词汇区 */
+    .answer-vocab { margin-top: 15px; padding: 12px; border-top: 1px dashed #e2e8f0; font-size: 0.85rem; color: #94a3b8; background: #fff; display: none; text-align: left; }
 
     .review-controls { margin-top: 20px; display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .review-controls.visible { opacity: 1; pointer-events: auto; }
@@ -531,7 +564,15 @@ function initData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     cards = raw ? JSON.parse(raw) : getInitialData();
-    cards.forEach(c => { if (!c.tags) c.tags = []; if (!c.category) c.category = "未分类"; if (!c.fs) c.fs = 2.5; if (!c.interval) c.interval = 0; if (!c.reviewCount) c.reviewCount = 0; });
+    cards.forEach(c => { 
+        if (!c.tags) c.tags = []; 
+        if (!c.category) c.category = "未分类"; 
+        // 兼容旧数据：确保分类中的连字符统一替换为斜杠
+        c.category = c.category.replace(/-/g, '/'); 
+        if (!c.fs) c.fs = 2.5; 
+        if (!c.interval) c.interval = 0; 
+        if (!c.reviewCount) c.reviewCount = 0; 
+    });
     const rawSettings = localStorage.getItem(SETTINGS_KEY);
     if(rawSettings) appSettings = JSON.parse(rawSettings);
     const rawChat = localStorage.getItem(CHAT_HISTORY_KEY);
@@ -546,7 +587,7 @@ function getInitialData() {
   return [{
     id: Date.now(),
     front: "公共管理的核心主体是什么？",
-    back: "**政府**是公共管理的核心主体。\n\n1. 政府拥有合法的强制力。\n2. 同时也包括非政府公共组织（NGO/NPO）。",
+    back: "**政府**是公共管理的核心主体。\n\n1. 政府拥有合法的强制力。\n2. 同时也包括非政府公共组织（NGO/NPO）。\n\n### 深度解析\n这里是拓展内容，字号较小且背景较淡，不会喧宾夺主。",
     category: "公共管理学/基础理论", tags: ["基础", "核心概念", "高频"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5, reviewCount: 0
   }];
 }
@@ -564,10 +605,13 @@ function applySettings() {
   document.getElementById('countdown-days').textContent = diff > 0 ? diff : 0;
 }
 
+// ================= 二级科目分类逻辑 =================
+
 function updateSubjectList() {
   const tree = {}; 
   cards.forEach(c => {
     const cat = c.category || "未分类";
+    // 关键修复：支持 "一级-二级" 和 "一级/二级"，统一分割
     const parts = cat.split(/[\/\-]/); 
     const mainCat = parts[0].trim();
     const subCat = parts.length > 1 ? parts[1].trim() : null;
@@ -610,7 +654,12 @@ function renderGrid(sourceCards = null) {
       else if (currentFilter === 'high_freq') currentDisplayCards = cards.filter(c => (c.tags||[]).includes("高频"));
       else if (currentFilter.startsWith('subject:')) {
           const targetSubject = currentFilter.split(':')[1];
-          currentDisplayCards = cards.filter(c => { const cat = c.category || "未分类"; const normalizedCat = cat.replace('-', '/'); return normalizedCat === targetSubject || normalizedCat.startsWith(targetSubject + '/'); });
+          // 关键修复：使用 replace(/-/g, '/') 进行全局替换
+          currentDisplayCards = cards.filter(c => { 
+              const cat = c.category || "未分类"; 
+              const normalizedCat = cat.replace(/-/g, '/'); 
+              return normalizedCat === targetSubject || normalizedCat.startsWith(targetSubject + '/'); 
+          });
       }
   }
   const sortMode = document.getElementById('sort-select').value;
@@ -747,7 +796,6 @@ function updateStats() {
   const todayValEl = document.getElementById('stat-today-val');
   if (todayValEl) todayValEl.textContent = stats.todayCount;
   
-  // Update Ring
   const goal = 20;
   const percent = Math.min(100, Math.round((stats.todayCount / goal) * 100));
   document.getElementById('stat-today-goal').textContent = `${percent}%`;
@@ -769,13 +817,24 @@ function showReviewCard() {
   const backContainer = document.getElementById('review-back-container');
   const rawText = card.back.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   const len = rawText.length;
+  // 复杂元素检测
   const hasComplex = card.back.includes('```') || card.back.includes('|'); 
   backContainer.className = 'back'; 
+  
+  // 核心优化：分离核心答案与拓展解析
   let html = parseCardAnswer(card.back);
-  if (len < 50 && !hasComplex) { backContainer.classList.add('layout-center'); html = html.replace('answer-main', 'answer-main text-xl'); } 
-  else if (len < 150 && !hasComplex) { backContainer.classList.add('layout-center'); html = html.replace('answer-main', 'answer-main text-lg'); } 
-  else { html = html.replace('answer-main', 'answer-main text-sm'); }
+  
+  if (len < 50 && !hasComplex) { 
+      backContainer.classList.add('layout-center'); 
+      html = html.replace('answer-core', 'answer-core text-xl'); 
+  } else if (len < 150 && !hasComplex) { 
+      backContainer.classList.add('layout-center'); 
+      html = html.replace('answer-core', 'answer-core text-lg'); 
+  } else { 
+      html = html.replace('answer-core', 'answer-core text-sm'); 
+  }
   backContainer.innerHTML = html;
+  
   const progress = ((currentReviewIndex) / reviewQueue.length) * 100;
   document.getElementById('review-progress').style.width = `${progress}%`;
   document.getElementById('review-counter').textContent = `${currentReviewIndex + 1}/${reviewQueue.length}`;
@@ -854,15 +913,15 @@ function showImportModal() {
       <strong>📋 数据格式要求：</strong>
       <ul style="margin:5px 0 10px 20px;padding:0;">
         <li>文件类型：JSON 数组</li>
-        <li>必需字段：<code>front</code> (问题), <code>back</code> (答案)</li>
-        <li>可选字段：<code>category</code> (科目), <code>tags</code> (标签数组)</li>
+        <li>必需字段：<code>front</code>, <code>back</code></li>
+        <li>可选字段：<code>category</code> (一级/二级), <code>tags</code></li>
       </ul>
       <div style="background:#e0f2fe;padding:8px;border-radius:4px;font-family:monospace;font-size:0.85rem;color:#0284c7;">
         [<br>
         &nbsp;&nbsp;{<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"front": "题目示例",<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"back": "答案内容",<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"category": "公共管理学"<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"front": "问题",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"back": "**核心答案**\\n\\n### 深度解析\\n拓展内容...",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"category": "政治/马原"<br>
         &nbsp;&nbsp;}<br>
         ]
       </div>
@@ -875,13 +934,13 @@ function showImportModal() {
 }
 
 function copyAiPrompt() {
-    const promptText = `请帮我生成公共管理专业的复习闪卡，要求如下：
-1. 输出格式必须是合法的 JSON 数组。
-2. 包含字段：front (问题), back (答案，支持 Markdown), category (科目/子科目), tags (标签数组)。
-3. 答案要结构化（定义-核心要素-意义），重点突出。
-示例：[{"front":"问题","back":"答案","category":"政治/马原","tags":["高频"]}]`;
+    const promptText = `请帮我生成公共管理专业的复习闪卡，要求：
+1. 输出合法的 JSON 数组。
+2. 包含字段：front (问题), back (答案), category (科目/子科目), tags。
+3. 【重要】答案格式：请将"核心结论"放在开头。如果有深度解析或背景知识，请使用 "### 深度解析" 或 "### 背景知识" 作为标题分隔，系统会自动将其排版为弱化显示的拓展内容。
+示例：[{"front":"问题","back":"**核心结论**\\n\\n### 深度解析\\n详细解释...","category":"政治/马原"}]`;
     const textArea = document.createElement("textarea"); textArea.value = promptText; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
-    try { document.execCommand('copy'); alert('提示词已复制！发送给 AI 即可生成数据。'); } catch (err) { alert('复制失败，请手动复制。'); }
+    try { document.execCommand('copy'); alert('提示词已复制！'); } catch (err) { alert('复制失败'); }
     document.body.removeChild(textArea);
 }
 
@@ -891,7 +950,7 @@ function executeImport() {
     try {
       const data = JSON.parse(jsonStr); if(!Array.isArray(data)) throw new Error("Root must be an array");
       let count = 0; data.forEach(item => { if(item.front && item.back) { if(!cards.some(c => c.front === item.front)) { cards.push({ id: Date.now() + Math.random(), front: item.front, back: item.back, category: item.category || "未分类", tags: item.tags || ["导入"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 }); count++; } } });
-      saveData(); renderGrid(); updateSubjectList(); closeModal(); alert(`成功导入 ${count} 张新卡片！(已自动过滤重复项)`);
+      saveData(); renderGrid(); updateSubjectList(); closeModal(); alert(`成功导入 ${count} 张新卡片！`);
     } catch(e) { alert("格式错误：请检查 JSON 语法是否正确，必须是对象数组。"); console.error(e); }
   };
   if (fileInput.files.length > 0) { const file = fileInput.files[0]; const reader = new FileReader(); reader.onload = (e) => processData(e.target.result); reader.readAsText(file); } else if (textArea.value.trim()) { processData(textArea.value.trim()); } else { alert("请选择文件或粘贴内容"); }
@@ -907,10 +966,40 @@ function updateNavActiveState() { document.querySelectorAll('.nav-item').forEach
 function loadNote() { document.getElementById('quick-note').value = localStorage.getItem(NOTES_KEY) || ""; }
 function saveNote() { localStorage.setItem(NOTES_KEY, document.getElementById('quick-note').value); }
 function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-function parseCardAnswer(t) { return `<div class="answer-main">${parseMarkdown(t)}</div>`; }
+
+// V2.0 智能答案解析：分离核心与拓展
+function parseCardAnswer(t) { 
+    let html = "";
+    // 检测是否存在 ### 标题
+    const splitRegex = /\n+###\s+(.*)/; // 匹配 ### 标题
+    const match = t.match(splitRegex);
+    
+    if (match && match.index > 0) {
+        // 存在拓展内容
+        const coreContent = t.substring(0, match.index);
+        const extendedContent = t.substring(match.index); // 包含 ### 的部分
+        
+        // 渲染核心部分（大字号）
+        html += `<div class="answer-core">${parseMarkdown(coreContent)}</div>`;
+        
+        // 渲染拓展部分（小字号，容器包裹）
+        // 将 markdown 标题 ### 转换为 HTML 标题
+        let extendedHtml = parseMarkdown(extendedContent);
+        // 简单的样式修正，让 markdown h3 在容器里更好看
+        extendedHtml = extendedHtml.replace(/<h3>/g, '<h4>').replace(/<\/h3>/g, '</h4>');
+        
+        html += `<div class="answer-extended">${extendedHtml}</div>`;
+    } else {
+        // 没有拓展内容，全是核心
+        html += `<div class="answer-core">${parseMarkdown(t)}</div>`;
+    }
+    return html;
+}
+
 function parseMarkdown(t) {
   let h = escapeHtml(t);
   h = h.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`([^`]+)`/g, '<code>$1</code>');
+  h = h.replace(/###\s+(.*)/g, '<h3>$1</h3>'); // 支持 h3 解析
   let lines = h.split('\n'), inTable = false, newLines = [];
   for(let i=0; i<lines.length; i++) {
       let line = lines[i].trim();
@@ -974,8 +1063,8 @@ async function sendMessage() {
     let prompt = `你是一位中国公共管理考研命题专家。
     1. **结构化输出**：定义 -> 核心要素 -> 意义。
     2. **结合时政**：联系中国数字政府、共同富裕等热点。
-    3. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目/子科目"}]。
-    4. **表格**：使用 Markdown 表格语法。`;
+    3. **准确分类**：自动判断科目（如：公共管理学、政治、社会研究方法）。
+    4. **JSON格式**：若生成闪卡，返回 [{"front":"...","back":"**核心结论**\\n\\n### 深度解析\\n...","category":"科目/子科目"}]。`;
     
     let res, data, reply;
     if(currentProvider==='deepseek') {
