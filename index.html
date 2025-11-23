@@ -16,12 +16,6 @@
       --text-main: #1e293b;
       --text-sub: #64748b;
       --border: #e2e8f0;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
       
       /* 卡片背面专用配色 */
       --card-paper: #ffffff;
@@ -30,7 +24,7 @@
       --highlight-text: #000000;
 
       /* 字体大小变量 */
-      --fs-card-answer: 1rem; 
+      --fs-card-answer: 1.1rem; 
     }
 
     * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -48,13 +42,13 @@
     /* 布局框架 */
     .app-container {
       display: grid;
-      grid-template-columns: 280px 1fr 320px;
+      grid-template-columns: 260px 1fr 320px; 
       height: 100vh;
-      max-width: 1800px;
+      max-width: 1920px;
       margin: 0 auto;
     }
 
-    /* 侧边栏 */
+    /* === 侧边栏 (左) === */
     .sidebar {
       background: var(--bg-card);
       border-right: 1px solid var(--border);
@@ -63,7 +57,6 @@
       padding: 20px;
       overflow-y: auto;
       z-index: 10;
-      transition: transform 0.3s ease;
     }
 
     .sidebar-header {
@@ -76,12 +69,14 @@
       gap: 8px;
     }
 
-    /* 中间卡片网格 */
+    /* === 中间内容区 === */
     .main-content {
       padding: 24px;
       overflow-y: auto;
       background: var(--bg-body);
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
     
     .content-header {
@@ -89,21 +84,20 @@
       justify-content: space-between; 
       align-items: center; 
       margin-bottom: 20px;
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      background: var(--bg-body);
-      padding-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .flashcard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       padding-bottom: 80px;
+      flex: 1;
+      align-content: start; 
     }
 
-    /* 右侧工具栏 */
+    /* === 右侧工具栏 (右) === */
     .tools-panel {
       background: var(--bg-card);
       border-left: 1px solid var(--border);
@@ -111,7 +105,7 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 24px; 
+      gap: 20px; 
     }
 
     .tool-module {
@@ -131,29 +125,58 @@
       align-items: center;
     }
 
-    /* 番茄钟等组件样式 */
-    .pomodoro-timer { text-align: center; padding: 10px 0; }
-    .timer-display { font-size: 2.5rem; font-weight: 800; color: var(--primary); font-family: monospace; margin-bottom: 10px; }
-    .timer-controls { display: flex; justify-content: center; gap: 10px; }
+    /* 倒计时看板 */
+    .countdown-card {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        cursor: pointer;
+        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+        transition: transform 0.2s;
+    }
+    .countdown-card:hover { transform: translateY(-2px); }
+    .countdown-label { font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; }
+    .countdown-number { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .countdown-unit { font-size: 0.9rem; opacity: 0.9; margin-left: 2px; }
 
+    /* 番茄钟 */
+    .pomodoro-timer { text-align: center; padding: 5px 0; }
+    .timer-display { font-size: 2rem; font-weight: 800; color: var(--text-main); font-family: monospace; margin-bottom: 10px; }
+    .timer-controls { display: flex; justify-content: center; gap: 8px; }
+
+    /* 进度环 */
     .daily-progress-container { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-    .progress-ring-mini { width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(var(--primary) 0%, #e2e8f0 0%); display: flex; align-items: center; justify-content: center; position: relative; }
-    .progress-ring-mini::after { content: ''; position: absolute; width: 48px; height: 48px; background: #f8fafc; border-radius: 50%; }
-    .progress-text-mini { position: relative; z-index: 2; font-size: 0.8rem; font-weight: bold; color: var(--primary); }
+    .progress-ring-mini { width: 50px; height: 50px; border-radius: 50%; background: conic-gradient(var(--primary) 0%, #e2e8f0 0%); display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; }
+    .progress-ring-mini::after { content: ''; position: absolute; width: 40px; height: 40px; background: #f8fafc; border-radius: 50%; }
+    .progress-text-mini { position: relative; z-index: 2; font-size: 0.75rem; font-weight: bold; color: var(--primary); }
+    
+    /* 可点击的目标设置区 */
+    .goal-setting-area {
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 2px 6px;
+        transition: background 0.2s;
+        margin-left: -6px; /* 微调对齐 */
+    }
+    .goal-setting-area:hover { background: #e2e8f0; }
+    .goal-setting-area:hover span { text-decoration: underline; }
 
+    /* 交互统计 */
     .interactive-stat { display: flex; justify-content: space-between; gap: 8px; }
-    .stat-block { flex: 1; background: white; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; }
-    .stat-block:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-    .sb-val { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
-    .sb-lbl { font-size: 0.75rem; color: var(--text-sub); }
+    .stat-block { flex: 1; background: white; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; }
+    .stat-block:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .sb-val { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+    .sb-lbl { font-size: 0.7rem; color: var(--text-sub); }
 
-    .note-area { width: 100%; height: 120px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; font-size: 0.9rem; resize: vertical; background: white; transition: border-color 0.2s; }
+    .note-area { width: 100%; height: 100px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; font-size: 0.9rem; resize: vertical; background: white; transition: border-color 0.2s; }
     .note-area:focus { border-color: var(--primary); outline: none; }
     .note-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
 
-    /* 通用组件样式 */
+    /* 组件 */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; user-select: none; }
-    .btn-sm { padding: 4px 12px; font-size: 0.85rem; }
+    .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
     .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
     .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
     .btn-secondary { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary-light); }
@@ -163,15 +186,17 @@
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-danger:hover { background: #fecaca; }
     .btn-block { width: 100%; }
+    .btn-icon-only { padding: 4px; border-radius: 4px; color: var(--text-sub); cursor: pointer; }
+    .btn-icon-only:hover { background: #e2e8f0; color: var(--primary); }
 
     .input-group { position: relative; margin-bottom: 12px; }
     .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); transition: border-color 0.2s; font-size: 1rem; }
     .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
     select.input-field { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 30px; }
 
-    /* 侧边栏分类 */
+    /* 侧边栏 */
     .nav-section { margin-bottom: 20px; }
-    .nav-title { font-size: 0.85rem; color: var(--text-sub); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .nav-title { font-size: 0.85rem; color: var(--text-sub); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
     .nav-item { display: flex; align-items: center; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-main); margin-bottom: 4px; transition: background 0.2s; position: relative; }
     .nav-item:hover { background: var(--bg-body); }
     .nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
@@ -183,6 +208,7 @@
     .nav-sub-group.open { display: block; }
     .nav-sub-item { padding: 6px 8px; font-size: 0.9rem; color: var(--text-sub); cursor: pointer; border-radius: 4px; margin-bottom: 2px; }
     .nav-sub-item:hover { background: var(--bg-body); color: var(--text-main); }
+    .nav-sub-item.active { color: var(--primary); font-weight: bold; background: #f1f5f9; }
     .nav-expand-icon { font-size: 0.7rem; color: #94a3b8; margin-right: 4px; transition: transform 0.2s; }
     .nav-item.expanded .nav-expand-icon { transform: rotate(90deg); }
 
@@ -197,78 +223,88 @@
     .card-thumb:hover .card-actions { opacity: 1; }
     .icon-btn { width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; border: 1px solid #e2e8f0; }
     .icon-btn:hover { background: white; color: var(--primary); border-color: var(--primary); }
+    .fav-btn-active { color: #fbbf24 !important; border-color: #fbbf24 !important; background: #fffbeb !important; }
 
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
     .status-new { background: #94a3b8; }
     .status-learning { background: var(--warning); }
     .status-mastered { background: var(--success); }
 
-    /* 沉浸式复习 (Overlay) */
-    #review-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
+    /* === 沉浸式复习 (Overlay) === */
+    #review-overlay { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(15, 23, 42, 0.96); 
+        backdrop-filter: blur(10px); z-index: 2000; 
+        display: none; flex-direction: column; align-items: center; justify-content: center; 
+        transition: opacity 0.3s ease; 
+    }
     #review-overlay.active { display: flex; animation: fadeIn 0.3s; }
+    
     .review-header { position: absolute; top: 0; left: 0; right: 0; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 3000; color: white; }
     .review-header .btn-ghost { color: #cbd5e1; } 
     .review-header .btn-ghost:hover { background: rgba(255,255,255,0.1); color: white; }
     .progress-bar-container { flex: 1; max-width: 400px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; margin: 0 20px; overflow: hidden; }
     .progress-fill { height: 100%; background: #818cf8; width: 0%; transition: width 0.3s; }
 
-    /* 3D 翻转卡片 */
+    /* 3D 翻转容器 */
     .flip-container { perspective: 1500px; width: 90%; max-width: 720px; height: 70vh; min-height: 400px; margin: 20px; position: relative; }
-    .flipper { transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); transform-style: preserve-3d; position: relative; width: 100%; height: 100%; cursor: pointer; will-change: transform; }
+    .flipper { 
+        position: relative; width: 100%; height: 100%; 
+        transform-style: preserve-3d; 
+        transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); 
+        transform-origin: center center;
+    }
     .flipper.flipped { transform: rotateY(180deg); }
     
-    .front, .back { backface-visibility: hidden; -webkit-backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; background: var(--card-paper); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); padding: 40px; display: flex; flex-direction: column; transform: translateZ(0); }
-    .front { z-index: 2; transform: rotateY(0deg); align-items: center; justify-content: center; text-align: center; background: #ffffff; border-top: 6px solid var(--primary); }
-    .back { transform: rotateY(180deg); background: #ffffff; overflow-y: auto; justify-content: flex-start; text-align: left; border-top: 6px solid #10b981; }
-    .back.layout-center { justify-content: center; align-items: center; text-align: center; overflow-y: hidden; }
+    .front, .back { 
+        backface-visibility: hidden; -webkit-backface-visibility: hidden; 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        border-radius: 24px; background: #ffffff; 
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
+        padding: 40px; 
+        display: flex; flex-direction: column; 
+        background-color: #ffffff;
+    }
     
+    .front { z-index: 2; transform: rotateY(0deg); display: grid; place-items: center; text-align: center; border-top: 8px solid var(--primary); }
+    .back { z-index: 1; transform: rotateY(180deg); overflow-y: auto; justify-content: flex-start; text-align: left; border-top: 8px solid #10b981; }
+    .back.layout-center { justify-content: center; align-items: center; text-align: center; }
+    
+    .back::-webkit-scrollbar { width: 6px; }
+    .back::-webkit-scrollbar-track { background: transparent; }
+    .back::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 3px; }
+
+    .card-content-lg { font-size: 2.2rem; font-weight: 800; color: #1e293b; line-height: 1.3; margin: 0; letter-spacing: -0.5px; max-width: 95%; }
+    .card-clue { color: #64748b; font-style: italic; font-size: 1.1rem; margin-top: 15px; }
     .card-category-label { position: absolute; top: 30px; left: 0; right: 0; text-align: center; color: var(--text-sub); font-weight: 600; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
     .card-bottom-hint { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: #94a3b8; font-size: 0.85rem; opacity: 0.8; }
-    .question-wrapper { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; }
-    .card-content-lg { font-size: 1.9rem; font-weight: 800; color: #1e293b; line-height: 1.4; margin-bottom: 15px; letter-spacing: -0.5px; }
-    .card-clue { color: #64748b; font-style: italic; font-size: 1.05rem; margin-top: 10px; }
     
-    /* 答案内容主容器 - 核心答案部分 */
-    .answer-main { width: 100%; font-size: var(--fs-card-answer); line-height: 1.85; color: #334155; transition: font-size 0.2s; }
-    .answer-main.text-xl { font-size: calc(var(--fs-card-answer) * 2.4); line-height: 1.3; font-weight: 700; text-align: center; color: #0f172a; }
-    .answer-main.text-lg { font-size: calc(var(--fs-card-answer) * 1.8); line-height: 1.5; font-weight: 600; text-align: center; }
-    .answer-main.text-md { font-size: calc(var(--fs-card-answer) * 1.3); line-height: 1.6; text-align: center; }
-    .answer-main.text-sm { font-size: var(--fs-card-answer); text-align: left; }
-    .answer-main p { margin-bottom: 1em; }
-    .answer-main strong { color: var(--highlight-text); background: linear-gradient(to top, var(--highlight-bg) 40%, transparent 40%); padding: 0 2px; font-weight: 700; }
-    .answer-main ul { padding-left: 1.4em; margin-bottom: 1em; display: inline-block; text-align: left; width: auto; max-width: 100%; }
-    .answer-main.text-sm ul { display: block; }
+    .split-box { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 12px 0; }
+    .split-item { font-weight: 900; color: #1e293b; font-size: 1em; }
+    .split-connector { font-size: 0.5em; color: #94a3b8; font-weight: 400; font-style: italic; display: block; position: relative; }
+    .split-connector::before, .split-connector::after { content: ''; position: absolute; top: 50%; width: 30px; height: 1px; background: #e2e8f0; }
+    .split-connector::before { right: 120%; } .split-connector::after { left: 120%; }
 
-    /* 拓展内容 (深度解析/英语积累) - 弱化样式 */
-    .answer-extend { 
-      margin-top: 20px; 
-      padding-top: 15px; 
-      border-top: 1px dashed #cbd5e1; 
-      font-size: 0.9rem; 
-      color: #64748b; 
-      background: #f8fafc; 
-      padding: 15px; 
-      border-radius: 8px; 
-      text-align: left; /* 强制左对齐 */
-      line-height: 1.6;
-    }
-    .answer-extend h1, .answer-extend h2, .answer-extend h3 {
-        font-size: 1rem;
-        color: #475569;
-        margin-top: 5px;
-        margin-bottom: 8px;
-        font-weight: 700;
-    }
-    .answer-extend p { margin-bottom: 0.8em; }
+    .answer-main { width: 100%; font-size: var(--fs-card-answer); line-height: 1.8; color: #334155; transition: font-size 0.2s; }
+    .answer-main.text-xl { font-size: 2.4rem; font-weight: 800; color: #0f172a; line-height: 1.3; text-align: center; }
+    .answer-main.text-lg { font-size: 1.8rem; font-weight: 700; line-height: 1.4; text-align: center; }
+    .answer-main.text-md { font-size: 1.4rem; font-weight: 500; line-height: 1.6; text-align: center; }
+    .answer-main.text-sm { font-size: 1.1rem; font-weight: 400; text-align: left; }
+    .answer-main strong { color: #000; background: linear-gradient(to top, rgba(253, 224, 71, 0.5) 50%, transparent 50%); padding: 0 2px; }
     
-    .review-controls { margin-top: 20px; display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .answer-extend { margin-top: 25px; padding: 15px; border-top: 1px dashed #cbd5e1; font-size: 0.95rem; color: #64748b; background: #f8fafc; border-radius: 8px; text-align: left; line-height: 1.6; width: 100%; }
+    .answer-extend h3 { font-size: 1rem; margin: 0 0 8px 0; color: #475569; }
+
+    .review-controls { margin-top: 30px; display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 3000; width: 100%; max-width: 720px; }
     .review-controls.visible { opacity: 1; pointer-events: auto; }
-    .grade-btn { padding: 14px 24px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); flex: 1; font-size: 1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-    .grade-btn:active { transform: scale(0.96); }
-    .grade-1 { background: linear-gradient(145deg, #ef4444, #b91c1c); }
-    .grade-2 { background: linear-gradient(145deg, #f59e0b, #b45309); }
-    .grade-3 { background: linear-gradient(145deg, #3b82f6, #1d4ed8); }
-    .grade-4 { background: linear-gradient(145deg, #10b981, #047857); }
+    .grade-btn { padding: 16px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; color: white; flex: 1; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .grade-btn:active { transform: scale(0.95); }
+    .grade-1 { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .grade-2 { background: linear-gradient(135deg, #f59e0b, #b45309); }
+    .grade-3 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .grade-4 { background: linear-gradient(135deg, #10b981, #047857); }
+    .grade-fav { background: white; color: #fbbf24; border: 2px solid #fbbf24; max-width: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .grade-fav.active { background: #fbbf24; color: white; }
 
     /* Chat */
     .chat-widget { position: fixed; bottom: 90px; right: 20px; width: 400px; height: 600px; background: white; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1); display: none; flex-direction: column; z-index: 1500; border: 1px solid var(--border); overflow: hidden; resize: both; min-width: 320px; min-height: 400px; max-width: 90vw; max-height: 90vh; }
@@ -284,7 +320,7 @@
     .countdown-container { margin-top: auto; text-align: center; color: var(--text-sub); font-size: 0.85rem; background: #f1f5f9; border-radius: 8px; padding: 10px; cursor: pointer; }
     .countdown-container:hover { background: #e2e8f0; }
 
-    /* Manage Modal */
+    /* Manage Modal - 修复版 */
     .manage-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
     .manage-tab { padding: 8px 16px; cursor: pointer; color: var(--text-sub); font-weight: 500; }
     .manage-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
@@ -292,7 +328,10 @@
     .manage-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; background: white; }
     .manage-item:hover { background: #f8fafc; }
     .manage-tag-group { background: #fff; border-radius: 8px; padding: 0; margin-bottom: 12px; border: 1px solid var(--border); overflow: hidden; }
-    .manage-tag-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f1f5f9; font-weight: 600; color: var(--primary-dark); }
+    .manage-tag-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f1f5f9; font-weight: 600; color: var(--primary-dark); cursor: pointer; user-select: none; }
+    .manage-tag-header:hover { background: #e0e7ff; }
+    .manage-group-body { display: none; }
+    .manage-group-body.open { display: block; }
     .check-box-wrapper { display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden; }
     .item-checkbox { width: 16px; height: 16px; cursor: pointer; }
 
@@ -331,19 +370,21 @@
       <div class="nav-item" onclick="filterByStatus('wrong')">
         <i>📕</i> 错题本 <span class="count-badge" id="count-wrong">0</span>
       </div>
-      <div class="nav-item" onclick="filterByStatus('high_freq')">
-        <i>⭐</i> 高频考点
+      <div class="nav-item" id="nav-fav" onclick="filterByStatus('favorite')">
+        <i>⭐</i> 收藏夹
       </div>
     </div>
 
     <div class="nav-section">
-      <div class="nav-title">📚 科目分类 (支持二级)</div>
+      <div class="nav-title">
+        📚 科目分类 <span id="subject-title-suffix"></span>
+      </div>
       <div id="subject-list"></div>
     </div>
 
     <div class="nav-section">
       <div class="nav-title">系统设置</div>
-      <button class="btn btn-secondary btn-block" onclick="showSettingsModal()">⚙️ 偏好设置 (答案字号/倒计时)</button>
+      <button class="btn btn-secondary btn-block" onclick="showSettingsModal()">⚙️ 偏好设置 (字体/倒计时)</button>
     </div>
 
     <div class="nav-section" style="margin-top:auto;">
@@ -352,12 +393,6 @@
       <button class="btn btn-secondary btn-block" onclick="showManageModal()" style="margin-bottom:8px;">🔧 管理题库</button>
       <button class="btn btn-ghost btn-block" onclick="showImportModal()">📥 导入题库</button>
       <button class="btn btn-ghost btn-block" onclick="exportCards()">📤 备份数据</button>
-    </div>
-    
-    <div id="countdown-box" class="countdown-container" onclick="showSettingsModal()" title="点击设置倒计时">
-      <div id="countdown-title">距离考研</div>
-      <div style="font-size:1.4rem; font-weight:800; color:var(--primary);" id="countdown-days">--</div>
-      <div>天</div>
     </div>
   </div>
 
@@ -394,6 +429,14 @@
 
   <!-- 右侧数据栏 -->
   <div class="tools-panel">
+    <!-- 1. 倒计时看板 (右上角置顶) -->
+    <div id="countdown-box" class="countdown-card" onclick="showSettingsModal()" title="点击设置目标">
+      <div class="countdown-label" id="countdown-title">距离考研</div>
+      <div class="countdown-number" id="countdown-days">--</div>
+      <div class="countdown-unit">天</div>
+    </div>
+
+    <!-- 2. 番茄钟 -->
     <div class="tool-module">
       <div class="tool-title">🍅 专注番茄钟</div>
       <div class="pomodoro-timer">
@@ -405,6 +448,7 @@
       </div>
     </div>
 
+    <!-- 3. 学习状态 (交互修复版) -->
     <div class="tool-module">
       <div class="tool-title">
         📊 学习状态
@@ -415,8 +459,12 @@
           <span class="progress-text-mini" id="stat-today-goal">0%</span>
         </div>
         <div>
-          <div style="font-size:0.85rem;color:var(--text-sub);">今日目标: 20张</div>
-          <div style="font-weight:bold;font-size:1rem;">已学 <span id="stat-today-val">0</span> 张</div>
+          <!-- 修复：整个区域可点，增加 title -->
+          <div class="goal-setting-area" onclick="setDailyGoal()" title="点击修改每日目标">
+              <span style="font-size:0.85rem;color:var(--text-sub);">今日目标: <span id="daily-goal-num" style="font-weight:bold;color:var(--primary);">20</span>张</span>
+              <span style="font-size:0.8rem; margin-left:4px;">⚙️</span>
+          </div>
+          <div style="font-weight:bold;font-size:1rem;margin-top:2px;">已学 <span id="stat-today-val">0</span> 张</div>
         </div>
       </div>
       
@@ -432,11 +480,12 @@
       </div>
     </div>
 
+    <!-- 4. 草稿纸 -->
     <div class="tool-module">
-      <div class="tool-title">📝 随手记 (灵感)</div>
+      <div class="tool-title">📝 随手记</div>
       <textarea id="quick-note" class="note-area" placeholder="记下稍纵即逝的想法..." oninput="saveNote()"></textarea>
       <div class="note-actions">
-        <button class="btn btn-secondary btn-sm" onclick="convertNoteToCard()" title="将当前笔记内容转化为新闪卡">✨ 转为闪卡</button>
+        <button class="btn btn-secondary btn-sm" onclick="convertNoteToCard()" title="转为闪卡">✨ 转为闪卡</button>
       </div>
     </div>
   </div>
@@ -465,6 +514,7 @@
     </div>
   </div>
   <div class="review-controls" id="review-controls">
+    <button class="grade-btn grade-fav" id="btn-fav-toggle" onclick="toggleReviewFavorite(event)">⭐</button>
     <button class="grade-btn grade-1" onclick="rateCard(1)">忘记 (1)</button>
     <button class="grade-btn grade-2" onclick="rateCard(2)">困难 (2)</button>
     <button class="grade-btn grade-3" onclick="rateCard(3)">良好 (3)</button>
@@ -477,7 +527,7 @@
 
 <div class="chat-widget" id="chat-widget">
   <div class="chat-header" onmousedown="dragChat(event)">
-    <span>🎓 考研伴学 AI (专业版)</span>
+    <span>✨ 闪卡小精灵</span>
     <div style="display:flex; gap:10px; align-items:center;">
       <span style="cursor:pointer; font-size:1.2rem;" onclick="clearChatHistory()" title="清空记录">🗑️</span>
       <span style="cursor:pointer" onclick="toggleChat()">✕</span>
@@ -491,7 +541,7 @@
     </select>
   </div>
   <div class="chat-body" id="chat-body">
-    <div class="msg ai">你好！我是你的专属考研导师。我专注于公共管理专业课的深度解析与卡片生成。请在上方设置 API Key 开始使用。</div>
+    <div class="msg ai">你好！我是闪卡小精灵 🧚‍♀️。我是你的公共管理考研专属助手。<br>请帮我设置 API Key，我可以帮你生成闪卡、解析考点！</div>
   </div>
   <div class="chat-footer">
     <input type="text" id="chat-input" class="input-field" style="margin:0;" placeholder="输入内容... (Enter发送)" onkeydown="if(event.key==='Enter') sendMessage()">
@@ -527,7 +577,7 @@ const API_CONFIG = {
 let currentProvider = 'deepseek';
 
 let cards = [], reviewQueue = [], currentReviewIndex = 0, currentFilter = 'all', manageViewMode = 'subject', chatHistory = [];
-let appSettings = { cardFontSize: 'normal', examName: '研究生考试', examDate: new Date(new Date().getFullYear(), 11, 21).toISOString().split('T')[0] };
+let appSettings = { cardFontSize: 'normal', examName: '研究生考试', examDate: new Date(new Date().getFullYear(), 11, 21).toISOString().split('T')[0], dailyGoal: 20 };
 
 let currentDisplayCards = [];
 let pomoTimer = null, pomoTimeLeft = 1500, isPomoRunning = false;
@@ -536,9 +586,19 @@ function initData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     cards = raw ? JSON.parse(raw) : getInitialData();
-    cards.forEach(c => { if (!c.tags) c.tags = []; if (!c.category) c.category = "未分类"; if (!c.fs) c.fs = 2.5; if (!c.interval) c.interval = 0; if (!c.reviewCount) c.reviewCount = 0; });
+    cards.forEach(c => { 
+        if (!c.tags) c.tags = []; 
+        if (!c.category) c.category = "未分类"; 
+        if (!c.fs) c.fs = 2.5; 
+        if (!c.interval) c.interval = 0; 
+        if (!c.reviewCount) c.reviewCount = 0;
+        if (c.tags.includes("高频")) c.isFavorite = true;
+        if (c.isFavorite === undefined) c.isFavorite = false;
+    });
     const rawSettings = localStorage.getItem(SETTINGS_KEY);
     if(rawSettings) appSettings = JSON.parse(rawSettings);
+    if(!appSettings.dailyGoal) appSettings.dailyGoal = 20;
+
     const rawChat = localStorage.getItem(CHAT_HISTORY_KEY);
     if (rawChat) { chatHistory = JSON.parse(rawChat); renderChatHistory(); }
   } catch (e) { console.error("Data error", e); cards = getInitialData(); }
@@ -552,7 +612,7 @@ function getInitialData() {
     id: Date.now(),
     front: "公共管理的核心主体是什么？",
     back: "**政府**是公共管理的核心主体。\n\n1. 政府拥有合法的强制力。\n2. 同时也包括非政府公共组织（NGO/NPO）。\n### 深度解析\n政府的主导地位源于其公共权力的合法性。",
-    category: "公共管理学/基础理论", tags: ["基础", "核心概念", "高频"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5, reviewCount: 0
+    category: "公共管理学/基础理论", tags: ["基础", "核心概念"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5, reviewCount: 0, isFavorite: true
   }];
 }
 
@@ -561,31 +621,32 @@ function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(appS
 
 function applySettings() {
   const root = document.documentElement;
-  if(appSettings.cardFontSize === 'medium') root.style.setProperty('--fs-card-answer', '1.2rem');
-  else if(appSettings.cardFontSize === 'large') root.style.setProperty('--fs-card-answer', '1.4rem');
-  else root.style.setProperty('--fs-card-answer', '1rem');
+  if(appSettings.cardFontSize === 'medium') root.style.setProperty('--fs-card-answer', '1.3rem');
+  else if(appSettings.cardFontSize === 'large') root.style.setProperty('--fs-card-answer', '1.5rem');
+  else root.style.setProperty('--fs-card-answer', '1.1rem');
   document.getElementById('countdown-title').textContent = `距离${appSettings.examName}`;
   const now = new Date(), target = new Date(appSettings.examDate), diff = Math.ceil((target - now) / 86400000);
   document.getElementById('countdown-days').textContent = diff > 0 ? diff : 0;
+  document.getElementById('daily-goal-num').textContent = appSettings.dailyGoal;
 }
 
+// 关键修复：科目分类支持“收藏夹联动”
 function updateSubjectList() {
   const tree = {}; 
-  cards.forEach(c => {
-    const cat = c.category || "未分类";
-    // 核心逻辑：一级为第一段，二级为剩余所有段
-    const firstSplit = cat.indexOf('/');
-    let mainCat = cat, subCat = null;
-    if (firstSplit !== -1) {
-        mainCat = cat.substring(0, firstSplit).trim();
-        subCat = cat.substring(firstSplit + 1).trim();
-    } else if (cat.indexOf('-') !== -1) {
-        // 兼容连字符
-        const parts = cat.split('-');
-        mainCat = parts[0].trim();
-        subCat = parts.slice(1).join('-').trim();
-    }
+  // 联动筛选源：如果是收藏模式，只统计收藏卡片
+  let sourceCards = cards;
+  if(currentFilter === 'favorite') {
+      sourceCards = cards.filter(c => c.isFavorite);
+      document.getElementById('subject-title-suffix').textContent = "(收藏模式)";
+  } else {
+      document.getElementById('subject-title-suffix').textContent = "";
+  }
 
+  sourceCards.forEach(c => {
+    const cat = c.category || "未分类";
+    const parts = cat.split(/[\/\-]/); 
+    const mainCat = parts[0].trim();
+    const subCat = parts.length > 1 ? parts[1].trim() : null;
     if (!tree[mainCat]) tree[mainCat] = { count: 0, subs: {} };
     tree[mainCat].count++;
     if (subCat) {
@@ -593,17 +654,33 @@ function updateSubjectList() {
         tree[mainCat].subs[subCat]++;
     }
   });
+  
   const listEl = document.getElementById('subject-list');
   listEl.innerHTML = '';
+  
+  if(Object.keys(tree).length === 0) {
+      listEl.innerHTML = '<div style="padding:10px;color:#94a3b8;font-size:0.9rem;text-align:center;">暂无数据</div>';
+      return;
+  }
+  
   Object.keys(tree).sort().forEach(main => {
     const item = tree[main];
     const hasSubs = Object.keys(item.subs).length > 0;
     const div = document.createElement('div'); div.className = 'nav-item-group';
     const header = document.createElement('div'); header.className = 'nav-item';
-    header.onclick = () => { filterBySubject(main); if(hasSubs) { document.getElementById(`sub-${main}`).classList.toggle('open'); header.classList.toggle('expanded'); } };
+    
+    header.onclick = () => { 
+        filterBySubject(main); 
+        if(hasSubs) { 
+            document.getElementById(`sub-${main}`).classList.toggle('open'); 
+            header.classList.toggle('expanded'); 
+        } 
+    };
+    
     let arrow = hasSubs ? `<span class="nav-expand-icon">▶</span>` : `<span style="width:14px;"></span>`;
     header.innerHTML = `${arrow} <i>📖</i> ${main} <span class="count-badge">${item.count}</span>`;
     div.appendChild(header);
+    
     if(hasSubs) {
         const subGroup = document.createElement('div'); subGroup.id = `sub-${main}`; subGroup.className = 'nav-sub-group';
         Object.keys(item.subs).sort().forEach(sub => {
@@ -622,14 +699,17 @@ function renderGrid(sourceCards = null) {
   if (sourceCards) { currentDisplayCards = sourceCards; } else {
       if (currentFilter === 'all') currentDisplayCards = cards;
       else if (currentFilter === 'wrong') currentDisplayCards = cards.filter(c => c.mastery < 2 && c.interval > 0);
-      else if (currentFilter === 'high_freq') currentDisplayCards = cards.filter(c => (c.tags||[]).includes("高频"));
+      else if (currentFilter === 'favorite') currentDisplayCards = cards.filter(c => c.isFavorite); 
       else if (currentFilter.startsWith('subject:')) {
           const targetSubject = currentFilter.split(':')[1];
-          // 修正匹配逻辑：匹配 "政治" 或 "政治/马原"
           currentDisplayCards = cards.filter(c => { 
               const cat = (c.category || "未分类").replace(/-/g, '/'); 
               return cat === targetSubject || cat.startsWith(targetSubject + '/'); 
           });
+          // 关键修复：科目筛选叠加收藏状态
+          if(document.getElementById('nav-fav').classList.contains('active')) {
+             currentDisplayCards = currentDisplayCards.filter(c => c.isFavorite);
+          }
       }
   }
   const sortMode = document.getElementById('sort-select').value;
@@ -643,6 +723,7 @@ function renderGrid(sourceCards = null) {
   
   if (currentFilter.startsWith('subject:')) { titleEl.textContent = currentFilter.split(':')[1]; startBtn.style.display = 'inline-flex'; startBtn.textContent = `▶️ 学习此列表 (${currentDisplayCards.length})`; } 
   else if (currentFilter === 'wrong') { titleEl.textContent = "错题本"; startBtn.style.display = 'inline-flex'; startBtn.textContent = `▶️ 重刷错题 (${currentDisplayCards.length})`; } 
+  else if (currentFilter === 'favorite') { titleEl.textContent = "收藏夹"; startBtn.style.display = 'inline-flex'; startBtn.textContent = `▶️ 复习收藏 (${currentDisplayCards.length})`; }
   else { titleEl.textContent = "全部卡片"; startBtn.style.display = 'none'; }
 
   if (currentDisplayCards.length === 0) { document.getElementById('empty-state').style.display = 'block'; return; }
@@ -652,12 +733,16 @@ function renderGrid(sourceCards = null) {
     const el = document.createElement('div'); el.className = 'card-thumb'; el.onclick = () => previewSingleCard(card.id);
     let statusClass = card.mastery >= 4 ? 'status-mastered' : (card.interval > 0 ? 'status-learning' : 'status-new');
     const catBadge = card.category ? `<span class="tag-pill" style="background:#f3f4f6;color:#4b5563;">${card.category}</span>` : '';
-    const tagsHtml = card.tags.slice(0,3).map(t => `<span class="tag-pill" style="${t==='高频'?'background:#fef3c7;color:#d97706;':''}">${t}</span>`).join('');
+    const tagsHtml = card.tags.slice(0,3).map(t => `<span class="tag-pill">${t}</span>`).join('');
     const nextDate = new Date(card.nextReview);
     const isDue = nextDate <= new Date();
     const dueText = isDue ? `<span style="color:#ef4444;font-weight:bold;">待复习</span>` : `${nextDate.getMonth()+1}/${nextDate.getDate()}`;
+    
     el.innerHTML = `
-      <div class="card-actions"><div class="icon-btn" title="编辑" onclick="event.stopPropagation(); editCard(${card.id})">✎</div></div>
+      <div class="card-actions">
+        <div class="icon-btn" title="编辑" onclick="event.stopPropagation(); editCard(${card.id})">✎</div>
+        <div class="icon-btn" style="${card.isFavorite?'color:#fbbf24':''}" title="收藏" onclick="event.stopPropagation(); toggleFavorite(${card.id})">⭐</div>
+      </div>
       <div class="card-meta"><span><span class="status-dot ${statusClass}"></span>${dueText}</span><span style="font-size:0.7rem;opacity:0.8;">复习:${card.reviewCount||0} | 熟练:${card.mastery}</span></div>
       <div class="card-title">${escapeHtml(card.front)}</div>
       <div class="card-tags">${catBadge} ${tagsHtml}</div>`;
@@ -708,36 +793,20 @@ function convertNoteToCard() {
   const back = content.substring(front.length + 1) || content;
   cards.unshift({ id: Date.now(), front: front.trim(), back: back.trim(), category: "笔记转化", tags: ["自建"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 });
   saveData(); renderGrid();
-  document.getElementById('quick-note').value = ""; 
-  saveNote();
-  alert("✨ 已将笔记转化为闪卡！");
+  document.getElementById('quick-note').value = ""; saveNote(); alert("✨ 已将笔记转化为闪卡！");
 }
 
 function sortCards() { renderGrid(currentDisplayCards); }
 function startSmartReview() {
   const now = new Date(); reviewQueue = cards.filter(c => new Date(c.nextReview) <= now).sort((a,b) => a.mastery - b.mastery);
-  if (reviewQueue.length === 0) { 
-      const newCards = cards.filter(c => c.interval === 0).slice(0, 20);
-      if (newCards.length > 0 && confirm('今日待复习已完成。开始学习 20 张新卡片？')) reviewQueue = newCards; else return alert("太棒了！所有卡片都已复习完毕。"); 
-  }
+  if (reviewQueue.length === 0) { const newCards = cards.filter(c => c.interval === 0).slice(0, 20); if (newCards.length > 0 && confirm('今日待复习已完成。开始学习 20 张新卡片？')) reviewQueue = newCards; else return alert("太棒了！所有卡片都已复习完毕。"); }
   currentReviewIndex = 0; document.getElementById('review-overlay').classList.add('active'); showReviewCard();
 }
-function startContinuousSession() {
-    if (currentDisplayCards.length === 0) return alert("当前列表为空");
-    reviewQueue = [...currentDisplayCards]; currentReviewIndex = 0;
-    document.getElementById('review-overlay').classList.add('active'); showReviewCard();
-}
+function startContinuousSession() { if (currentDisplayCards.length === 0) return alert("当前列表为空"); reviewQueue = [...currentDisplayCards]; currentReviewIndex = 0; document.getElementById('review-overlay').classList.add('active'); showReviewCard(); }
 function previewSingleCard(id) { const card = cards.find(c => c.id === id); if (!card) return; reviewQueue = [card]; currentReviewIndex = 0; document.getElementById('review-overlay').classList.add('active'); showReviewCard(); }
-function shuffleGrid() {
-  for (let i = currentDisplayCards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [currentDisplayCards[i], currentDisplayCards[j]] = [currentDisplayCards[j], currentDisplayCards[i]]; }
-  document.getElementById('sort-select').value = 'smart'; renderGrid(currentDisplayCards); alert("🔀 列表已打乱！点击“学习此列表”即可随机抽查。");
-}
+function shuffleGrid() { for (let i = currentDisplayCards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [currentDisplayCards[i], currentDisplayCards[j]] = [currentDisplayCards[j], currentDisplayCards[i]]; } document.getElementById('sort-select').value = 'smart'; renderGrid(currentDisplayCards); alert("🔀 列表已打乱！点击“学习此列表”即可随机抽查。"); }
 
-function updateSidebarCounts() {
-  document.getElementById('count-total').textContent = cards.length;
-  document.getElementById('count-wrong').textContent = cards.filter(c => c.mastery < 2 && c.interval > 0).length;
-  const now = new Date(); document.getElementById('count-due').textContent = cards.filter(c => new Date(c.nextReview) <= now).length;
-}
+function updateSidebarCounts() { document.getElementById('count-total').textContent = cards.length; document.getElementById('count-wrong').textContent = cards.filter(c => c.mastery < 2 && c.interval > 0).length; const now = new Date(); document.getElementById('count-due').textContent = cards.filter(c => new Date(c.nextReview) <= now).length; }
 
 function updateStats() {
   const stats = JSON.parse(localStorage.getItem(STATS_KEY) || '{"streak":0, "lastDate":null, "todayCount":0}');
@@ -746,7 +815,8 @@ function updateStats() {
   
   const streakEl = document.getElementById('stat-streak'); if (streakEl) streakEl.textContent = stats.streak;
   const todayValEl = document.getElementById('stat-today-val'); if (todayValEl) todayValEl.textContent = stats.todayCount;
-  const goal = 20;
+  
+  const goal = appSettings.dailyGoal || 20; 
   const percent = Math.min(100, Math.round((stats.todayCount / goal) * 100));
   document.getElementById('stat-today-goal').textContent = `${percent}%`;
   document.getElementById('daily-ring').style.setProperty('--percent', `${percent}%`);
@@ -755,19 +825,37 @@ function updateStats() {
   document.getElementById('stat-learning').textContent = cards.filter(c => c.interval > 0 && c.mastery < 4).length;
 }
 
+// 修复：确保事件可触发
+function setDailyGoal() {
+    const newGoal = prompt("设置每日学习目标（张数）：", appSettings.dailyGoal);
+    if(newGoal && !isNaN(newGoal)) {
+        appSettings.dailyGoal = parseInt(newGoal);
+        saveSettings();
+        updateStats();
+        document.getElementById('daily-goal-num').textContent = appSettings.dailyGoal;
+    }
+}
+
 function showReviewCard() {
   if (currentReviewIndex >= reviewQueue.length) { endReview(true); return; }
   const card = reviewQueue[currentReviewIndex];
   document.getElementById('review-card-flipper').classList.remove('flipped');
   document.getElementById('review-controls').classList.remove('visible');
+  
+  // 修复镜像翻转问题
+  const backFace = document.getElementById('review-back-container');
+  backFace.style.zIndex = "1"; 
+
   document.getElementById('review-category').textContent = card.category || '未分类';
   document.getElementById('review-front').textContent = card.front;
   document.getElementById('review-clue').textContent = card.clue || "";
   
-  const backContainer = document.getElementById('review-back-container');
-  // 分离核心与拓展内容
+  // 收藏状态更新
+  const favBtn = document.getElementById('btn-fav-toggle');
+  if(card.isFavorite) favBtn.classList.add('active');
+  else favBtn.classList.remove('active');
+
   const rawText = card.back;
-  // 优先检查 ### 或 ---
   const splitMarkers = ['###', '---'];
   let mainText = rawText;
   let extendText = '';
@@ -776,7 +864,6 @@ function showReviewCard() {
       if(rawText.includes(marker)) {
           const parts = rawText.split(marker);
           mainText = parts[0];
-          // 合并剩余部分为拓展，并补回标记（如果是标题）
           let rest = parts.slice(1).join(marker);
           if(marker === '###') rest = '### ' + rest;
           extendText = rest;
@@ -787,25 +874,17 @@ function showReviewCard() {
   const rawLen = mainText.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().length;
   const hasComplex = mainText.includes('|'); 
   
-  backContainer.className = 'back'; 
+  backContainer = document.getElementById('review-back-container');
+  backContainer.className = 'back card-face'; 
   
   let html = `<div class="answer-main">${parseMarkdown(mainText)}</div>`;
   
-  // 智能排版逻辑
-  if (rawLen < 50 && !hasComplex) {
-      backContainer.classList.add('layout-center');
-      html = html.replace('answer-main', 'answer-main text-lg');
-  } else if (rawLen < 150 && !hasComplex) {
-      backContainer.classList.add('layout-center');
-      html = html.replace('answer-main', 'answer-main text-md');
-  } else {
-      html = html.replace('answer-main', 'answer-main text-sm');
-  }
+  if (rawLen < 10 && !hasComplex) { backContainer.classList.add('layout-center-xl'); html = html.replace('answer-main', 'answer-main text-xl'); }
+  else if (rawLen < 30 && !hasComplex) { backContainer.classList.add('layout-center-lg'); html = html.replace('answer-main', 'answer-main text-lg'); }
+  else if (rawLen < 80 && !hasComplex) { backContainer.classList.add('layout-center-md'); html = html.replace('answer-main', 'answer-main text-md'); }
+  else { html = html.replace('answer-main', 'answer-main text-sm'); }
   
-  // 添加弱化显示的拓展内容
-  if (extendText.trim()) {
-      html += `<div class="answer-extend">${parseMarkdown(extendText)}</div>`;
-  }
+  if (extendText.trim()) { html += `<div class="answer-extend">${parseMarkdown(extendText)}</div>`; }
   
   backContainer.innerHTML = html;
   const progress = ((currentReviewIndex) / reviewQueue.length) * 100;
@@ -813,7 +892,14 @@ function showReviewCard() {
   document.getElementById('review-counter').textContent = `${currentReviewIndex + 1}/${reviewQueue.length}`;
 }
 
-function flipCard() { const flipper = document.getElementById('review-card-flipper'); if (!flipper.classList.contains('flipped')) { flipper.classList.add('flipped'); setTimeout(() => { document.getElementById('review-controls').classList.add('visible'); }, 300); } }
+function flipCard() {
+  const flipper = document.getElementById('review-card-flipper');
+  const backFace = document.getElementById('review-back-container');
+  if (!flipper.classList.contains('flipped')) {
+    flipper.classList.add('flipped');
+    setTimeout(() => { backFace.style.zIndex = "3"; document.getElementById('review-controls').classList.add('visible'); }, 250);
+  }
+}
 function handleOverlayClick(e) { if (e.target.id === 'review-overlay') endReview(); }
 function rateCard(quality) {
   const card = reviewQueue[currentReviewIndex];
@@ -823,8 +909,30 @@ function rateCard(quality) {
   const originalIndex = cards.findIndex(c => c.id === card.id); if (originalIndex !== -1) cards[originalIndex] = card;
   const stats = JSON.parse(localStorage.getItem(STATS_KEY)); stats.todayCount++; localStorage.setItem(STATS_KEY, JSON.stringify(stats)); updateStats(); saveData(); currentReviewIndex++; showReviewCard();
 }
-function endReview(finished = false) { if (finished) alert("🎉 复习完成！"); document.getElementById('review-overlay').classList.remove('active'); renderGrid(); }
 
+function toggleFavorite(id) {
+    const card = cards.find(c => c.id === id);
+    if(card) {
+        card.isFavorite = !card.isFavorite;
+        saveData();
+        renderGrid();
+    }
+}
+
+function toggleReviewFavorite(e) {
+    e.stopPropagation();
+    const card = reviewQueue[currentReviewIndex];
+    if(card) {
+        card.isFavorite = !card.isFavorite;
+        const btn = document.getElementById('btn-fav-toggle');
+        if(card.isFavorite) btn.classList.add('active'); else btn.classList.remove('active');
+        const originalIndex = cards.findIndex(c => c.id === card.id);
+        if (originalIndex !== -1) cards[originalIndex] = card;
+        saveData();
+    }
+}
+
+function endReview(finished = false) { if (finished) alert("🎉 复习完成！"); document.getElementById('review-overlay').classList.remove('active'); renderGrid(); }
 function showSettingsModal() {
   document.getElementById('modal-title').textContent = "⚙️ 系统设置";
   document.getElementById('modal-content').innerHTML = `
@@ -843,28 +951,97 @@ function showSettingsModal() {
 function updateFontSize(size) { appSettings.cardFontSize = size; saveSettings(); showSettingsModal(); }
 function updateCountdownSetting() { const name = document.getElementById('set-exam-name').value, date = document.getElementById('set-exam-date').value; if(name && date) { appSettings.examName = name; appSettings.examDate = date; saveSettings(); alert('已保存'); closeModal(); } }
 
+function toggleManageGroup(header) {
+    const body = header.nextElementSibling;
+    if (body) {
+        body.classList.toggle('open');
+    }
+}
+
+function deleteAllCards() {
+    if(confirm("⚠️ 警告：这将清空所有卡片且无法恢复！确定要继续吗？")) {
+        if(confirm("请再次确认清空操作")) {
+            cards = [];
+            saveData();
+            renderGrid();
+            updateSubjectList();
+            showManageModal();
+        }
+    }
+}
+
 function showManageModal(mode = 'subject') {
   manageViewMode = mode;
   document.getElementById('modal-title').textContent = "🔧 题库管理";
   const content = document.getElementById('modal-content');
-  let html = `<div class="manage-tabs"><div class="manage-tab ${mode==='subject'?'active':''}" onclick="showManageModal('subject')">按科目</div><div class="manage-tab ${mode==='list'?'active':''}" onclick="showManageModal('list')">全部</div></div><div style="max-height:60vh;overflow-y:auto;">`;
+  
+  let headerHtml = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <div class="manage-tabs" style="margin:0;border:none;">
+            <div class="manage-tab ${mode==='subject'?'active':''}" onclick="showManageModal('subject')">按科目</div>
+            <div class="manage-tab ${mode==='list'?'active':''}" onclick="showManageModal('list')">全部列表</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteAllCards()">💣 清空全部</button>
+    </div>
+    <div style="max-height:60vh;overflow-y:auto;">
+  `;
+  
+  let html = headerHtml;
+
   if (mode === 'subject') {
     const grouped = {}; cards.forEach(c => { const cat = c.category || "未分类"; if(!grouped[cat]) grouped[cat]=[]; grouped[cat].push(c); });
     Object.keys(grouped).forEach(cat => {
-      html += `<div class="manage-tag-group"><div class="manage-tag-header"><span>📖 ${cat} (${grouped[cat].length})</span><button class="btn btn-danger btn-sm" onclick="deleteByCategory('${cat}')">删除分类</button></div><ul class="manage-list">
-        ${grouped[cat].map(c => `<li class="manage-item"><span>${escapeHtml(c.front).substring(0,30)}...</span><button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button></li>`).join('')}</ul></div>`;
+      // 修复：为字符串转义防止引号报错
+      const safeCat = cat.replace(/'/g, "\\'");
+      html += `
+        <div class="manage-tag-group">
+          <div class="manage-tag-header" onclick="toggleManageGroup(this)">
+            <span>📖 ${cat} (${grouped[cat].length})</span>
+            <span style="font-size:0.8rem;color:#94a3b8;">▼</span>
+          </div>
+          <div class="manage-group-body">
+             <div style="padding:8px;border-bottom:1px solid #f1f5f9;text-align:right;">
+                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteByCategory('${safeCat}')">删除此分类</button>
+             </div>
+             <ul class="manage-list">
+                ${grouped[cat].map(c => `<li class="manage-item"><span>${escapeHtml(c.front).substring(0,30)}...</span><button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button></li>`).join('')}
+             </ul>
+          </div>
+        </div>
+      `;
     });
   } else {
-    html += `<div style="margin-bottom:10px;display:flex;gap:10px;"><button class="btn btn-danger btn-sm" onclick="batchDelete()">删除选中</button><input type="text" class="input-field" style="padding:4px 8px;" placeholder="筛选..." oninput="filterManageList(this.value)"></div><ul class="manage-list" id="manage-all-list">
-      ${cards.map(c => `<li class="manage-item" data-text="${c.front.toLowerCase()}"><div class="check-box-wrapper"><input type="checkbox" class="item-checkbox" value="${c.id}"><div style="display:flex;flex-direction:column;"><span>${escapeHtml(c.front).substring(0,35)}...</span><span style="font-size:0.75rem;color:#64748b;">${c.category}</span></div></div><button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button></li>`).join('')}</ul>`;
+    html += `
+      <div style="margin-bottom:10px;display:flex;gap:10px;">
+        <button class="btn btn-danger btn-sm" onclick="batchDelete()">删除选中</button>
+        <select class="input-field" style="padding:4px;width:auto;font-size:0.8rem;" onchange="sortManageList(this.value)">
+            <option value="default">默认排序</option>
+            <option value="mastery">按熟练度 (低→高)</option>
+            <option value="newest">按添加时间 (新→旧)</option>
+            <option value="review">按复习次数 (多→少)</option>
+        </select>
+      </div>
+      <ul class="manage-list" id="manage-all-list">
+      ${cards.map(c => `<li class="manage-item" data-text="${c.front.toLowerCase()}"><div class="check-box-wrapper"><input type="checkbox" class="item-checkbox" value="${c.id}"><div style="display:flex;flex-direction:column;"><span>${escapeHtml(c.front).substring(0,35)}...</span><span style="font-size:0.75rem;color:#64748b;">${c.category} | 熟练度:${c.mastery} | 复习:${c.reviewCount||0}</span></div></div><button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button></li>`).join('')}</ul>`;
   }
   content.innerHTML = html + '</div>';
   document.getElementById('modal-root').style.display = 'flex';
 }
+
+function sortManageList(criteria) {
+    let sortedCards = [...cards];
+    if (criteria === 'mastery') sortedCards.sort((a,b) => a.mastery - b.mastery);
+    if (criteria === 'newest') sortedCards.sort((a,b) => b.id - a.id);
+    if (criteria === 'review') sortedCards.sort((a,b) => (b.reviewCount||0) - (a.reviewCount||0));
+    
+    const list = document.getElementById('manage-all-list');
+    list.innerHTML = sortedCards.map(c => `<li class="manage-item" data-text="${c.front.toLowerCase()}"><div class="check-box-wrapper"><input type="checkbox" class="item-checkbox" value="${c.id}"><div style="display:flex;flex-direction:column;"><span>${escapeHtml(c.front).substring(0,35)}...</span><span style="font-size:0.75rem;color:#64748b;">${c.category} | 熟练度:${c.mastery} | 复习:${c.reviewCount||0}</span></div></div><button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">✎</button></li>`).join('');
+}
+
 function filterManageList(text) { document.querySelectorAll('#manage-all-list .manage-item').forEach(item => item.style.display = item.dataset.text.includes(text.toLowerCase()) ? 'flex' : 'none'); }
 function batchDelete() { const ids = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(cb => parseFloat(cb.value)); if(ids.length===0 || !confirm(`删除 ${ids.length} 张?`)) return; cards = cards.filter(c => !ids.includes(c.id)); saveData(); renderGrid(); showManageModal('list'); }
+// 修复：确保删除按钮逻辑
 function deleteByCategory(cat) { if(confirm(`删除科目 "${cat}" 下所有卡片?`)) { cards = cards.filter(c => (c.category||"未分类") !== cat); saveData(); renderGrid(); showManageModal('subject'); } }
-
 function addNewCard() {
   const front = prompt("输入问题 (Front):"); if(!front) return;
   const back = prompt("输入答案 (Back):"); if(!back) return;
@@ -882,62 +1059,63 @@ function showImportModal() {
   document.getElementById('modal-title').textContent = "导入题库 (JSON)";
   document.getElementById('modal-content').innerHTML = `
     <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:12px;border-radius:8px;margin-bottom:15px;font-size:0.9rem;color:#0c4a6e;">
-      <strong>📋 数据格式要求：</strong>
-      <ul style="margin:5px 0 10px 20px;padding:0;">
-        <li>文件类型：JSON 数组</li>
-        <li>必需字段：<code>front</code> (问题), <code>back</code> (答案)</li>
-        <li>可选字段：<code>category</code> (科目), <code>tags</code> (标签数组)</li>
-      </ul>
-      <div style="background:#e0f2fe;padding:8px;border-radius:4px;font-family:monospace;font-size:0.85rem;color:#0284c7;">
-        [<br>
-        &nbsp;&nbsp;{<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"front": "题目示例",<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"back": "答案内容...",<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;"category": "公共管理学"<br>
-        &nbsp;&nbsp;}<br>
-        ]
-      </div>
+      <strong>📋 格式要求：</strong> JSON 数组，包含 <code>front</code>, <code>back</code>, <code>category</code>。<br>
+      <div style="background:#e0f2fe;padding:5px;margin-top:5px;border-radius:4px;font-family:monospace;">[{"front":"题","back":"答","category":"政治"}]</div>
       <button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="copyAiPrompt()">📋 复制 AI 提示词</button>
     </div>
-    <div style="margin-bottom:15px;"><label style="display:block;margin-bottom:6px;font-weight:600;">方式 1: 上传文件 (.json)</label><input type="file" id="import-file" accept=".json" class="input-field" style="padding:8px;"></div>
-    <div style="margin-bottom:15px;"><label style="display:block;margin-bottom:6px;font-weight:600;">方式 2: 粘贴文本</label><textarea id="import-area" class="input-field" style="height:120px;font-family:monospace;font-size:12px;" placeholder="在此处粘贴 JSON 数组..."></textarea></div>
+    <div style="margin-bottom:15px;"><label>方式 1: 上传文件</label><input type="file" id="import-file" accept=".json" class="input-field" style="padding:8px;"></div>
+    <div style="margin-bottom:15px;"><label>方式 2: 粘贴文本</label><textarea id="import-area" class="input-field" style="height:100px;" placeholder="在此处粘贴..."></textarea></div>
     <button class="btn btn-primary btn-block" onclick="executeImport()">确认导入</button>`;
   document.getElementById('modal-root').style.display = 'flex';
 }
 
 function copyAiPrompt() {
-    const promptText = `请帮我生成公共管理专业的复习闪卡，要求如下：
-1. 输出格式必须是合法的 JSON 数组。
-2. 包含字段：front (问题), back (答案，支持 Markdown), category (科目/子科目), tags (标签数组)。
-3. 答案结构：【核心回答】必须在最前。如有【拓展/深度解析/英语词汇】，请使用 "###" 或 "---" 进行分隔，这些内容将被自动弱化显示。
-示例：[{"front":"问题","back":"核心答案...\\n\\n### 深度解析\\n内容...","category":"政治/马原","tags":["高频"]}]`;
+    const promptText = `请帮我生成闪卡数据，要求：
+1. 输出必须是合法的 JSON 数组格式。
+2. 包含字段：front (问题), back (答案), category (科目/二级科目), tags (标签)。
+3. 答案排版：核心答案在前。如果有"深度解析"或"拓展内容"，请务必使用 "###" 或 "---" 进行分隔（系统会自动将其弱化显示）。
+示例：[{"front":"问题","back":"核心答案...\\n\\n### 深度解析\\n内容...","category":"政治/马原"}]`;
     const textArea = document.createElement("textarea"); textArea.value = promptText; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
-    try { document.execCommand('copy'); alert('提示词已复制！发送给 AI 即可生成数据。'); } catch (err) { alert('复制失败，请手动复制。'); }
+    try { document.execCommand('copy'); alert('提示词已复制！'); } catch (err) { alert('复制失败'); }
     document.body.removeChild(textArea);
 }
-
 function executeImport() {
   const fileInput = document.getElementById('import-file'); const textArea = document.getElementById('import-area');
   const processData = (jsonStr) => {
     try {
-      const data = JSON.parse(jsonStr); if(!Array.isArray(data)) throw new Error("Root must be an array");
-      let count = 0; data.forEach(item => { if(item.front && item.back) { if(!cards.some(c => c.front === item.front)) { cards.push({ id: Date.now() + Math.random(), front: item.front, back: item.back, category: item.category || "未分类", tags: item.tags || ["导入"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 }); count++; } } });
-      saveData(); renderGrid(); updateSubjectList(); closeModal(); alert(`成功导入 ${count} 张新卡片！(已自动过滤重复项)`);
-    } catch(e) { alert("格式错误：请检查 JSON 语法是否正确，必须是对象数组。"); console.error(e); }
+      const data = JSON.parse(jsonStr); if(!Array.isArray(data)) throw new Error();
+      let count = 0; data.forEach(item => { if(item.front && item.back) { if(!cards.some(c => c.front === item.front)) { cards.push({ id: Date.now() + Math.random(), front: item.front, back: item.back, category: item.category || "未分类", tags: item.tags || ["导入"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5, isFavorite: false }); count++; } } });
+      saveData(); renderGrid(); updateSubjectList(); closeModal(); alert(`导入 ${count} 张`);
+    } catch(e) { alert("格式错误"); }
   };
   if (fileInput.files.length > 0) { const file = fileInput.files[0]; const reader = new FileReader(); reader.onload = (e) => processData(e.target.result); reader.readAsText(file); } else if (textArea.value.trim()) { processData(textArea.value.trim()); } else { alert("请选择文件或粘贴内容"); }
 }
-
 function exportCards() { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards)); a.download = "mpa_flashcards.json"; document.body.appendChild(a); a.click(); a.remove(); }
 function closeModal() { document.getElementById('modal-root').style.display = 'none'; }
 function filterCards(kw) { if(!kw) { renderGrid(); return; } const l = kw.toLowerCase(); renderGrid(cards.filter(c => c.front.toLowerCase().includes(l) || c.back.toLowerCase().includes(l))); }
-function filterByStatus(t) { currentFilter = t; updateNavActiveState(); renderGrid(); }
+function filterByStatus(t) { 
+    currentFilter = t; 
+    // 更新导航选中状态
+    updateNavActiveState(); 
+    // 如果是收藏夹模式，需要强制开启收藏筛选标记
+    if (t === 'favorite') {
+        document.getElementById('nav-fav').classList.add('active');
+    }
+    renderGrid(); 
+    // 关键：触发科目列表刷新，让它根据当前筛选源（收藏/全部）重新统计
+    updateSubjectList(); 
+}
 function filterBySubject(s) { currentFilter = 'subject:'+s; updateNavActiveState(); renderGrid(); }
-function resetFilter() { currentFilter = 'all'; updateNavActiveState(); renderGrid(); }
-function updateNavActiveState() { document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); if(currentFilter==='all') document.getElementById('nav-all').classList.add('active'); }
+function resetFilter() { currentFilter = 'all'; updateNavActiveState(); renderGrid(); updateSubjectList(); }
+function updateNavActiveState() { 
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); 
+    if(currentFilter==='all') document.getElementById('nav-all').classList.add('active'); 
+    else if(currentFilter==='favorite') document.getElementById('nav-fav').classList.add('active');
+}
 function loadNote() { document.getElementById('quick-note').value = localStorage.getItem(NOTES_KEY) || ""; }
 function saveNote() { localStorage.setItem(NOTES_KEY, document.getElementById('quick-note').value); }
 function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
 function parseCardAnswer(t) { return `<div class="answer-main">${parseMarkdown(t)}</div>`; }
 function parseMarkdown(t) {
   let h = escapeHtml(t);
@@ -967,7 +1145,7 @@ function dragChat(e) { if(e.target.tagName==='SPAN') return; const el = document
 
 function renderChatHistory() {
     const b = document.getElementById('chat-body'); b.innerHTML = '';
-    if(chatHistory.length===0) { b.innerHTML = '<div class="msg ai">你好！我是你的专属考研导师。请设置 Key 开始。</div>'; return; }
+    if(chatHistory.length===0) { b.innerHTML = '<div class="msg ai">你好！我是闪卡小精灵 🧚‍♀️。我是你的专属考研导师。请设置 Key 开始。</div>'; return; }
     chatHistory.forEach(m => {
         const d = document.createElement('div'); d.className = `msg ${m.role}`;
         if(m.role==='ai') {
@@ -1002,11 +1180,10 @@ async function sendMessage() {
   
   const ld = document.createElement('div'); ld.className='msg ai'; ld.innerText='思考中...'; document.getElementById('chat-body').appendChild(ld);
   try {
-    let prompt = `你是一位中国公共管理考研命题专家。
+    let prompt = `你是一位闪卡小精灵，专注公共管理考研。
     1. **结构化输出**：定义 -> 核心要素 -> 意义。
-    2. **结合时政**：联系中国数字政府、共同富裕等热点。
-    3. **准确分类**：如果生成闪卡，请根据内容自动判断科目（如：公共管理学、政治、社会研究方法）。如果没有明确线索，默认分类为“AI生成”。
-    4. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目/子科目"}]。`;
+    2. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目"}]。
+    3. **表格**：使用 Markdown 表格语法。`;
     
     let res, data, reply;
     if(currentProvider==='deepseek') {
@@ -1028,7 +1205,7 @@ async function sendMessage() {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-primary btn-sm'; btn.style.marginTop='8px'; btn.textContent = `一键导入 ${parsed.length} 张卡片`;
                 btn.onclick = function() { 
-                    let count=0; parsed.forEach(p=>{ if(!cards.some(c=>c.front===p.front)){ cards.push({id:Date.now()+Math.random(), front:p.front, back:p.back, category:p.category||"AI生成", tags:p.tags||["AI"], nextReview:new Date().toISOString(), mastery:0, interval:0, fs:2.5}); count++; } });
+                    let count=0; parsed.forEach(p=>{ if(!cards.some(c=>c.front===p.front)){ cards.push({id:Date.now()+Math.random(), front:p.front, back:p.back, category:p.category||"AI生成", tags:p.tags||["AI"], nextReview:new Date().toISOString(), mastery:0, interval:0, fs:2.5, isFavorite:false}); count++; } });
                     saveData(); renderGrid(); updateSubjectList(); this.disabled=true; this.textContent=`成功导入 ${count} 张`; alert(`导入成功`);
                 };
                 msgDiv.appendChild(btn);
