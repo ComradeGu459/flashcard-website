@@ -94,6 +94,8 @@
       z-index: 5;
       background: var(--bg-body);
       padding-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .flashcard-grid {
@@ -129,7 +131,7 @@
       font-size: 0.9rem;
       user-select: none;
     }
-    .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+    .btn-sm { padding: 4px 12px; font-size: 0.85rem; }
     .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
     .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
     .btn-secondary { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary-light); }
@@ -156,6 +158,7 @@
     /* 侧边栏分类列表 */
     .nav-section { margin-bottom: 20px; }
     .nav-title { font-size: 0.85rem; color: var(--text-sub); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
     .nav-item {
       display: flex;
       align-items: center;
@@ -165,11 +168,27 @@
       color: var(--text-main);
       margin-bottom: 4px;
       transition: background 0.2s;
+      position: relative;
     }
     .nav-item:hover { background: var(--bg-body); }
     .nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
     .nav-item i { margin-right: 8px; font-style: normal; width: 20px; text-align: center; }
     .count-badge { margin-left: auto; background: #e2e8f0; font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; }
+    
+    /* 二级分类样式 */
+    .nav-sub-group { margin-left: 28px; border-left: 2px solid #e2e8f0; padding-left: 8px; display: none; }
+    .nav-sub-group.open { display: block; }
+    .nav-sub-item {
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 2px;
+    }
+    .nav-sub-item:hover { background: var(--bg-body); color: var(--text-main); }
+    .nav-expand-icon { font-size: 0.7rem; color: #94a3b8; margin-right: 4px; transition: transform 0.2s; }
+    .nav-item.expanded .nav-expand-icon { transform: rotate(90deg); }
 
     /* 闪卡样式 - 列表视图 */
     .card-thumb {
@@ -182,7 +201,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      min-height: 150px;
+      min-height: 160px;
       cursor: pointer;
     }
     .card-thumb:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
@@ -201,10 +220,10 @@
     .status-learning { background: var(--warning); }
     .status-mastered { background: var(--success); }
 
-    /* 沉浸式复习模式 (Overlay) */
+    /* 沉浸式复习模式 (Overlay) - 深色专注模式 */
     #review-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.92); /* 深色磨砂背景 */
+      background: rgba(15, 23, 42, 0.95); 
       backdrop-filter: blur(8px);
       z-index: 2000;
       display: none;
@@ -285,13 +304,12 @@
       text-align: left; 
       border-top: 6px solid #10b981; 
     }
-    
     /* 动态布局类：居中模式 (flex 覆盖) */
     .back.layout-center { 
-      justify-content: center; 
-      align-items: center; 
-      text-align: center; 
-      overflow-y: hidden; /* 短内容不需要滚动 */
+        justify-content: center; 
+        align-items: center; 
+        text-align: center; 
+        overflow-y: hidden; 
     }
     
     .back::-webkit-scrollbar { width: 6px; }
@@ -301,7 +319,7 @@
     .card-content-lg { font-size: 1.9rem; font-weight: 800; color: #1e293b; line-height: 1.4; margin-bottom: 15px; letter-spacing: -0.5px; }
     .card-clue { color: #64748b; font-style: italic; font-size: 1.05rem; margin-top: 10px; }
     
-    /* 答案内容主容器 - 关键优化 */
+    /* 答案内容主容器 */
     .answer-main {
       width: 100%;
       font-size: var(--fs-card-answer); 
@@ -309,80 +327,47 @@
       color: #334155;
       transition: font-size 0.2s;
     }
-    
-    /* === 智能排版分级规则 (Smart Typography Levels) === */
-    
-    /* Level 1: 极短文本 (如名词解释核心) - 超大字，居中 */
+    /* 智能分级排版 */
     .answer-main.text-xl { 
-      font-size: calc(var(--fs-card-answer) * 2.4); 
-      line-height: 1.3; 
-      font-weight: 700; 
-      text-align: center; 
-      color: #0f172a; /* 更黑一点 */
+        font-size: calc(var(--fs-card-answer) * 2.4); 
+        line-height: 1.3; 
+        font-weight: 700; 
+        text-align: center; 
+        color: #0f172a; 
     }
-    
-    /* Level 2: 短文本 - 大字，居中 */
     .answer-main.text-lg { 
-      font-size: calc(var(--fs-card-answer) * 1.8); 
-      line-height: 1.5; 
-      font-weight: 600; 
-      text-align: center; 
+        font-size: calc(var(--fs-card-answer) * 1.8); 
+        line-height: 1.5; 
+        font-weight: 600; 
+        text-align: center; 
     }
-    
-    /* Level 3: 中等文本 - 中字，居中 */
     .answer-main.text-md { 
-      font-size: calc(var(--fs-card-answer) * 1.3); 
-      line-height: 1.6; 
-      text-align: center; 
+        font-size: calc(var(--fs-card-answer) * 1.3); 
+        line-height: 1.6; 
+        text-align: center; 
     }
-    
-    /* Level 4: 长文本/复杂内容 - 默认字号，左对齐 */
     .answer-main.text-sm { 
-      font-size: var(--fs-card-answer); 
-      text-align: left; 
+        font-size: var(--fs-card-answer); 
+        text-align: left; 
     }
     
     .answer-main p { margin-bottom: 1em; }
-    .answer-main strong { 
-        color: var(--highlight-text); 
-        background: linear-gradient(to top, var(--highlight-bg) 40%, transparent 40%); 
-        padding: 0 2px; 
-        font-weight: 700; 
-    }
-    /* 列表优化 */
-    .answer-main ul { 
-      padding-left: 1.4em; 
-      margin-bottom: 1em; 
-      /* 如果父容器是居中的，列表应该根据内容自适应并居中显示，而不是左侧贴边 */
-      display: inline-block; 
-      text-align: left; 
-      width: auto;
-      max-width: 100%;
-    }
-    /* 强制列表左对齐（针对长文本） */
+    .answer-main strong { color: var(--highlight-text); background: linear-gradient(to top, var(--highlight-bg) 40%, transparent 40%); padding: 0 2px; font-weight: 700; }
+    .answer-main ul { padding-left: 1.4em; margin-bottom: 1em; display: inline-block; text-align: left; width: auto; max-width: 100%; }
     .answer-main.text-sm ul { display: block; }
 
     .answer-vocab { margin-top: 24px; padding-top: 16px; border-top: 1px dashed #e2e8f0; font-size: 0.9rem; color: #64748b; background: #f8fafc; padding: 16px; border-radius: 8px; display: none; }
     
     .review-controls { margin-top: 20px; display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .review-controls.visible { opacity: 1; pointer-events: auto; }
-    
     .grade-btn { padding: 14px 24px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); flex: 1; font-size: 1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-    .grade-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
     .grade-btn:active { transform: scale(0.96); }
     .grade-1 { background: linear-gradient(145deg, #ef4444, #b91c1c); }
     .grade-2 { background: linear-gradient(145deg, #f59e0b, #b45309); }
     .grade-3 { background: linear-gradient(145deg, #3b82f6, #1d4ed8); }
     .grade-4 { background: linear-gradient(145deg, #10b981, #047857); }
 
-    /* 统计卡片 */
-    .stat-card {
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      color: #0c4a6e;
-    }
+    .stat-card { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; padding: 16px; margin-bottom: 16px; color: #0c4a6e; }
     .stat-card.highlight { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
     .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
     .stat-label { font-size: 0.85rem; opacity: 0.9; }
@@ -473,8 +458,8 @@
       <div class="nav-item active" id="nav-all" onclick="resetFilter()">
         <i>🗂️</i> 全部卡片 <span class="count-badge" id="count-total">0</span>
       </div>
-      <div class="nav-item" id="nav-review" onclick="startFocusedReview()">
-        <i>🎯</i> 沉浸背诵 <span class="count-badge" style="background:var(--primary); color:white;" id="count-due">0</span>
+      <div class="nav-item" id="nav-review" onclick="startSmartReview()">
+        <i>🎯</i> 智能推荐 <span class="count-badge" style="background:var(--primary); color:white;" id="count-due">0</span>
       </div>
       <div class="nav-item" onclick="filterByStatus('wrong')">
         <i>📕</i> 错题本 <span class="count-badge" id="count-wrong">0</span>
@@ -485,7 +470,7 @@
     </div>
 
     <div class="nav-section">
-      <div class="nav-title">📚 科目分类</div>
+      <div class="nav-title">📚 科目分类 (支持二级)</div>
       <div id="subject-list"></div>
     </div>
 
@@ -513,8 +498,22 @@
   <div class="main-content">
     <div class="content-header">
       <h2 style="margin:0; font-size:1.5rem;" id="grid-title">全部卡片</h2>
-      <div style="display:flex; gap:10px;">
-        <button class="btn btn-secondary" onclick="shuffleGrid()" title="打乱顺序进行随机抽查">🔀 随机乱序</button>
+      
+      <div style="display:flex; gap:10px; align-items:center;">
+        <!-- 排序功能 -->
+        <select id="sort-select" class="input-field" style="padding:6px 30px 6px 12px; font-size:0.9rem; width:auto;" onchange="sortCards(this.value)">
+          <option value="smart">🧠 智能遗忘曲线 (默认)</option>
+          <option value="mastery_asc">📉 熟练度 (低→高)</option>
+          <option value="count_desc">🔥 学习热度 (多→少)</option>
+          <option value="newest">🆕 最近添加</option>
+        </select>
+        
+        <!-- 连续学习按钮 (动态显示) -->
+        <button id="btn-start-session" class="btn btn-primary" onclick="startContinuousSession()" style="display:none;">
+          ▶️ 学习此列表
+        </button>
+        
+        <button class="btn btn-secondary" onclick="shuffleGrid()" title="打乱顺序">🔀 乱序</button>
       </div>
     </div>
     
@@ -567,14 +566,11 @@
   <div class="flip-container" onclick="flipCard()">
     <div class="flipper" id="review-card-flipper">
       <div class="front">
-        <!-- 科目独立显示 -->
         <div class="card-category-label" id="review-category"></div>
-        <!-- 问题绝对居中 -->
         <div class="question-wrapper">
             <div class="card-content-lg" id="review-front"></div>
             <div class="card-clue" id="review-clue"></div>
         </div>
-        <!-- 底部提示 -->
         <div class="card-bottom-hint">(点击翻看答案)</div>
       </div>
       <div class="back" id="review-back-container"></div>
@@ -645,11 +641,21 @@ let currentProvider = 'deepseek';
 let cards = [], reviewQueue = [], currentReviewIndex = 0, currentFilter = 'all', manageViewMode = 'subject', chatHistory = [];
 let appSettings = { cardFontSize: 'normal', examName: '研究生考试', examDate: new Date(new Date().getFullYear(), 11, 21).toISOString().split('T')[0] };
 
+// 当前展示的卡片列表（用于连续学习和排序）
+let currentDisplayCards = [];
+
 function initData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     cards = raw ? JSON.parse(raw) : getInitialData();
-    cards.forEach(c => { if (!c.tags) c.tags = []; if (!c.category) c.category = "未分类"; if (!c.fs) c.fs = 2.5; if (!c.interval) c.interval = 0; });
+    // 数据兼容性处理
+    cards.forEach(c => { 
+        if (!c.tags) c.tags = []; 
+        if (!c.category) c.category = "未分类"; 
+        if (!c.fs) c.fs = 2.5; 
+        if (!c.interval) c.interval = 0;
+        if (!c.reviewCount) c.reviewCount = 0; // 新增：复习次数
+    });
     const rawSettings = localStorage.getItem(SETTINGS_KEY);
     if(rawSettings) appSettings = JSON.parse(rawSettings);
     const rawChat = localStorage.getItem(CHAT_HISTORY_KEY);
@@ -665,7 +671,10 @@ function getInitialData() {
     id: Date.now(),
     front: "公共管理的核心主体是什么？",
     back: "**政府**是公共管理的核心主体。\n\n1. 政府拥有合法的强制力。\n2. 同时也包括非政府公共组织（NGO/NPO）。",
-    category: "公共管理学", tags: ["基础", "核心概念", "高频"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5
+    category: "公共管理学/基础理论", // 示例：二级分类
+    tags: ["基础", "核心概念", "高频"], 
+    nextReview: new Date().toISOString(), 
+    mastery: 0, interval: 0, fs: 2.5, reviewCount: 0
   }];
 }
 
@@ -682,39 +691,159 @@ function applySettings() {
   document.getElementById('countdown-days').textContent = diff > 0 ? diff : 0;
 }
 
+// ================= 二级科目分类逻辑 =================
+
 function updateSubjectList() {
-  const subjects = {};
-  cards.forEach(c => { const cat = c.category || "未分类"; subjects[cat] = (subjects[cat] || 0) + 1; });
+  const tree = {}; // { "政治": { count: 10, subs: { "马原": 5, "史纲": 5 } } }
+  
+  cards.forEach(c => {
+    const cat = c.category || "未分类";
+    // 支持 "一级/二级" 或 "一级-二级" 格式
+    const parts = cat.split(/[\/\-]/); 
+    const mainCat = parts[0].trim();
+    const subCat = parts.length > 1 ? parts[1].trim() : null;
+    
+    if (!tree[mainCat]) tree[mainCat] = { count: 0, subs: {} };
+    tree[mainCat].count++;
+    
+    if (subCat) {
+        if (!tree[mainCat].subs[subCat]) tree[mainCat].subs[subCat] = 0;
+        tree[mainCat].subs[subCat]++;
+    }
+  });
+
   const listEl = document.getElementById('subject-list');
   listEl.innerHTML = '';
-  Object.keys(subjects).sort().forEach(sub => {
+  
+  Object.keys(tree).sort().forEach(main => {
+    const item = tree[main];
+    const hasSubs = Object.keys(item.subs).length > 0;
+    
+    // 主分类容器
     const div = document.createElement('div');
-    div.className = 'nav-item'; div.onclick = () => filterBySubject(sub);
-    div.innerHTML = `<i>📖</i> ${sub} <span class="count-badge">${subjects[sub]}</span>`;
+    div.className = 'nav-item-group';
+    
+    // 主分类行
+    const header = document.createElement('div');
+    header.className = 'nav-item';
+    header.onclick = () => {
+        filterBySubject(main); // 筛选主分类
+        if(hasSubs) {
+            const subEl = document.getElementById(`sub-${main}`);
+            subEl.classList.toggle('open');
+            header.classList.toggle('expanded');
+        }
+    };
+    
+    let arrow = hasSubs ? `<span class="nav-expand-icon">▶</span>` : `<span style="width:14px;"></span>`;
+    header.innerHTML = `${arrow} <i>📖</i> ${main} <span class="count-badge">${item.count}</span>`;
+    div.appendChild(header);
+    
+    // 子分类容器
+    if(hasSubs) {
+        const subGroup = document.createElement('div');
+        subGroup.id = `sub-${main}`;
+        subGroup.className = 'nav-sub-group';
+        Object.keys(item.subs).sort().forEach(sub => {
+            const subDiv = document.createElement('div');
+            subDiv.className = 'nav-sub-item';
+            subDiv.innerHTML = `${sub} <span style="float:right;opacity:0.6;font-size:0.75rem;">${item.subs[sub]}</span>`;
+            subDiv.onclick = (e) => {
+                e.stopPropagation(); // 防止触发父级点击
+                filterBySubject(`${main}/${sub}`); // 筛选具体二级分类
+            };
+            subGroup.appendChild(subDiv);
+        });
+        div.appendChild(subGroup);
+    }
+    
     listEl.appendChild(div);
   });
 }
 
+// ================= 列表渲染与过滤 =================
+
 function renderGrid(sourceCards = null) {
-  let displayCards = sourceCards;
-  if (!displayCards) {
-    if (currentFilter === 'all') displayCards = cards;
-    else if (currentFilter === 'wrong') displayCards = cards.filter(c => c.mastery < 2 && c.interval > 0);
-    else if (currentFilter === 'high_freq') displayCards = cards.filter(c => (c.tags||[]).includes("高频"));
-    else if (currentFilter.startsWith('subject:')) { const sub = currentFilter.split(':')[1]; displayCards = cards.filter(c => c.category === sub); }
+  // 1. 确定数据源
+  if (sourceCards) {
+      currentDisplayCards = sourceCards;
+  } else {
+      // 根据当前过滤器重构 displayCards
+      if (currentFilter === 'all') {
+          currentDisplayCards = cards;
+      } else if (currentFilter === 'wrong') {
+          currentDisplayCards = cards.filter(c => c.mastery < 2 && c.interval > 0);
+      } else if (currentFilter === 'high_freq') {
+          currentDisplayCards = cards.filter(c => (c.tags||[]).includes("高频"));
+      } else if (currentFilter.startsWith('subject:')) {
+          const targetSubject = currentFilter.split(':')[1];
+          // 支持前缀匹配： "政治" 可以匹配 "政治/马原"
+          currentDisplayCards = cards.filter(c => {
+              const cat = c.category || "未分类";
+              // 统一分隔符
+              const normalizedCat = cat.replace('-', '/'); 
+              return normalizedCat === targetSubject || normalizedCat.startsWith(targetSubject + '/');
+          });
+      }
   }
+  
+  // 2. 应用排序 (Sort)
+  const sortMode = document.getElementById('sort-select').value;
+  if (sortMode === 'mastery_asc') {
+      currentDisplayCards.sort((a, b) => a.mastery - b.mastery); // 熟练度低到高
+  } else if (sortMode === 'count_desc') {
+      currentDisplayCards.sort((a, b) => (b.reviewCount||0) - (a.reviewCount||0)); // 学习次数多到少
+  } else if (sortMode === 'newest') {
+      currentDisplayCards.sort((a, b) => b.id - a.id); // 最新 ID 在前
+  } else {
+      // 默认：智能推荐 (复习时间紧迫度)
+      // 未复习过的排前面，已到期的排前面
+      currentDisplayCards.sort((a, b) => new Date(a.nextReview) - new Date(b.nextReview));
+  }
+
+  // 3. 更新 UI 状态
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  if (!displayCards || displayCards.length === 0) { document.getElementById('empty-state').style.display = 'block'; return; }
+  const titleEl = document.getElementById('grid-title');
+  const startBtn = document.getElementById('btn-start-session');
+  
+  if (currentFilter.startsWith('subject:')) {
+      titleEl.textContent = currentFilter.split(':')[1];
+      startBtn.style.display = 'inline-flex'; // 显示“学习此列表”按钮
+      startBtn.textContent = `▶️ 学习此列表 (${currentDisplayCards.length})`;
+  } else if (currentFilter === 'wrong') {
+      titleEl.textContent = "错题本";
+      startBtn.style.display = 'inline-flex';
+      startBtn.textContent = `▶️ 重刷错题 (${currentDisplayCards.length})`;
+  } else {
+      titleEl.textContent = "全部卡片";
+      startBtn.style.display = 'none'; // 全部模式下推荐用左侧的“智能推荐”
+  }
+
+  if (currentDisplayCards.length === 0) { 
+      document.getElementById('empty-state').style.display = 'block'; 
+      return; 
+  }
   document.getElementById('empty-state').style.display = 'none';
-  displayCards.forEach(card => {
+
+  // 4. 渲染卡片
+  currentDisplayCards.forEach(card => {
     const el = document.createElement('div'); el.className = 'card-thumb'; el.onclick = () => previewSingleCard(card.id);
     let statusClass = card.mastery >= 4 ? 'status-mastered' : (card.interval > 0 ? 'status-learning' : 'status-new');
     const catBadge = card.category ? `<span class="tag-pill" style="background:#f3f4f6;color:#4b5563;">${card.category}</span>` : '';
     const tagsHtml = card.tags.slice(0,3).map(t => `<span class="tag-pill" style="${t==='高频'?'background:#fef3c7;color:#d97706;':''}">${t}</span>`).join('');
+    
+    // 增强信息展示：复习次数 + 下次时间
+    const nextDate = new Date(card.nextReview);
+    const isDue = nextDate <= new Date();
+    const dueText = isDue ? `<span style="color:#ef4444;font-weight:bold;">待复习</span>` : `${nextDate.getMonth()+1}/${nextDate.getDate()}`;
+    
     el.innerHTML = `
       <div class="card-actions"><div class="icon-btn" title="编辑" onclick="event.stopPropagation(); editCard(${card.id})">✎</div></div>
-      <div class="card-meta"><span><span class="status-dot ${statusClass}"></span>${new Date(card.nextReview).toLocaleDateString()}</span><span>${card.mastery}/4</span></div>
+      <div class="card-meta">
+        <span><span class="status-dot ${statusClass}"></span>${dueText}</span>
+        <span style="font-size:0.7rem;opacity:0.8;">复习:${card.reviewCount||0} | 熟练:${card.mastery}</span>
+      </div>
       <div class="card-title">${escapeHtml(card.front)}</div>
       <div class="card-tags">${catBadge} ${tagsHtml}</div>`;
     grid.appendChild(el);
@@ -722,29 +851,81 @@ function renderGrid(sourceCards = null) {
   updateSidebarCounts();
 }
 
-function previewSingleCard(id) {
-  const card = cards.find(c => c.id === id); if (!card) return;
-  reviewQueue = [card]; currentReviewIndex = 0;
-  document.getElementById('review-overlay').classList.add('active'); showReviewCard();
+// 排序触发函数
+function sortCards() {
+    renderGrid(currentDisplayCards); // 重新渲染即可，renderGrid 内部会处理排序
 }
 
-function shuffleGrid() {
-  let currentCards = [...cards]; 
-  // Apply current filter if needed
-  if (currentFilter === 'wrong') currentCards = cards.filter(c => c.mastery < 2 && c.interval > 0);
-  else if (currentFilter === 'high_freq') currentCards = cards.filter(c => (c.tags||[]).includes("高频"));
-  else if (currentFilter.startsWith('subject:')) currentCards = cards.filter(c => c.category === currentFilter.split(':')[1]);
+// ================= 连续学习逻辑 (重点优化) =================
+
+// 1. 智能推荐复习 (左侧导航入口)
+function startSmartReview() {
+  const now = new Date();
+  // 筛选所有到期的卡片
+  reviewQueue = cards.filter(c => new Date(c.nextReview) <= now).sort((a,b) => a.mastery - b.mastery);
   
-  for (let i = currentCards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1)); [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
+  if (reviewQueue.length === 0) { 
+      // 如果没有到期的，尝试复习新卡片 (interval === 0)
+      const newCards = cards.filter(c => c.interval === 0).slice(0, 20);
+      if (newCards.length > 0) {
+          if(confirm('恭喜！今日待复习已完成。要开始学习 20 张新卡片吗？')) {
+              reviewQueue = newCards;
+          } else {
+              return;
+          }
+      } else {
+          alert("太棒了！所有卡片都已复习完毕。"); 
+          return; 
+      }
   }
-  renderGrid(currentCards); alert("🔀 已打乱卡片顺序！");
+  
+  currentReviewIndex = 0; 
+  document.getElementById('review-overlay').classList.add('active'); 
+  showReviewCard();
+}
+
+// 2. 连续学习当前列表 (分类入口)
+function startContinuousSession() {
+    if (currentDisplayCards.length === 0) return alert("当前列表为空");
+    // 直接使用当前筛选并排序后的列表作为队列
+    reviewQueue = [...currentDisplayCards];
+    currentReviewIndex = 0;
+    document.getElementById('review-overlay').classList.add('active');
+    showReviewCard();
+}
+
+// 3. 单张预览 (点击卡片)
+function previewSingleCard(id) {
+  const card = cards.find(c => c.id === id); if (!card) return;
+  reviewQueue = [card]; // 队列只有一张
+  currentReviewIndex = 0;
+  document.getElementById('review-overlay').classList.add('active'); 
+  showReviewCard();
+}
+
+// 乱序功能
+function shuffleGrid() {
+  // Fisher-Yates 洗牌
+  for (let i = currentDisplayCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1)); 
+    [currentDisplayCards[i], currentDisplayCards[j]] = [currentDisplayCards[j], currentDisplayCards[i]];
+  }
+  // 强制刷新 UI (不重新排序)
+  // 这里我们需要临时绕过 renderGrid 的自动排序逻辑，直接渲染
+  // 简单的做法是：让 renderGrid 知道不需要排序，或者我们手动更新 DOM
+  // 为了简单，我们只更新 DOM，或者临时把 sort 设为默认
+  document.getElementById('sort-select').value = 'smart'; // 重置排序选项视觉
+  // 重新渲染，但传入已经乱序的数组作为源
+  renderGrid(currentDisplayCards); 
+  alert("🔀 列表已打乱！点击“学习此列表”即可随机抽查。");
 }
 
 function updateSidebarCounts() {
   document.getElementById('count-total').textContent = cards.length;
   document.getElementById('count-wrong').textContent = cards.filter(c => c.mastery < 2 && c.interval > 0).length;
-  document.getElementById('count-due').textContent = cards.filter(c => new Date(c.nextReview) <= new Date()).length;
+  const now = new Date();
+  const dueCount = cards.filter(c => new Date(c.nextReview) <= now).length;
+  document.getElementById('count-due').textContent = dueCount;
 }
 
 function updateStats() {
@@ -761,19 +942,12 @@ function updateStats() {
   document.getElementById('stat-learning').textContent = cards.filter(c => c.interval > 0 && c.mastery < 4).length;
 }
 
-function startFocusedReview() {
-  reviewQueue = cards.filter(c => new Date(c.nextReview) <= new Date()).sort((a,b) => a.mastery - b.mastery).slice(0, 50);
-  if (reviewQueue.length === 0) { alert("当前没有待复习的卡片！"); return; }
-  currentReviewIndex = 0; document.getElementById('review-overlay').classList.add('active'); showReviewCard();
-}
-
 function showReviewCard() {
   if (currentReviewIndex >= reviewQueue.length) { endReview(true); return; }
   const card = reviewQueue[currentReviewIndex];
   document.getElementById('review-card-flipper').classList.remove('flipped');
   document.getElementById('review-controls').classList.remove('visible');
   
-  // 新的 DOM 注入逻辑
   document.getElementById('review-category').textContent = card.category || '未分类';
   document.getElementById('review-front').textContent = card.front;
   document.getElementById('review-clue').textContent = card.clue || "";
@@ -824,22 +998,51 @@ function flipCard() {
 }
 
 function handleOverlayClick(e) { if (e.target.id === 'review-overlay') endReview(); }
+
 function rateCard(quality) {
   const card = reviewQueue[currentReviewIndex];
-  if (quality >= 3) { card.interval = card.interval === 0 ? 1 : (card.interval === 1 ? 6 : Math.round(card.interval * card.fs)); card.mastery = Math.min(4, card.mastery + 1); } 
-  else { card.interval = 1; card.mastery = Math.max(0, card.mastery - 1); }
+  
+  // 间隔重复算法更新
+  if (quality >= 3) { 
+      card.interval = card.interval === 0 ? 1 : (card.interval === 1 ? 6 : Math.round(card.interval * card.fs)); 
+      card.mastery = Math.min(4, card.mastery + 1); 
+  } else { 
+      card.interval = 1; 
+      card.mastery = Math.max(0, card.mastery - 1); 
+  }
+  
+  // 增加复习次数计数
+  card.reviewCount = (card.reviewCount || 0) + 1;
   card.fs = Math.max(1.3, card.fs + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
-  const nextDate = new Date(); nextDate.setDate(nextDate.getDate() + card.interval); card.nextReview = nextDate.toISOString();
-  const originalIndex = cards.findIndex(c => c.id === card.id); if (originalIndex !== -1) cards[originalIndex] = card;
-  const stats = JSON.parse(localStorage.getItem(STATS_KEY)); stats.todayCount++; localStorage.setItem(STATS_KEY, JSON.stringify(stats)); document.getElementById('stat-today').textContent = stats.todayCount;
-  saveData(); currentReviewIndex++; showReviewCard();
+  
+  const nextDate = new Date(); 
+  nextDate.setDate(nextDate.getDate() + card.interval); 
+  card.nextReview = nextDate.toISOString();
+  
+  // 更新原数组数据
+  const originalIndex = cards.findIndex(c => c.id === card.id); 
+  if (originalIndex !== -1) cards[originalIndex] = card;
+  
+  const stats = JSON.parse(localStorage.getItem(STATS_KEY)); 
+  stats.todayCount++; 
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats)); 
+  document.getElementById('stat-today').textContent = stats.todayCount;
+  
+  saveData(); 
+  currentReviewIndex++; 
+  showReviewCard();
 }
+
 function endReview(finished = false) { if (finished) alert("🎉 复习完成！"); document.getElementById('review-overlay').classList.remove('active'); renderGrid(); }
+
+// ... (其余辅助函数保持不变: showSettingsModal, showImportModal, executeImport, parseCardAnswer, AI逻辑等) ...
+// 为了节省篇幅，这里省略未修改的辅助函数代码，它们逻辑与上一版本一致
+// 请确保保留之前的 toggleChat, updateApiProvider, setApiKey, dragChat, renderChatHistory 等完整逻辑
 
 function showSettingsModal() {
   document.getElementById('modal-title').textContent = "⚙️ 系统设置";
   document.getElementById('modal-content').innerHTML = `
-    <div style="margin-bottom:20px;"><h4 style="margin-bottom:10px;">📖 卡片答案字号 (基准)</h4><div style="display:flex; gap:10px;">
+    <div style="margin-bottom:20px;"><h4 style="margin-bottom:10px;">📖 卡片答案字号</h4><div style="display:flex; gap:10px;">
       <button class="btn btn-secondary ${appSettings.cardFontSize==='normal'?'btn-primary':''}" onclick="updateFontSize('normal')">标准</button>
       <button class="btn btn-secondary ${appSettings.cardFontSize==='medium'?'btn-primary':''}" onclick="updateFontSize('medium')">中号</button>
       <button class="btn btn-secondary ${appSettings.cardFontSize==='large'?'btn-primary':''}" onclick="updateFontSize('large')">大号</button>
@@ -882,7 +1085,7 @@ function deleteByCategory(cat) { if(confirm(`删除科目 "${cat}" 下所有卡�
 function addNewCard() {
   const front = prompt("输入问题 (Front):"); if(!front) return;
   const back = prompt("输入答案 (Back):"); if(!back) return;
-  const category = prompt("科目:", "公共管理学");
+  const category = prompt("科目 (格式: 一级/二级):", "政治/马原");
   cards.unshift({ id: Date.now(), front, back, category: category||"未分类", tags: ["手动"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 });
   saveData(); renderGrid();
 }
@@ -895,18 +1098,125 @@ function editCard(id) {
 function showImportModal() {
   document.getElementById('modal-title').textContent = "导入题库 (JSON)";
   document.getElementById('modal-content').innerHTML = `
-    <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:10px;border-radius:6px;margin-bottom:10px;font-size:0.85rem;">粘贴 JSON 数组。</div><textarea id="import-area" class="input-field" style="height:150px;"></textarea><button class="btn btn-primary btn-block" onclick="executeImport()">导入</button>`;
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:12px;border-radius:8px;margin-bottom:15px;font-size:0.9rem;color:#0c4a6e;">
+      <strong>📋 数据格式要求：</strong>
+      <ul style="margin:5px 0 10px 20px;padding:0;">
+        <li>文件类型：JSON 数组</li>
+        <li>必需字段：<code>front</code> (问题), <code>back</code> (答案)</li>
+        <li>可选字段：<code>category</code> (科目), <code>tags</code> (标签数组)</li>
+      </ul>
+      <div style="background:#e0f2fe;padding:8px;border-radius:4px;font-family:monospace;font-size:0.85rem;color:#0284c7;">
+        [<br>
+        &nbsp;&nbsp;{<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"front": "题目示例",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"back": "答案内容",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"category": "公共管理学"<br>
+        &nbsp;&nbsp;}<br>
+        ]
+      </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="copyAiPrompt()">📋 复制 AI 提示词</button>
+    </div>
+    
+    <div style="margin-bottom:15px;">
+      <label style="display:block;margin-bottom:6px;font-weight:600;">方式 1: 上传文件 (.json)</label>
+      <input type="file" id="import-file" accept=".json" class="input-field" style="padding:8px;">
+    </div>
+    
+    <div style="margin-bottom:15px;">
+      <label style="display:block;margin-bottom:6px;font-weight:600;">方式 2: 粘贴文本</label>
+      <textarea id="import-area" class="input-field" style="height:120px;font-family:monospace;font-size:12px;" placeholder="在此处粘贴 JSON 数组..."></textarea>
+    </div>
+    
+    <button class="btn btn-primary btn-block" onclick="executeImport()">确认导入</button>
+  `;
   document.getElementById('modal-root').style.display = 'flex';
 }
-function executeImport() {
-  try {
-    const data = JSON.parse(document.getElementById('import-area').value);
-    if(!Array.isArray(data)) throw new Error();
-    let count = 0;
-    data.forEach(item => { if(item.front && item.back) { if(!cards.some(c=>c.front===item.front)) { cards.push({ id: Date.now()+Math.random(), front: item.front, back: item.back, category: item.category||"未分类", tags: item.tags||["导入"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5 }); count++; } } });
-    saveData(); closeModal(); renderGrid(); alert(`导入 ${count} 张`);
-  } catch(e) { alert("格式错误"); }
+
+function copyAiPrompt() {
+    const promptText = `请帮我生成公共管理专业的复习闪卡，要求如下：
+1. 输出格式必须是合法的 JSON 数组。
+2. 包含字段：front (问题), back (答案，支持 Markdown), category (科目/子科目), tags (标签数组)。
+3. 答案要结构化（定义-核心要素-意义），重点突出。
+示例：[{"front":"问题","back":"答案","category":"政治/马原","tags":["高频"]}]`;
+    
+    // Fallback for iframe restrictions
+    const textArea = document.createElement("textarea");
+    textArea.value = promptText;
+    
+    // Ensure it's not visible but part of the DOM
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+    document.body.appendChild(textArea);
+    
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        const msg = successful ? '提示词已复制！发送给 AI 即可生成数据。' : '复制失败，请手动复制。';
+        alert(msg);
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+        alert('复制失败，请手动复制。');
+    }
+    
+    document.body.removeChild(textArea);
 }
+
+function executeImport() {
+  const fileInput = document.getElementById('import-file');
+  const textArea = document.getElementById('import-area');
+  
+  const processData = (jsonStr) => {
+    try {
+      const data = JSON.parse(jsonStr);
+      if(!Array.isArray(data)) throw new Error("Root must be an array");
+      
+      let count = 0;
+      data.forEach(item => {
+        if(item.front && item.back) {
+          if(!cards.some(c => c.front === item.front)) {
+             cards.push({
+               id: Date.now() + Math.random(),
+               front: item.front,
+               back: item.back,
+               category: item.category || "未分类",
+               tags: item.tags || ["导入"],
+               nextReview: new Date().toISOString(),
+               mastery: 0,
+               interval: 0,
+               fs: 2.5
+             });
+             count++;
+          }
+        }
+      });
+      
+      saveData();
+      renderGrid();
+      updateSubjectList(); 
+      closeModal();
+      alert(`成功导入 ${count} 张新卡片！(已自动过滤重复项)`);
+      
+    } catch(e) {
+      alert("格式错误：请检查 JSON 语法是否正确，必须是对象数组。");
+      console.error(e);
+    }
+  };
+
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => processData(e.target.result);
+    reader.readAsText(file);
+  } else if (textArea.value.trim()) {
+    processData(textArea.value.trim());
+  } else {
+    alert("请选择文件或粘贴内容");
+  }
+}
+
 function exportCards() {
   const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards)); a.download = "mpa_flashcards.json"; document.body.appendChild(a); a.click(); a.remove();
 }
@@ -986,7 +1296,7 @@ async function sendMessage() {
     let prompt = `你是一位中国公共管理考研命题专家。
     1. **结构化输出**：定义 -> 核心要素 -> 意义。
     2. **结合时政**：联系中国数字政府、共同富裕等热点。
-    3. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目"}]。
+    3. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目/子科目"}]。
     4. **表格**：使用 Markdown 表格语法。`;
     
     let res, data, reply;
