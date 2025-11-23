@@ -274,23 +274,7 @@
     .back::-webkit-scrollbar-track { background: transparent; }
     .back::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 3px; }
 
-    /* 修复：正面问题排版，避免孤字换行，绝对居中 */
-    .card-content-lg { 
-        font-weight: 800; color: #1e293b; line-height: 1.3; margin: 0; letter-spacing: -0.5px; 
-        width: 100%; 
-        /* 核心修复：平衡换行 */
-        text-wrap: balance; 
-        word-break: normal; /* 避免单词内断行 */
-        overflow-wrap: break-word;
-        transition: font-size 0.2s;
-    }
-    
-    /* 动态字号 - 正面 */
-    .card-content-lg.text-xl { font-size: 2.8rem; line-height: 1.2; }
-    .card-content-lg.text-lg { font-size: 2.2rem; line-height: 1.3; }
-    .card-content-lg.text-md { font-size: 1.6rem; line-height: 1.4; }
-    .card-content-lg.text-sm { font-size: 1.25rem; line-height: 1.5; text-align: left; } /* 字多时左对齐 */
-
+    .card-content-lg { font-size: 2.2rem; font-weight: 800; color: #1e293b; line-height: 1.3; margin: 0; letter-spacing: -0.5px; max-width: 95%; }
     .card-clue { color: #64748b; font-style: italic; font-size: 1.1rem; margin-top: 15px; }
     .card-category-label { position: absolute; top: 30px; left: 0; right: 0; text-align: center; color: var(--text-sub); font-weight: 600; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
     .card-bottom-hint { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: #94a3b8; font-size: 0.85rem; opacity: 0.8; }
@@ -308,6 +292,23 @@
     .answer-main.text-sm { font-size: 1.1rem; font-weight: 400; text-align: left; }
     .answer-main strong { color: #000; background: linear-gradient(to top, rgba(253, 224, 71, 0.5) 50%, transparent 50%); padding: 0 2px; }
     
+    /* 表格样式 (V12.5 增强) */
+    .answer-main table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1em 0;
+        font-size: 0.95em;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .table-wrapper { overflow-x: auto; border-radius: 8px; margin-bottom: 1em; }
+    .answer-main th { background: #f1f5f9; font-weight: 700; color: #1e293b; padding: 10px 12px; border-bottom: 2px solid #cbd5e1; text-align: center; }
+    .answer-main td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; color: #334155; line-height: 1.6; }
+    .answer-main tr:nth-child(even) { background: #fcfcfc; }
+    .answer-main tr:hover { background: #f0f9ff; }
+
     .answer-extend { margin-top: 25px; padding: 15px; border-top: 1px dashed #cbd5e1; font-size: 0.95rem; color: #64748b; background: #f8fafc; border-radius: 8px; text-align: left; line-height: 1.6; width: 100%; }
     .answer-extend h3 { font-size: 1rem; margin: 0 0 8px 0; color: #475569; }
 
@@ -333,7 +334,7 @@
     .msg.ai { background: white; border: 1px solid var(--border); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg strong { color: #b91c1c; }
     
-    /* Chat Table Styles (V12.5) */
+    /* Chat Table */
     .msg table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.85em; background: #fff; border-radius: 4px; overflow: hidden; border: 1px solid #e2e8f0; }
     .msg th, .msg td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
     .msg th { background: #f1f5f9; font-weight: 600; color: var(--text-main); border-bottom: 2px solid #cbd5e1; }
