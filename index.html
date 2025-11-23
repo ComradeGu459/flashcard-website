@@ -19,7 +19,7 @@
       
       /* 卡片背面专用配色 */
       --card-paper: #ffffff;
-      --card-ink: #334155;
+      --card-ink: #0f172a;
       --highlight-bg: rgba(253, 224, 71, 0.4);
       --highlight-text: #000000;
 
@@ -230,28 +230,34 @@
     .status-learning { background: var(--warning); }
     .status-mastered { background: var(--success); }
 
-    /* === 沉浸式复习 (Overlay) === */
+    /* === 沉浸式复习 (Overlay) - 大师级排版 === */
     #review-overlay { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(15, 23, 42, 0.96); 
-        backdrop-filter: blur(10px); z-index: 2000; 
+        background: #0f172a; 
+        background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        backdrop-filter: blur(12px); z-index: 2000; 
         display: none; flex-direction: column; align-items: center; justify-content: center; 
         transition: opacity 0.3s ease; 
     }
     #review-overlay.active { display: flex; animation: fadeIn 0.3s; }
     
     .review-header { position: absolute; top: 0; left: 0; right: 0; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 3000; color: white; }
-    .review-header .btn-ghost { color: #cbd5e1; } 
-    .review-header .btn-ghost:hover { background: rgba(255,255,255,0.1); color: white; }
-    .progress-bar-container { flex: 1; max-width: 400px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; margin: 0 20px; overflow: hidden; }
-    .progress-fill { height: 100%; background: #818cf8; width: 0%; transition: width 0.3s; }
+    .review-header .btn-ghost { color: #94a3b8; transition: color 0.2s; } 
+    .review-header .btn-ghost:hover { color: white; background: rgba(255,255,255,0.1); }
+    .progress-bar-container { flex: 1; max-width: 400px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 0 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #6366f1; width: 0%; transition: width 0.3s; }
 
-    /* 3D 翻转容器 */
-    .flip-container { perspective: 1500px; width: 90%; max-width: 720px; height: 70vh; min-height: 400px; margin: 20px; position: relative; }
+    /* 3D 翻转容器 - 极致居中 */
+    .flip-container { 
+        perspective: 2000px; 
+        width: 90%; max-width: 760px; 
+        height: 65vh; min-height: 450px; 
+        margin: 20px; position: relative; 
+    }
     .flipper { 
         position: relative; width: 100%; height: 100%; 
         transform-style: preserve-3d; 
-        transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); 
+        transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
         transform-origin: center center;
     }
     .flipper.flipped { transform: rotateY(180deg); }
@@ -259,25 +265,84 @@
     .front, .back { 
         backface-visibility: hidden; -webkit-backface-visibility: hidden; 
         position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-        border-radius: 24px; background: #ffffff; 
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
-        padding: 40px; 
+        border-radius: 24px; 
+        background: #ffffff; 
+        box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1);
+        padding: 50px; 
         display: flex; flex-direction: column; 
         background-color: #ffffff;
     }
     
-    .front { z-index: 2; transform: rotateY(0deg); display: grid; place-items: center; text-align: center; border-top: 8px solid var(--primary); }
-    .back { z-index: 1; transform: rotateY(180deg); overflow-y: auto; justify-content: flex-start; text-align: left; border-top: 8px solid #10b981; }
+    /* 正面 - 绝对居中 */
+    .front { 
+        z-index: 2; 
+        transform: rotateY(0deg); 
+        display: grid; 
+        place-items: center; 
+        text-align: center; 
+        border-top: 8px solid var(--primary); 
+    }
+    
+    /* 背面 */
+    .back { 
+        z-index: 1; 
+        transform: rotateY(180deg); 
+        overflow-y: auto; 
+        justify-content: flex-start; 
+        text-align: left; 
+        border-top: 8px solid #10b981; 
+    }
     .back.layout-center { justify-content: center; align-items: center; text-align: center; }
     
     .back::-webkit-scrollbar { width: 6px; }
     .back::-webkit-scrollbar-track { background: transparent; }
-    .back::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 3px; }
+    .back::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
 
-    .card-content-lg { font-size: 2.2rem; font-weight: 800; color: #1e293b; line-height: 1.3; margin: 0; letter-spacing: -0.5px; max-width: 95%; }
-    .card-clue { color: #64748b; font-style: italic; font-size: 1.1rem; margin-top: 15px; }
-    .card-category-label { position: absolute; top: 30px; left: 0; right: 0; text-align: center; color: var(--text-sub); font-weight: 600; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
-    .card-bottom-hint { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: #94a3b8; font-size: 0.85rem; opacity: 0.8; }
+    /* === 核心：排版重构 V16.0 (结合 V14.5 的逻辑) === */
+    .question-wrapper { 
+        display: flex; flex-direction: column; justify-content: center; align-items: center; 
+        width: 100%; height: 100%;
+    }
+
+    .card-content-lg { 
+        color: #0f172a; 
+        font-weight: 800; 
+        margin: 0; 
+        width: 100%; 
+        text-wrap: balance; 
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        transition: font-size 0.2s;
+    }
+    
+    /* 动态字号分级 */
+    .card-content-lg.text-xl { font-size: 3.2rem; line-height: 1.2; font-weight: 900; } /* <10 */
+    .card-content-lg.text-lg { font-size: 2.4rem; line-height: 1.3; font-weight: 800; } /* 10-22 */
+    .card-content-lg.text-md { font-size: 1.8rem; line-height: 1.5; font-weight: 700; } /* 22-35 */
+    .card-content-lg.text-sm { font-size: 1.4rem; line-height: 1.6; font-weight: 600; text-align: left; } /* >35 */
+
+    .card-clue { color: #64748b; font-style: italic; font-size: 1.1rem; margin-top: 24px; font-weight: 500; }
+    
+    /* 磨砂胶囊标签 */
+    .card-category-label { 
+        position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+        background: rgba(241, 245, 249, 0.8); /* 磨砂白 */
+        backdrop-filter: blur(4px);
+        color: #64748b; 
+        padding: 6px 16px; border-radius: 20px;
+        font-weight: 600; font-size: 0.8rem; 
+        letter-spacing: 0.5px; text-transform: uppercase; 
+        width: max-content; max-width: 80%; 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .card-bottom-hint { 
+        position: absolute; bottom: 30px; left: 0; right: 0; 
+        text-align: center; color: #cbd5e1; font-size: 0.9rem; 
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        opacity: 0.6;
+    }
     
     .split-box { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 12px 0; }
     .split-item { font-weight: 900; color: #1e293b; font-size: 1em; }
@@ -292,7 +357,7 @@
     .answer-main.text-sm { font-size: 1.1rem; font-weight: 400; text-align: left; }
     .answer-main strong { color: #000; background: linear-gradient(to top, rgba(253, 224, 71, 0.5) 50%, transparent 50%); padding: 0 2px; }
     
-    /* 表格样式 (V12.5 增强) */
+    /* 表格样式 */
     .answer-main table {
         border-collapse: collapse;
         width: 100%;
@@ -334,7 +399,6 @@
     .msg.ai { background: white; border: 1px solid var(--border); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg strong { color: #b91c1c; }
     
-    /* Chat Table Styles (V12.5) */
     .msg table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.85em; background: #fff; border-radius: 4px; overflow: hidden; border: 1px solid #e2e8f0; }
     .msg th, .msg td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
     .msg th { background: #f1f5f9; font-weight: 600; color: var(--text-main); border-bottom: 2px solid #cbd5e1; }
@@ -617,7 +681,6 @@ function initData() {
         if (!c.fs) c.fs = 2.5; 
         if (!c.interval) c.interval = 0; 
         if (!c.reviewCount) c.reviewCount = 0;
-        // 迁移：如果以前是高频标签，设为 isFavorite
         if (c.tags.includes("高频")) c.isFavorite = true;
         if (c.isFavorite === undefined) c.isFavorite = false;
     });
@@ -664,12 +727,54 @@ function applySettings() {
   document.getElementById('daily-goal-num').textContent = appSettings.dailyGoal;
 }
 
+// 关键：分离导入逻辑 (复用)
+function importCardData(data, source = 'manual') {
+    let count = 0;
+    data.forEach(item => {
+        if (item.front && item.back) {
+            let finalCat = item.category || "未分类";
+            let tags = item.tags || [];
+
+            if (source === 'ai') {
+                // AI 强制归类
+                if (!finalCat.startsWith("AI智慧生成")) {
+                    finalCat = "AI智慧生成/" + finalCat;
+                }
+                if (!tags.includes("AI")) tags.push("AI");
+            } else {
+                // 手动导入，保留原分类
+                if (!tags.includes("导入")) tags.push("导入");
+            }
+
+            if (!cards.some(c => c.front === item.front)) {
+                cards.push({
+                    id: Date.now() + Math.random(),
+                    front: item.front,
+                    back: item.back,
+                    category: finalCat,
+                    tags: tags,
+                    nextReview: new Date().toISOString(),
+                    mastery: 0,
+                    interval: 0,
+                    fs: 2.5,
+                    isFavorite: item.isFavorite || false
+                });
+                count++;
+            }
+        }
+    });
+    saveData();
+    renderGrid();
+    updateSubjectList();
+    return count;
+}
+
 // 关键修复：分区域渲染科目
 function updateSubjectList() {
   const normalTree = {}; 
   const aiTree = {};
   
-  // 联动筛选源：如果是收藏模式，只统计收藏卡片
+  // 联动筛选源
   let sourceCards = cards;
   if(currentFilter === 'favorite') {
       sourceCards = cards.filter(c => c.isFavorite);
@@ -680,12 +785,10 @@ function updateSubjectList() {
 
   sourceCards.forEach(c => {
     const cat = c.category || "未分类";
-    // 区分 AI 与 普通
     const isAI = cat.startsWith("AI智慧生成");
     
-    // 去掉 AI 前缀以便展示
     let displayCat = isAI ? cat.replace("AI智慧生成/", "") : cat;
-    if(isAI && displayCat === "AI智慧生成") displayCat = "未分类"; // 处理根目录情况
+    if(isAI && displayCat === "AI智慧生成") displayCat = "未分类";
 
     const parts = displayCat.split(/[\/\-]/); 
     const mainCat = parts[0].trim();
@@ -701,7 +804,6 @@ function updateSubjectList() {
     }
   });
   
-  // 渲染函数
   const renderTree = (tree, containerId, isAiMode) => {
       const listEl = document.getElementById(containerId);
       listEl.innerHTML = '';
@@ -717,7 +819,6 @@ function updateSubjectList() {
         const div = document.createElement('div'); div.className = 'nav-item-group';
         const header = document.createElement('div'); header.className = 'nav-item';
         
-        // 构建完整查询路径
         const queryPath = isAiMode ? `AI智慧生成/${main}` : main;
 
         header.onclick = () => { 
@@ -767,7 +868,6 @@ function renderGrid(sourceCards = null) {
               const cat = (c.category || "未分类").replace(/-/g, '/'); 
               return cat === targetSubject || cat.startsWith(targetSubject + '/'); 
           });
-          // 关键修复：科目筛选叠加收藏状态
           if(document.getElementById('nav-fav').classList.contains('active')) {
              currentDisplayCards = currentDisplayCards.filter(c => c.isFavorite);
           }
@@ -916,7 +1016,6 @@ function showReviewCard() {
   if(card.isFavorite) favBtn.classList.add('active');
   else favBtn.classList.remove('active');
 
-  // 核心逻辑：根据字数动态设置布局和字体
   const rawText = card.back;
   const splitMarkers = ['###', '---'];
   let mainText = rawText;
@@ -933,11 +1032,13 @@ function showReviewCard() {
       }
   }
 
+  // === V16.0 排版引擎接入 ===
   const frontLen = card.front.length;
   const frontEl = document.getElementById('review-front');
   frontEl.className = 'card-content-lg';
+  // 动态调整问题字号
   if (frontLen < 10) frontEl.classList.add('text-xl');
-  else if (frontLen < 20) frontEl.classList.add('text-lg');
+  else if (frontLen < 22) frontEl.classList.add('text-lg');
   else if (frontLen < 35) frontEl.classList.add('text-md');
   else frontEl.classList.add('text-sm');
 
@@ -949,9 +1050,10 @@ function showReviewCard() {
   
   let html = `<div class="answer-main">${parseMarkdown(mainText)}</div>`;
   
-  if (rawLen < 10 && !hasComplex) { backContainer.classList.add('layout-center-xl'); html = html.replace('answer-main', 'answer-main text-xl'); }
-  else if (rawLen < 30 && !hasComplex) { backContainer.classList.add('layout-center-lg'); html = html.replace('answer-main', 'answer-main text-lg'); }
-  else if (rawLen < 80 && !hasComplex) { backContainer.classList.add('layout-center-md'); html = html.replace('answer-main', 'answer-main text-md'); }
+  // 智能答案排版
+  if (rawLen < 12 && !hasComplex) { backContainer.classList.add('layout-center'); html = html.replace('answer-main', 'answer-main text-xl'); }
+  else if (rawLen < 35 && !hasComplex) { backContainer.classList.add('layout-center'); html = html.replace('answer-main', 'answer-main text-lg'); }
+  else if (rawLen < 80 && !hasComplex) { backContainer.classList.add('layout-center'); html = html.replace('answer-main', 'answer-main text-md'); }
   else { html = html.replace('answer-main', 'answer-main text-sm'); }
   
   if (extendText.trim()) { html += `<div class="answer-extend">${parseMarkdown(extendText)}</div>`; }
@@ -1143,7 +1245,7 @@ function copyAiPrompt() {
     const promptText = `请帮我生成闪卡数据，要求：
 1. 输出必须是合法的 JSON 数组格式。
 2. 包含字段：front (问题), back (答案), category (科目/二级科目), tags (标签)。
-3. 答案结构：【核心回答】必须在最前。如有【拓展/深度解析/英语词汇】，请使用 "###" 或 "---" 进行分隔，这些内容将被自动弱化显示。
+3. 答案排版：核心答案在前。如果有"深度解析"或"拓展内容"，请务必使用 "###" 或 "---" 进行分隔（系统会自动将其弱化显示）。
 示例：[{"front":"问题","back":"核心答案...\\n\\n### 深度解析\\n内容...","category":"AI智慧生成/科目"}]`;
     const textArea = document.createElement("textarea"); textArea.value = promptText; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
     try { document.execCommand('copy'); alert('提示词已复制！'); } catch (err) { alert('复制失败'); }
@@ -1154,30 +1256,10 @@ function executeImport() {
   const processData = (jsonStr) => {
     try {
       const data = JSON.parse(jsonStr); if(!Array.isArray(data)) throw new Error();
-      let count = 0; 
-      data.forEach(item => { 
-          if(item.front && item.back) { 
-              // 强制劫持分类：AI 导入的一律加前缀
-              let finalCat = item.category || "未分类";
-              if(!finalCat.startsWith("AI智慧生成")) {
-                  finalCat = "AI智慧生成/" + finalCat;
-              }
-
-              if(!cards.some(c => c.front === item.front)) { 
-                  cards.push({ 
-                      id: Date.now() + Math.random(), 
-                      front: item.front, 
-                      back: item.back, 
-                      category: finalCat, 
-                      tags: item.tags || ["AI"], 
-                      nextReview: new Date().toISOString(), 
-                      mastery: 0, interval: 0, fs: 2.5, isFavorite: false 
-                  }); 
-                  count++; 
-              } 
-          } 
-      });
-      saveData(); renderGrid(); updateSubjectList(); closeModal(); alert(`导入 ${count} 张`);
+      // 改动：现在导入函数调用 importCardData, 且默认手动来源
+      const count = importCardData(data, 'manual');
+      closeModal(); 
+      alert(`导入 ${count} 张`);
     } catch(e) { alert("格式错误"); }
   };
   if (fileInput.files.length > 0) { const file = fileInput.files[0]; const reader = new FileReader(); reader.onload = (e) => processData(e.target.result); reader.readAsText(file); } else if (textArea.value.trim()) { processData(textArea.value.trim()); } else { alert("请选择文件或粘贴内容"); }
@@ -1248,7 +1330,14 @@ function renderChatHistory() {
                        btn.className = 'btn btn-primary btn-sm';
                        btn.style.marginTop = '8px';
                        btn.textContent = "检测到闪卡数据 (点击导入)";
-                       btn.onclick = function() { document.getElementById('import-area').value = jsonStr; executeImport(); this.disabled=true; this.textContent="已导入"; };
+                       btn.onclick = function() { 
+                           // AI 导入按钮逻辑：强制标记源为 'ai'
+                           const parsed = JSON.parse(jsonStr);
+                           const count = importCardData(parsed, 'ai');
+                           this.disabled = true;
+                           this.textContent = `已导入 ${count} 张`;
+                           alert(`导入成功`);
+                       };
                        d.appendChild(btn);
                    }
                  } catch(e){}
@@ -1271,7 +1360,7 @@ async function sendMessage() {
   try {
     let prompt = `你是一位闪卡小精灵，专注公共管理考研。
     1. **结构化输出**：定义 -> 核心要素 -> 意义。
-    2. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"AI智慧生成/科目"}]。
+    2. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目"}]。
     3. **表格**：使用 Markdown 表格语法。`;
     
     let res, data, reply;
@@ -1294,8 +1383,10 @@ async function sendMessage() {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-primary btn-sm'; btn.style.marginTop='8px'; btn.textContent = `一键导入 ${parsed.length} 张卡片`;
                 btn.onclick = function() { 
-                    let count=0; parsed.forEach(p=>{ if(!cards.some(c=>c.front===p.front)){ cards.push({id:Date.now()+Math.random(), front:p.front, back:p.back, category:p.category||"AI生成", tags:p.tags||["AI"], nextReview:new Date().toISOString(), mastery:0, interval:0, fs:2.5, isFavorite:false}); count++; } });
-                    saveData(); renderGrid(); updateSubjectList(); this.disabled=true; this.textContent=`成功导入 ${count} 张`; alert(`导入成功`);
+                    const count = importCardData(parsed, 'ai');
+                    this.disabled = true;
+                    this.textContent = `已导入 ${count} 张`;
+                    alert(`导入成功`);
                 };
                 msgDiv.appendChild(btn);
             }
@@ -1310,6 +1401,48 @@ function addMsg(role, text) {
     document.getElementById('chat-body').scrollTop = document.getElementById('chat-body').scrollHeight;
     chatHistory.push({role, text}); saveChatHistory();
     return d;
+}
+
+// 核心导入逻辑分离 (关键修复)
+function importCardData(data, source = 'manual') {
+    let count = 0;
+    data.forEach(item => {
+        if (item.front && item.back) {
+            let finalCat = item.category || "未分类";
+            let tags = item.tags || [];
+
+            if (source === 'ai') {
+                // AI 强制归类
+                if (!finalCat.startsWith("AI智慧生成")) {
+                    finalCat = "AI智慧生成/" + finalCat;
+                }
+                if (!tags.includes("AI")) tags.push("AI");
+            } else {
+                // 手动导入，保留原分类
+                if (!tags.includes("导入")) tags.push("导入");
+            }
+
+            if (!cards.some(c => c.front === item.front)) {
+                cards.push({
+                    id: Date.now() + Math.random(),
+                    front: item.front,
+                    back: item.back,
+                    category: finalCat,
+                    tags: tags,
+                    nextReview: new Date().toISOString(),
+                    mastery: 0,
+                    interval: 0,
+                    fs: 2.5,
+                    isFavorite: item.isFavorite || false
+                });
+                count++;
+            }
+        }
+    });
+    saveData();
+    renderGrid();
+    updateSubjectList();
+    return count;
 }
 
 window.onload = initData;
