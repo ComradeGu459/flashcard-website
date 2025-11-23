@@ -334,7 +334,7 @@
     .msg.ai { background: white; border: 1px solid var(--border); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg strong { color: #b91c1c; }
     
-    /* Chat Table */
+    /* Chat Table Styles (V12.5) */
     .msg table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.85em; background: #fff; border-radius: 4px; overflow: hidden; border: 1px solid #e2e8f0; }
     .msg th, .msg td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
     .msg th { background: #f1f5f9; font-weight: 600; color: var(--text-main); border-bottom: 2px solid #cbd5e1; }
@@ -616,7 +616,6 @@ function initData() {
         if (!c.fs) c.fs = 2.5; 
         if (!c.interval) c.interval = 0; 
         if (!c.reviewCount) c.reviewCount = 0;
-        // 迁移：如果以前是高频标签，设为 isFavorite
         if (c.tags.includes("高频")) c.isFavorite = true;
         if (c.isFavorite === undefined) c.isFavorite = false;
     });
