@@ -405,9 +405,10 @@
       <div id="subject-list"></div>
     </div>
 
+    <!-- 新增：AI 智慧生成独立区域 -->
     <div class="nav-section">
-      <div class="nav-title">系统设置</div>
-      <button class="btn btn-secondary btn-block" onclick="showSettingsModal()">⚙️ 偏好设置 (字体/倒计时)</button>
+      <div class="nav-title" style="color:var(--primary);">✨ AI 智慧生成</div>
+      <div id="ai-subject-list"></div>
     </div>
 
     <div class="nav-section" style="margin-top:auto;">
@@ -616,6 +617,7 @@ function initData() {
         if (!c.fs) c.fs = 2.5; 
         if (!c.interval) c.interval = 0; 
         if (!c.reviewCount) c.reviewCount = 0;
+        // 迁移：如果以前是高频标签，设为 isFavorite
         if (c.tags.includes("高频")) c.isFavorite = true;
         if (c.isFavorite === undefined) c.isFavorite = false;
     });
@@ -662,9 +664,11 @@ function applySettings() {
   document.getElementById('daily-goal-num').textContent = appSettings.dailyGoal;
 }
 
-// 关键修复：科目分类支持“收藏夹联动”
+// 关键修复：分区域渲染科目
 function updateSubjectList() {
-  const tree = {}; 
+  const normalTree = {}; 
+  const aiTree = {};
+  
   // 联动筛选源：如果是收藏模式，只统计收藏卡片
   let sourceCards = cards;
   if(currentFilter === 'favorite') {
@@ -676,55 +680,80 @@ function updateSubjectList() {
 
   sourceCards.forEach(c => {
     const cat = c.category || "未分类";
-    const parts = cat.split(/[\/\-]/); 
+    // 区分 AI 与 普通
+    const isAI = cat.startsWith("AI智慧生成");
+    
+    // 去掉 AI 前缀以便展示
+    let displayCat = isAI ? cat.replace("AI智慧生成/", "") : cat;
+    if(isAI && displayCat === "AI智慧生成") displayCat = "未分类"; // 处理根目录情况
+
+    const parts = displayCat.split(/[\/\-]/); 
     const mainCat = parts[0].trim();
     const subCat = parts.length > 1 ? parts[1].trim() : null;
-    if (!tree[mainCat]) tree[mainCat] = { count: 0, subs: {} };
-    tree[mainCat].count++;
+    
+    const targetTree = isAI ? aiTree : normalTree;
+
+    if (!targetTree[mainCat]) targetTree[mainCat] = { count: 0, subs: {} };
+    targetTree[mainCat].count++;
     if (subCat) {
-        if (!tree[mainCat].subs[subCat]) tree[mainCat].subs[subCat] = 0;
-        tree[mainCat].subs[subCat]++;
+        if (!targetTree[mainCat].subs[subCat]) targetTree[mainCat].subs[subCat] = 0;
+        targetTree[mainCat].subs[subCat]++;
     }
   });
   
-  const listEl = document.getElementById('subject-list');
-  listEl.innerHTML = '';
-  
-  if(Object.keys(tree).length === 0) {
-      listEl.innerHTML = '<div style="padding:10px;color:#94a3b8;font-size:0.9rem;text-align:center;">暂无数据</div>';
-      return;
-  }
-  
-  Object.keys(tree).sort().forEach(main => {
-    const item = tree[main];
-    const hasSubs = Object.keys(item.subs).length > 0;
-    const div = document.createElement('div'); div.className = 'nav-item-group';
-    const header = document.createElement('div'); header.className = 'nav-item';
-    
-    header.onclick = () => { 
-        filterBySubject(main); 
-        if(hasSubs) { 
-            document.getElementById(`sub-${main}`).classList.toggle('open'); 
-            header.classList.toggle('expanded'); 
-        } 
-    };
-    
-    let arrow = hasSubs ? `<span class="nav-expand-icon">▶</span>` : `<span style="width:14px;"></span>`;
-    header.innerHTML = `${arrow} <i>📖</i> ${main} <span class="count-badge">${item.count}</span>`;
-    div.appendChild(header);
-    
-    if(hasSubs) {
-        const subGroup = document.createElement('div'); subGroup.id = `sub-${main}`; subGroup.className = 'nav-sub-group';
-        Object.keys(item.subs).sort().forEach(sub => {
-            const subDiv = document.createElement('div'); subDiv.className = 'nav-sub-item';
-            subDiv.innerHTML = `${sub} <span style="float:right;opacity:0.6;font-size:0.75rem;">${item.subs[sub]}</span>`;
-            subDiv.onclick = (e) => { e.stopPropagation(); filterBySubject(`${main}/${sub}`); };
-            subGroup.appendChild(subDiv);
-        });
-        div.appendChild(subGroup);
-    }
-    listEl.appendChild(div);
-  });
+  // 渲染函数
+  const renderTree = (tree, containerId, isAiMode) => {
+      const listEl = document.getElementById(containerId);
+      listEl.innerHTML = '';
+      
+      if(Object.keys(tree).length === 0) {
+          listEl.innerHTML = '<div style="padding:10px;color:#94a3b8;font-size:0.85rem;text-align:center;">暂无内容</div>';
+          return;
+      }
+
+      Object.keys(tree).sort().forEach(main => {
+        const item = tree[main];
+        const hasSubs = Object.keys(item.subs).length > 0;
+        const div = document.createElement('div'); div.className = 'nav-item-group';
+        const header = document.createElement('div'); header.className = 'nav-item';
+        
+        // 构建完整查询路径
+        const queryPath = isAiMode ? `AI智慧生成/${main}` : main;
+
+        header.onclick = () => { 
+            filterBySubject(queryPath); 
+            if(hasSubs) { 
+                const subId = `sub-${isAiMode?'ai':'norm'}-${main}`;
+                document.getElementById(subId).classList.toggle('open'); 
+                header.classList.toggle('expanded'); 
+            } 
+        };
+        
+        let arrow = hasSubs ? `<span class="nav-expand-icon">▶</span>` : `<span style="width:14px;"></span>`;
+        header.innerHTML = `${arrow} <i>${isAiMode ? '🤖' : '📖'}</i> ${main} <span class="count-badge">${item.count}</span>`;
+        div.appendChild(header);
+        
+        if(hasSubs) {
+            const subGroup = document.createElement('div'); 
+            subGroup.id = `sub-${isAiMode?'ai':'norm'}-${main}`; 
+            subGroup.className = 'nav-sub-group';
+            Object.keys(item.subs).sort().forEach(sub => {
+                const subDiv = document.createElement('div'); subDiv.className = 'nav-sub-item';
+                subDiv.innerHTML = `${sub} <span style="float:right;opacity:0.6;font-size:0.75rem;">${item.subs[sub]}</span>`;
+                subDiv.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    filterBySubject(`${queryPath}/${sub}`); 
+                };
+                subGroup.appendChild(subDiv);
+            });
+            div.appendChild(subGroup);
+        }
+        listEl.appendChild(div);
+      });
+  };
+
+  renderTree(normalTree, 'subject-list', false);
+  renderTree(aiTree, 'ai-subject-list', true);
 }
 
 function renderGrid(sourceCards = null) {
@@ -764,7 +793,7 @@ function renderGrid(sourceCards = null) {
   currentDisplayCards.forEach(card => {
     const el = document.createElement('div'); el.className = 'card-thumb'; el.onclick = () => previewSingleCard(card.id);
     let statusClass = card.mastery >= 4 ? 'status-mastered' : (card.interval > 0 ? 'status-learning' : 'status-new');
-    const catBadge = card.category ? `<span class="tag-pill" style="background:#f3f4f6;color:#4b5563;">${card.category}</span>` : '';
+    const catBadge = card.category ? `<span class="tag-pill" style="background:#f3f4f6;color:#4b5563;">${card.category.split('/').pop()}</span>` : '';
     const tagsHtml = card.tags.slice(0,3).map(t => `<span class="tag-pill">${t}</span>`).join('');
     const nextDate = new Date(card.nextReview);
     const isDue = nextDate <= new Date();
@@ -1114,8 +1143,8 @@ function copyAiPrompt() {
     const promptText = `请帮我生成闪卡数据，要求：
 1. 输出必须是合法的 JSON 数组格式。
 2. 包含字段：front (问题), back (答案), category (科目/二级科目), tags (标签)。
-3. 答案排版：核心答案在前。如果有"深度解析"或"拓展内容"，请务必使用 "###" 或 "---" 进行分隔（系统会自动将其弱化显示）。
-示例：[{"front":"问题","back":"核心答案...\\n\\n### 深度解析\\n内容...","category":"政治/马原"}]`;
+3. 答案结构：【核心回答】必须在最前。如有【拓展/深度解析/英语词汇】，请使用 "###" 或 "---" 进行分隔，这些内容将被自动弱化显示。
+示例：[{"front":"问题","back":"核心答案...\\n\\n### 深度解析\\n内容...","category":"AI智慧生成/科目"}]`;
     const textArea = document.createElement("textarea"); textArea.value = promptText; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
     try { document.execCommand('copy'); alert('提示词已复制！'); } catch (err) { alert('复制失败'); }
     document.body.removeChild(textArea);
@@ -1125,7 +1154,29 @@ function executeImport() {
   const processData = (jsonStr) => {
     try {
       const data = JSON.parse(jsonStr); if(!Array.isArray(data)) throw new Error();
-      let count = 0; data.forEach(item => { if(item.front && item.back) { if(!cards.some(c => c.front === item.front)) { cards.push({ id: Date.now() + Math.random(), front: item.front, back: item.back, category: item.category || "未分类", tags: item.tags || ["导入"], nextReview: new Date().toISOString(), mastery: 0, interval: 0, fs: 2.5, isFavorite: false }); count++; } } });
+      let count = 0; 
+      data.forEach(item => { 
+          if(item.front && item.back) { 
+              // 强制劫持分类：AI 导入的一律加前缀
+              let finalCat = item.category || "未分类";
+              if(!finalCat.startsWith("AI智慧生成")) {
+                  finalCat = "AI智慧生成/" + finalCat;
+              }
+
+              if(!cards.some(c => c.front === item.front)) { 
+                  cards.push({ 
+                      id: Date.now() + Math.random(), 
+                      front: item.front, 
+                      back: item.back, 
+                      category: finalCat, 
+                      tags: item.tags || ["AI"], 
+                      nextReview: new Date().toISOString(), 
+                      mastery: 0, interval: 0, fs: 2.5, isFavorite: false 
+                  }); 
+                  count++; 
+              } 
+          } 
+      });
       saveData(); renderGrid(); updateSubjectList(); closeModal(); alert(`导入 ${count} 张`);
     } catch(e) { alert("格式错误"); }
   };
@@ -1136,14 +1187,11 @@ function closeModal() { document.getElementById('modal-root').style.display = 'n
 function filterCards(kw) { if(!kw) { renderGrid(); return; } const l = kw.toLowerCase(); renderGrid(cards.filter(c => c.front.toLowerCase().includes(l) || c.back.toLowerCase().includes(l))); }
 function filterByStatus(t) { 
     currentFilter = t; 
-    // 更新导航选中状态
     updateNavActiveState(); 
-    // 如果是收藏夹模式，需要强制开启收藏筛选标记
     if (t === 'favorite') {
         document.getElementById('nav-fav').classList.add('active');
     }
     renderGrid(); 
-    // 关键：触发科目列表刷新，让它根据当前筛选源（收藏/全部）重新统计
     updateSubjectList(); 
 }
 function filterBySubject(s) { currentFilter = 'subject:'+s; updateNavActiveState(); renderGrid(); }
@@ -1223,7 +1271,7 @@ async function sendMessage() {
   try {
     let prompt = `你是一位闪卡小精灵，专注公共管理考研。
     1. **结构化输出**：定义 -> 核心要素 -> 意义。
-    2. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"科目"}]。
+    2. **JSON格式**：若生成闪卡，返回 [{"front":"问题","back":"答案markdown","category":"AI智慧生成/科目"}]。
     3. **表格**：使用 Markdown 表格语法。`;
     
     let res, data, reply;
